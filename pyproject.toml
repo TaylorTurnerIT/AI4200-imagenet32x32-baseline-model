@@ -6,7 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "residual-mlp-baseline"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["torch>=2.0"]   # lower bound only, so pip keeps your existing CUDA build
+dependencies = [
+    "ipykernel>=7.4.0",
+    "jupytext>=1.19.6",
+    "torch>=2.0",
+]   # lower bound only, so pip keeps your existing CUDA build
 
 [dependency-groups]
 dev = [
