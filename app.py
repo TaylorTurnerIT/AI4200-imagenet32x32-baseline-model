@@ -1,4 +1,4 @@
-"""Local development harness. Start with ./run or uv run marimo edit app.py."""
+"""Local development harness. Start the notebook server with ./run."""
 
 import marimo
 

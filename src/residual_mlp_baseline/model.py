@@ -1,16 +1,41 @@
-import torch
-import torch.nn as nn
+"""Importable model module and editable marimo notebook."""
+
+import marimo
+
+__generated_with = "0.25.1"
+app = marimo.App(width="medium")
 
 
-# Each task differs only in its input size and its number of classes.
-# The same model class is used for all three.
-TASKS = {
-    "mnist":      {"in_features": 28 * 28,     "num_classes": 10},    # 28x28 grayscale
-    "cifar10":    {"in_features": 3 * 32 * 32, "num_classes": 10},    # 32x32 color
-    "imagenet32": {"in_features": 3 * 32 * 32, "num_classes": 1000},  # 32x32 color
-}
+with app.setup:
+    import torch
+    import torch.nn as nn
 
 
+    # Each task differs only in its input size and its number of classes.
+    # The same model class is used for all three.
+    TASKS = {
+        "mnist":      {"in_features": 28 * 28,     "num_classes": 10},    # 28x28 grayscale
+        "cifar10":    {"in_features": 3 * 32 * 32, "num_classes": 10},    # 32x32 color
+        "imagenet32": {"in_features": 3 * 32 * 32, "num_classes": 1000},  # 32x32 color
+    }
+
+
+@app.cell
+def _():
+    import marimo as mo
+
+    mo.md("""
+    # Model architecture
+
+    Edit `TASKS` in the setup cell and the classes below. These same definitions
+    are imported by `train.py` and `app.py`; there is no separate notebook copy.
+    Save changes before switching notebooks. The development app reloads imports
+    automatically; click **Train and evaluate** there to test your changes.
+    """)
+    return
+
+
+@app.class_definition
 class Block(nn.Module):
     """One residual block:  x + Linear(tanh(Linear(LayerNorm(x))))
 
@@ -29,6 +54,7 @@ class Block(nn.Module):
         return x + h                          # skip connection: add the input back
 
 
+@app.class_definition
 class ResidualMLP(nn.Module):
     """Baseline residual MLP.
 
@@ -78,3 +104,7 @@ class ResidualMLP(nn.Module):
         self.eval()                           # switch layers to inference behavior
         with torch.no_grad():                 # no gradients needed at inference
             return torch.softmax(self.forward(x), dim=1)
+
+
+if __name__ == "__main__":
+    app.run()

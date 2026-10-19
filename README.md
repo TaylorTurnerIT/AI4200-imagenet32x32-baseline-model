@@ -63,7 +63,9 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run:
 ```
 
 This installs Python 3.12 and the locked dependencies into `.venv`, installs this
-package in editable mode, and opens `app.py` in marimo. Select a task and click
+package in editable mode, and opens marimo's notebook list. One server hosts
+`app.py`, `src/residual_mlp_baseline/model.py`, and
+`src/residual_mlp_baseline/train.py`. Open `app.py`, select a task, and click
 **Train and evaluate**. The first run downloads the dataset; later runs reuse
 `data/`. The app prefers CUDA, then Apple Silicon MPS, then CPU. You can select
 CPU manually. The status panel verifies an actual Metal forward/backward operation
@@ -90,15 +92,15 @@ uv run --locked marimo run app.py
 
 In VS Code, install the recommended Python and marimo extensions and select
 `.venv/bin/python` as the interpreter. Open `app.py` with the marimo extension.
-Restart the marimo session after editing imported model or training code to ensure
-it uses your latest changes.
+Both `model.py` and `train.py` also open as marimo notebooks. Their classes and
+functions remain importable by the package and grading harness.
 
 With [just](https://github.com/casey/just) installed, use these shortcuts:
 
 ```bash
 just model       # Open model.py in Zed.
 just train       # Open train.py in Zed.
-just app         # Open the marimo notebook editor in your browser.
+just app         # Open all three notebooks from one marimo server.
 just app-source  # Open app.py as Python source in Zed.
 ```
 
@@ -106,10 +108,14 @@ Run `just` to list commands. Pass another macOS app name to a source shortcut,
 for example `just model "Visual Studio Code"`. `just marimo` aliases `just app`;
 extra marimo options work too, such as `just app --headless --port 2718`.
 
-Marimo's notebook editor shows the cells in `app.py`. Edit the ordinary Python
-modules `model.py` and `train.py` in your code editor. Restart the marimo session
-after changing those modules. `just app` watches edits to `app.py`, so that file
-can also be edited in your code editor while marimo is open.
+Use the notebook list to switch between `app.py`, `model.py`, and `train.py`
+without restarting the server. The model notebook exposes each class as a cell;
+the training notebook exposes each function as a cell. Edit imports and settings
+in each notebook's setup cell. Save changes before switching to `app.py`.
+Project settings enable automatic reloads of imported modules, so the next
+**Train and evaluate** run uses your saved code. Opening the model or training
+notebook does not start a training run. `just app` also watches files saved from
+an external editor.
 
 `project1_harness.ipynb` is the grading notebook. Its setup cell's `PACKAGE_URL`
 points to `git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git`.
@@ -130,8 +136,8 @@ pip install git+https://github.com/JesseTNRoberts/AI4200-imagenet32x32-baseline-
 
 ## Files
 
-- `src/residual_mlp_baseline/model.py`: the residual MLP. One class for all three tasks; only the input size and number of classes change.
-- `src/residual_mlp_baseline/train.py`: the required `train` and `predict` functions.
+- `src/residual_mlp_baseline/model.py`: an importable marimo notebook defining the residual MLP. One class for all three tasks; only the input size and number of classes change.
+- `src/residual_mlp_baseline/train.py`: an importable marimo notebook defining the required `train` and `predict` functions.
 - `app.py`: the local marimo development app.
 - `project1_harness.ipynb`: the test harness. It downloads and caches the datasets, installs a package from GitHub, and reports test accuracy.
 

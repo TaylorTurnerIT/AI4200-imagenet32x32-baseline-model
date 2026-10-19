@@ -6,7 +6,7 @@ default:
 setup:
     uv sync --locked
 
-# Open the marimo app in the browser; watch for edits from another editor.
+# Open all project notebooks in one server; watch for external edits.
 app *args:
     ./run --watch {{args}}
 

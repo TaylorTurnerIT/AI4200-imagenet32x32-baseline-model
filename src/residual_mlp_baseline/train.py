@@ -1,17 +1,44 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
+"""Importable train module and editable marimo notebook."""
 
-from .model import TASKS, ResidualMLP
+import marimo
 
-
-# Baseline settings. Deliberately plain so they are easy to beat:
-# plain SGD, constant learning rate, no dropout, no schedule, no augmentation.
-LEARNING_RATE = 0.05
-BATCH_SIZE = 256
-EPOCHS = {"mnist": 10, "cifar10": 30, "imagenet32": 10}
+__generated_with = "0.25.1"
+app = marimo.App(width="medium")
 
 
+with app.setup:
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import DataLoader, TensorDataset
+
+    from residual_mlp_baseline.model import TASKS, ResidualMLP
+
+
+    # Baseline settings. Deliberately plain so they are easy to beat:
+    # plain SGD, constant learning rate, no dropout, no schedule, no augmentation.
+    LEARNING_RATE = 0.05
+    BATCH_SIZE = 256
+    EPOCHS = {"mnist": 10, "cifar10": 30, "imagenet32": 10}
+
+
+@app.cell
+def _():
+    import marimo as mo
+
+    mo.md("""
+    # Training and prediction
+
+    Edit the settings in the setup cell and the functions below. Keep the
+    `train(task, X_train, y_train, seed=0, device="cuda")` and `predict(model, X)`
+    interfaces unchanged for grading.
+
+    Save changes, then open `app.py` from the notebook list and click
+    **Train and evaluate**. Opening this notebook does not start training.
+    """)
+    return
+
+
+@app.function
 def prepare(X):
     """Convert uint8 images (0-255) to floats in roughly [-1, 1]."""
     return (torch.as_tensor(X).float() / 255.0 - 0.5) / 0.5
@@ -27,6 +54,7 @@ def prepare(X):
 # Change anything inside them, but keep their names and arguments.
 # ---------------------------------------------------------------------------
 
+@app.function
 def train(task, X_train, y_train, seed=0, device="cuda"):
     """Build a new model and train it from scratch. Returns the trained model."""
     torch.manual_seed(seed)                   # makes the run reproducible
@@ -63,6 +91,7 @@ def train(task, X_train, y_train, seed=0, device="cuda"):
     return model
 
 
+@app.function
 def predict(model, X):
     """Return class probabilities for X, one row per example, on the CPU."""
     device = next(model.parameters()).device
@@ -70,3 +99,7 @@ def predict(model, X):
     # Predict in chunks so a large test set does not run out of GPU memory.
     chunks = [model.predict(X[i:i + 1024].to(device)).cpu() for i in range(0, len(X), 1024)]
     return torch.cat(chunks)
+
+
+if __name__ == "__main__":
+    app.run()
