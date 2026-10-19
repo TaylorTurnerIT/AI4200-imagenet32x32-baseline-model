@@ -5,7 +5,6 @@ import marimo
 __generated_with = "0.25.1"
 app = marimo.App(width="medium")
 
-
 with app.setup:
     import torch
     import torch.nn as nn
@@ -16,9 +15,9 @@ with app.setup:
 
     # Baseline settings. Deliberately plain so they are easy to beat:
     # plain SGD, constant learning rate, no dropout, no schedule, no augmentation.
-    LEARNING_RATE = 0.05
+    LEARNING_RATE = 0.15
     BATCH_SIZE = 256
-    EPOCHS = {"mnist": 10, "cifar10": 30, "imagenet32": 10}
+    EPOCHS = {"mnist": 50, "cifar10": 30, "imagenet32": 10}
 
 
 @app.cell
@@ -43,16 +42,6 @@ def prepare(X):
     """Convert uint8 images (0-255) to floats in roughly [-1, 1]."""
     return (torch.as_tensor(X).float() / 255.0 - 0.5) / 0.5
 
-
-# ---------------------------------------------------------------------------
-# The two functions below are the REQUIRED INTERFACE for every submission.
-# The grading notebook calls them like this:
-#
-#     model = train("cifar10", X_train, y_train, seed=0, device="cuda")
-#     probs = predict(model, X_test)
-#
-# Change anything inside them, but keep their names and arguments.
-# ---------------------------------------------------------------------------
 
 @app.function
 def train(task, X_train, y_train, seed=0, device="cuda"):

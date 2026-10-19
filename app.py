@@ -194,6 +194,14 @@ def _(
 ):
     mo.stop(not run_training.value, mo.md("Ready. Select a task and start training."))
 
+    def _accuracy_on(model, X, y, chunk=1024):
+        """Accuracy of the model on (X, y), scored in chunks to save memory."""
+        correct = 0
+        for start in range(0, len(X), chunk):
+            probs = torch.as_tensor(predict(model, X[start:start + chunk])).float().cpu()
+            correct += int((probs.argmax(1).numpy() == np.asarray(y[start:start + chunk])).sum())
+        return correct / len(X)
+
     with mo.status.spinner(title=f"Loading {task.value} and training on {device.value}..."):
         _X_train, _y_train, _X_test, _y_test = load_task(task.value)
         _start = time.perf_counter()
@@ -205,15 +213,30 @@ def _(
         assert (_probs >= 0).all(), "Predictions contain negative probabilities"
         assert torch.allclose(_probs.sum(1), torch.ones(len(_probs)), atol=1e-3), "Probabilities must sum to 1"
         _accuracy = float(np.mean(_probs.argmax(1).numpy() == _y_test))
+        _train_accuracy = _accuracy_on(_model, _X_train, _y_train)
 
+    _header = ["time", "package_url", "import_name", "task", "accuracy", "train_accuracy", "train_minutes", "seed"]
     _new_file = not RESULTS_FILE.exists() or RESULTS_FILE.stat().st_size == 0
+    if not _new_file:
+        # Older results.csv files have no train_accuracy column; rewrite them so
+        # every row has the same number of columns.
+        with RESULTS_FILE.open(newline="") as _file:
+            _old_rows = list(csv.reader(_file))
+        _old_header = _old_rows[0] if _old_rows else []
+        if "train_accuracy" not in _old_header:
+            _missing = [c for c in _header if c not in _old_header]
+            with RESULTS_FILE.open("w", newline="") as _file:
+                _writer = csv.writer(_file)
+                _writer.writerow(_old_header + _missing)
+                for _row in _old_rows[1:]:
+                    _writer.writerow(_row + [""] * len(_missing))
     with RESULTS_FILE.open("a", newline="") as _file:
         _writer = csv.writer(_file)
         if _new_file:
-            _writer.writerow(["time", "package_url", "import_name", "task", "accuracy", "train_minutes", "seed"])
+            _writer.writerow(_header)
         _writer.writerow([time.strftime("%Y-%m-%d %H:%M"), str(RESULTS_FILE.parent),
                           "residual_mlp_baseline", task.value, f"{_accuracy:.4f}",
-                          f"{_minutes:.1f}", int(seed.value)])
+                          f"{_train_accuracy:.4f}", f"{_minutes:.1f}", int(seed.value)])
 
     del _model, _X_train, _y_train, _X_test, _y_test, _probs
     if device.value == "cuda":
@@ -221,7 +244,11 @@ def _(
     elif device.value == "mps":
         torch.mps.empty_cache()
 
-    mo.md(f"**{task.value}: {_accuracy:.2%} test accuracy** · {_minutes:.1f} minutes · {device.value}  \nSaved to `results.csv`.")
+    mo.md(
+        f"**{task.value}: {_accuracy:.2%} test accuracy** · "
+        f"**{_train_accuracy:.2%} train accuracy** · {_minutes:.1f} minutes · {device.value}  \n"
+        f"Train-test gap: {(_train_accuracy - _accuracy):.2%}  \nSaved to `results.csv`."
+    )
     return
 
 
