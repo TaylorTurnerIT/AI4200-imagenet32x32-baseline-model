@@ -17,7 +17,7 @@ with app.setup:
     # plain SGD, constant learning rate, no dropout, no schedule, no augmentation.
     LEARNING_RATE = 0.05
     BATCH_SIZE = 256
-    EPOCHS = {"mnist": 50, "cifar10": 30, "imagenet32": 10}
+    EPOCHS = {"mnist": 100, "cifar10": 30, "imagenet32": 10}
     WEIGHT_DECAY = 1e-4
     MOMENTUM = 0.0
     DAMPENING = 0.0

@@ -146,7 +146,9 @@ mnist: 97.60% test accuracy · 99.67% train accuracy · 0.5 minutes · mps
 
 > Regression. Let's roll with 6 layers for now. Going to try a run with 50 epochs and 6 layers.
 
-layers=6
+> Depth correction (retrospective): The runs below, through the optimizer experiments and before the later depth-discovery note, probably used `depth=7` despite recording `layers=6`. I likely forgot to reset depth after the seven-layer test. Git confirms seven in the October 19 commits, but the exact change time is uncertain. Replaying the later regularized configuration reproduced 98.24% with seven blocks and 98.16% with six.
+
+layers=6 # Probably 7; see depth note above.
 epochs=50
 mnist: 98.01% test accuracy · 100.00% train accuracy · 0.9 minutes · mps
 
@@ -175,7 +177,7 @@ width=128
 mnist: 98.03% test accuracy · 99.78% train accuracy · 0.4 minutes · mps
 
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 epochs=25
 a=0.05
 width=32
@@ -185,7 +187,7 @@ mnist: 95.92% test accuracy · 96.93% train accuracy · 0.4 minutes · mps
 
 > Immediately slower training. Didn't reach 0.0# until epoch 18.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 epochs=25
 a=0.05
 width=256
@@ -195,7 +197,7 @@ mnist: 98.04% test accuracy · 99.99% train accuracy · 0.5 minutes · mps
 > Recovered training speed, 6 epochs to hit 0.0#%. Incredible training accuracy but a trivial improvement in test. All we did was improve the models ability to overfit. This looks like a dead end. Let's try a 50 epoch here since I see a bit more room for training loss.
 
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 epochs=50
 a=0.05
 width=256
@@ -205,7 +207,7 @@ mnist: 98.01% test accuracy · 100.00% train accuracy · 0.9 minutes · mps
 
 > We gained an incredible -0.03%. I'd say that was just further overfitting pushing our performance worse. Having reached 100% at a low epoch, we could be in a good place for some regularization. For now, let's see what happens when we tinker with the size of the hidden layers. Perhaps reducing the models capacity will serve a similar role.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 epochs=50
 a=0.05
 width=256
@@ -217,7 +219,7 @@ mnist: 98.17% test accuracy · 100.00% train accuracy · 1.0 minutes · mps
 
 > We've given the model a huge amount of per-layer capacity and residual stream capacity that it has used to memorize the train accuracy but still find some generalization. At this stage I'd like to do a wild experiment then move onto regularization. The idea being we're not able to learn anything new once we've memorized training so there's no more room left to gain test accuracy.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 epochs=50
 a=0.05
 width=512
@@ -225,7 +227,7 @@ hidden=512
 
 mnist: 98.16% test accuracy · 100.00% train accuracy · 1.1 minutes · mps
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 epochs=50
 a=0.05
 width=512
@@ -243,7 +245,7 @@ mnist: 98.15% test accuracy · 100.00% train accuracy · 1.4 minutes · mps
 
 > Implementing using simple pytorch optimizer parameter. (weight_decay=WEIGHT_DECAY)
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.05
@@ -254,7 +256,7 @@ mnist: 11.35% test accuracy · 11.24% train accuracy · 1.0 minutes · mps
 
 > Didn't learn a thing. Only moved by 0.0001 across 50 epochs. 0.99 for lamda means that 99% of the squared magnitude is allowed to affect the weight decay, so much regularization that it can't train at all.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.05
@@ -265,7 +267,7 @@ mnist: 87.79% test accuracy · 86.78% train accuracy · 0.5 minutes · mps
 
 > Still a big decay lambda. Good to see that the theory held. Let's try suggestion from the internet, 1e-4.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.05
@@ -285,7 +287,7 @@ epoch 25: train loss 0.0047
 
 > This is interesting, we're almost back where we started but we still have a little wiggle room with train accuracy. I still see some more downward motion in the loss as well. Let's try 50 epochs.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.05
@@ -296,7 +298,7 @@ mnist: 98.24% test accuracy · 100.00% train accuracy · 1.0 minutes · mps
 
 > The plan paid off! We closed the train accuracy to 100% again and gained 0.10 of test accuracy. There's more regularization where that came from.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.05
@@ -307,7 +309,7 @@ mnist: 97.92% test accuracy · 99.27% train accuracy · 1.0 minutes · mps
 
 > Tried another jump in regularization and I'm starting to see a lot of oscillation. We've lost test accuracy in exchange for some train room. Let me try a smaller learning rate.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.03
@@ -316,7 +318,7 @@ weight_decay=0.001
 
 mnist: 98.06% test accuracy · 99.66% train accuracy · 1.0 minutes · mps
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.01
@@ -335,7 +337,7 @@ mnist: 97.97% test accuracy · 99.91% train accuracy · 1.0 minutes · mps
 
 > I also saw a parameter "dampening" which decreases the impact of the current gradient to help prevent overshooting. We can try that if we see overshoot. 
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.01
@@ -347,7 +349,7 @@ mnist: 96.66% test accuracy · 98.25% train accuracy · 1.1 minutes · mps
 
 > Well that didn't work. Let's try less.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.01
@@ -359,7 +361,7 @@ mnist: 98.00% test accuracy · 100.00% train accuracy · 1.1 minutes · mps
 
 > Well that kinda worked. Maybe more regularization?
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 a=0.01
@@ -371,7 +373,7 @@ mnist: 94.08% test accuracy · 94.67% train accuracy · 1.1 minutes · mps
 
 > Huge overshoot. Let's try less momentum then bring in dampening. Could also try a smaller learning rate.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 batch=256
@@ -384,7 +386,7 @@ mnist: 96.65% test accuracy · 97.73% train accuracy · 1.1 minutes · mps
 
 > Doing something else as a waiting move. Changing weight decay back down and turning down batch size so it must generalize more.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 batch=128
@@ -399,7 +401,7 @@ mnist: 96.36% test accuracy · 98.41% train accuracy · 2.0 minutes · mps
 
 > https://distill.pub/2017/momentum/ This post opened my eyes. Let's experiment. Maybe our learning rate is too high? Let's try more momentum, less learning rate.
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 batch=256
@@ -412,7 +414,7 @@ mnist: 97.76% test accuracy · 99.96% train accuracy · 1.2 minutes · mps
 
 > Slow training, okay results. More batch to make more little jumps?
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 batch=128
@@ -425,7 +427,7 @@ mnist: 97.85% test accuracy · 99.94% train accuracy · 2.0 minutes · mps
 
 > Faster convergence, seeing some oscillation. 
 
-layers=6
+layers=6 # Probably 7; see depth note above.
 width=256
 hidden=512
 batch=128
@@ -440,7 +442,7 @@ mnist: 97.94% test accuracy · 100.00% train accuracy · 2.9 minutes · mps
 
 > Note: at some point I set depth=7. No idea when that happens but almost every experiment has now been thrown into question. We found minimal changes but not zero.
 
-layers=6
+layers=7
 width=256
 hidden=512
 batch=256
@@ -452,7 +454,7 @@ mnist: 98.22% test accuracy · 100.00% train accuracy · 1.0 minutes · mps
 
 > I actually made a mistake, I forgot to remove the 0. before the 1 in weight_decay and I got this 98.22%. 
 
-layers=6
+layers=7
 width=256
 hidden=512
 batch=256
@@ -461,6 +463,16 @@ epochs=50
 weight_decay=1e-4
 
 mnist: 98.16% test accuracy · 100.00% train accuracy · 0.9 minutes · mps
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=50
+weight_decay=1e-4
+
+mnist: 98.24% test accuracy · 100.00% train accuracy · 1.0 minutes · mps
 
 # Planning
 
