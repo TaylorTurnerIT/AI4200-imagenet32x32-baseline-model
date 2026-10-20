@@ -213,7 +213,31 @@ hidden=512
 
 mnist: 98.17% test accuracy · 100.00% train accuracy · 1.0 minutes · mps
 
-> New record! 98.18 with almost no wiggle room. I forgot to turn down epochs so we've got quite a bit of training happening here.
+> New record! 98.18 with almost no wiggle room. I forgot to turn down epochs so we've got quite a bit of training happening here. 
+
+> We've given the model a huge amount of per-layer capacity and residual stream capacity that it has used to memorize the train accuracy but still find some generalization. At this stage I'd like to do a wild experiment then move onto regularization. The idea being we're not able to learn anything new once we've memorized training so there's no more room left to gain test accuracy.
+
+layers=6
+epochs=50
+a=0.05
+width=512
+hidden=512
+
+mnist: 98.16% test accuracy · 100.00% train accuracy · 1.1 minutes · mps
+
+layers=6
+epochs=50
+a=0.05
+width=512
+hidden=1024
+
+mnist: 98.15% test accuracy · 100.00% train accuracy · 1.4 minutes · mps
+
+> Crazy experiments over with no real change. This is obviously a dead end.
+
+### Regularization
+
+
 
 ---
 
