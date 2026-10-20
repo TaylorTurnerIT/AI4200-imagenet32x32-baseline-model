@@ -5,7 +5,6 @@ import marimo
 __generated_with = "0.25.1"
 app = marimo.App(width="medium")
 
-
 with app.setup:
     import torch
     import torch.nn as nn
@@ -51,7 +50,7 @@ class Block(nn.Module):
 
     def forward(self, x):
         h = self.fc2(torch.tanh(self.fc1(self.norm(x))))
-        return x + h                          # skip connection: add the input back
+        return x + h
 
 
 @app.class_definition
@@ -67,7 +66,7 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
-    def __init__(self, in_features, num_classes, width=128, hidden=256, depth=30):
+    def __init__(self, in_features, num_classes, width=256, hidden=512, depth=7):
         super().__init__()
 
         # Project the flattened image down to the backbone width.
