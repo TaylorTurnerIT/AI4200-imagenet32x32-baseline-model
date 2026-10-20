@@ -206,14 +206,14 @@ mnist: 98.01% test accuracy · 100.00% train accuracy · 0.9 minutes · mps
 > We gained an incredible -0.03%. I'd say that was just further overfitting pushing our performance worse. Having reached 100% at a low epoch, we could be in a good place for some regularization. For now, let's see what happens when we tinker with the size of the hidden layers. Perhaps reducing the models capacity will serve a similar role.
 
 layers=6
-epochs=25
+epochs=50
 a=0.05
 width=256
 hidden=512
 
 mnist: 98.17% test accuracy · 100.00% train accuracy · 1.0 minutes · mps
 
-> New record!
+> New record! 98.18 with almost no wiggle room. I forgot to turn down epochs so we've got quite a bit of training happening here.
 
 ---
 
