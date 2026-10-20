@@ -233,15 +233,99 @@ hidden=1024
 
 mnist: 98.15% test accuracy · 100.00% train accuracy · 1.4 minutes · mps
 
-> Crazy experiments over with no real change. This is obviously a dead end.
+> Crazy experiments over with no real change. This is obviously a dead end. Onto Regularization.
 
-### Regularization
+## Regularization
 
+### L2 Regularization
 
+> Weight decay is a classic from ML. Let's try to force down those worthless weights and see if we can open up some capacity for the test accuracy to use.
 
----
+> Implementing using simple pytorch optimizer parameter. (weight_decay=WEIGHT_DECAY)
 
-> I am thinking the next steps are to investigate the gradient norm over layers. Then, tinker with the number of layers. We can think about changing the shape once it is understood if the gradient is stable.
+layers=6
+width=256
+hidden=512
+a=0.05
+epochs=50
+weight_decay=0.99
+
+mnist: 11.35% test accuracy · 11.24% train accuracy · 1.0 minutes · mps
+
+> Didn't learn a thing. Only moved by 0.0001 across 50 epochs. 0.99 for lamda means that 99% of the squared magnitude is allowed to affect the weight decay, so much regularization that it can't train at all.
+
+layers=6
+width=256
+hidden=512
+a=0.05
+epochs=25
+weight_decay=0.01
+
+mnist: 87.79% test accuracy · 86.78% train accuracy · 0.5 minutes · mps
+
+> Still a big decay lambda. Good to see that the theory held. Let's try suggestion from the internet, 1e-4.
+
+layers=6
+width=256
+hidden=512
+a=0.05
+epochs=25
+weight_decay=1e-4
+
+mnist: 98.09% test accuracy · 99.96% train accuracy · 0.5 minutes · mps
+
+...
+epoch 22: train loss 0.0093
+
+epoch 23: train loss 0.0077
+
+epoch 24: train loss 0.0060
+
+epoch 25: train loss 0.0047
+
+> This is interesting, we're almost back where we started but we still have a little wiggle room with train accuracy. I still see some more downward motion in the loss as well. Let's try 50 epochs.
+
+layers=6
+width=256
+hidden=512
+a=0.05
+epochs=50
+weight_decay=1e-4
+
+mnist: 98.24% test accuracy · 100.00% train accuracy · 1.0 minutes · mps
+
+> The plan paid off! We closed the train accuracy to 100% again and gained 0.10 of test accuracy. There's more regularization where that came from.
+
+layers=6
+width=256
+hidden=512
+a=0.05
+epochs=50
+weight_decay=0.001
+
+mnist: 97.92% test accuracy · 99.27% train accuracy · 1.0 minutes · mps
+
+> Tried another jump in regularization and I'm starting to see a lot of oscillation. We've lost test accuracy in exchange for some train room. Let me try a smaller learning rate.
+
+layers=6
+width=256
+hidden=512
+a=0.03
+epochs=50
+weight_decay=0.001
+
+mnist: 98.06% test accuracy · 99.66% train accuracy · 1.0 minutes · mps
+
+layers=6
+width=256
+hidden=512
+a=0.01
+epochs=50
+weight_decay=0.001
+
+mnist: 97.97% test accuracy · 99.91% train accuracy · 1.0 minutes · mps
+
+> a=0.03 worked. I saw oscillation happening and it predictably solved it. With 0.01 we're seeing incredibly slow training with more room for training by epoch 50. Even if there's room there, I would rather explore another path than wait for an eternal learning rate.
 
 # Planning
 
