@@ -325,7 +325,142 @@ weight_decay=0.001
 
 mnist: 97.97% test accuracy · 99.91% train accuracy · 1.0 minutes · mps
 
-> a=0.03 worked. I saw oscillation happening and it predictably solved it. With 0.01 we're seeing incredibly slow training with more room for training by epoch 50. Even if there's room there, I would rather explore another path than wait for an eternal learning rate.
+> a=0.03 worked. I saw oscillation happening and it predictably solved it. With 0.01 we're seeing incredibly slow training with more room for training by epoch 50. Even if there's room there, I would rather explore another path than wait for an endless training time. Especially with only 0.09% training accuracy left.
+
+> It's not immediately clear to me where to go from here, but I'm starting to get curious about using a fresh optimizer configuration. Dropout comes to mind for more regularization as well if we need it.
+
+## Optimizer Tuning
+
+> We're already using SGD, I have no interest in trying classical GD due to time and probable worse performance. So, let's try just adding some momentum and see what happens.
+
+> I also saw a parameter "dampening" which decreases the impact of the current gradient to help prevent overshooting. We can try that if we see overshoot. 
+
+layers=6
+width=256
+hidden=512
+a=0.01
+epochs=50
+weight_decay=0.001
+momentum=0.9
+
+mnist: 96.66% test accuracy · 98.25% train accuracy · 1.1 minutes · mps
+
+> Well that didn't work. Let's try less.
+
+layers=6
+width=256
+hidden=512
+a=0.01
+epochs=50
+weight_decay=0.001
+momentum=0.5
+
+mnist: 98.00% test accuracy · 100.00% train accuracy · 1.1 minutes · mps
+
+> Well that kinda worked. Maybe more regularization?
+
+layers=6
+width=256
+hidden=512
+a=0.01
+epochs=50
+weight_decay=0.005
+momentum=0.5
+
+mnist: 94.08% test accuracy · 94.67% train accuracy · 1.1 minutes · mps
+
+> Huge overshoot. Let's try less momentum then bring in dampening. Could also try a smaller learning rate.
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.01
+epochs=50
+weight_decay=0.005
+momentum=0.3
+
+mnist: 96.65% test accuracy · 97.73% train accuracy · 1.1 minutes · mps
+
+> Doing something else as a waiting move. Changing weight decay back down and turning down batch size so it must generalize more.
+
+layers=6
+width=256
+hidden=512
+batch=128
+a=0.01
+epochs=50
+weight_decay=0.001
+momentum=0.3
+
+mnist: 96.36% test accuracy · 98.41% train accuracy · 2.0 minutes · mps
+
+> Still oscillating. Let's bring in dampening with previous batch size and new batch size. Odd that we overfit more with smaller batches.
+
+> https://distill.pub/2017/momentum/ This post opened my eyes. Let's experiment. Maybe our learning rate is too high? Let's try more momentum, less learning rate.
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.001
+epochs=50
+weight_decay=0.001
+momentum=0.9
+
+mnist: 97.76% test accuracy · 99.96% train accuracy · 1.2 minutes · mps
+
+> Slow training, okay results. More batch to make more little jumps?
+
+layers=6
+width=256
+hidden=512
+batch=128
+a=0.001
+epochs=50
+weight_decay=0.001
+momentum=0.9
+
+mnist: 97.85% test accuracy · 99.94% train accuracy · 2.0 minutes · mps
+
+> Faster convergence, seeing some oscillation. 
+
+layers=6
+width=256
+hidden=512
+batch=128
+a=0.0001
+epochs=50
+weight_decay=0.001
+momentum=0.9
+
+mnist: 97.94% test accuracy · 100.00% train accuracy · 2.9 minutes · mps
+
+> I'm starting to think that I have focused too much on MNIST. I think it's time to accept my high score and call it. Good to move on and come back later with future findings.
+
+> Note: at some point I set depth=7. No idea when that happens but almost every experiment has now been thrown into question. We found minimal changes but not zero.
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=50
+weight_decay=0.1e-4 # accident, 0.1e-4 == 1e-5 != 1e-4
+
+mnist: 98.22% test accuracy · 100.00% train accuracy · 1.0 minutes · mps
+
+> I actually made a mistake, I forgot to remove the 0. before the 1 in weight_decay and I got this 98.22%. 
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=50
+weight_decay=1e-4
+
+mnist: 98.16% test accuracy · 100.00% train accuracy · 0.9 minutes · mps
 
 # Planning
 

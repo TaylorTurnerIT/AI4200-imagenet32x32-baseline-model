@@ -15,10 +15,12 @@ with app.setup:
 
     # Baseline settings. Deliberately plain so they are easy to beat:
     # plain SGD, constant learning rate, no dropout, no schedule, no augmentation.
-    LEARNING_RATE = 0.01
+    LEARNING_RATE = 0.05
     BATCH_SIZE = 256
     EPOCHS = {"mnist": 50, "cifar10": 30, "imagenet32": 10}
-    WEIGHT_DECAY = 0.001
+    WEIGHT_DECAY = 1e-4
+    MOMENTUM = 0.0
+    DAMPENING = 0.0
 
 
 @app.cell
@@ -58,7 +60,7 @@ def train(task, X_train, y_train, seed=0, device="cuda"):
 
     # 3. Choose the loss and the optimizer.
     loss_fn = nn.CrossEntropyLoss()           # expects raw logits
-    optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
+    optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=MOMENTUM)
 
     # 4. The training loop.
     model.train()
