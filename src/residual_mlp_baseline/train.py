@@ -15,7 +15,7 @@ with app.setup:
 
     # Baseline settings. Deliberately plain so they are easy to beat:
     # plain SGD, constant learning rate, no dropout, no schedule, no augmentation.
-    LEARNING_RATE = 0.15
+    LEARNING_RATE = 0.05
     BATCH_SIZE = 256
     EPOCHS = {"mnist": 50, "cifar10": 30, "imagenet32": 10}
 
