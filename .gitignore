@@ -10,3 +10,4 @@ data/
 results.csv
 harness_run.ipynb
 __marimo__/
+.DS_Store
