@@ -6,7 +6,7 @@ default:
 setup:
     uv sync --locked
 
-# Open all project notebooks in one server; watch for external edits.
+# Open the consolidated notebook; watch for external edits.
 app *args:
     ./run --watch {{args}}
 
@@ -15,12 +15,12 @@ alias marimo := app
 
 # Open the network architecture in Zed (or another macOS editor).
 model editor="Zed":
-    open -a {{quote(editor)}} src/residual_mlp_baseline/model.py
+    open -a {{quote(editor)}} src/residual_mlp_baseline/notebook.py
 
 # Open training and prediction in Zed (or another macOS editor).
 train editor="Zed":
-    open -a {{quote(editor)}} src/residual_mlp_baseline/train.py
+    open -a {{quote(editor)}} src/residual_mlp_baseline/notebook.py
 
 # Open the marimo app's Python source in Zed (or another macOS editor).
 app-source editor="Zed":
-    open -a {{quote(editor)}} app.py
+    open -a {{quote(editor)}} src/residual_mlp_baseline/notebook.py

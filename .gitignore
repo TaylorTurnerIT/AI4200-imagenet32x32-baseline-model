@@ -11,3 +11,7 @@ results.csv
 harness_run.ipynb
 __marimo__/
 .DS_Store
+
+# HTML exports of the consolidated marimo notebook.
+notebook.html
+notebook.py.html
