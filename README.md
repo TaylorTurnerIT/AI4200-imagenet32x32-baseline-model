@@ -70,7 +70,12 @@ top, then click **Train and evaluate**. The first run downloads the dataset; lat
 CPU manually. The status panel verifies an actual Metal forward/backward operation
 and shows the Python interpreter. Select **Apple Metal (MPS)** to train on this
 Mac's GPU. CUDA is NVIDIA-specific and is not required on macOS.
-Results append to `results.csv`; the app never posts to the leaderboard.
+Results append to `results.csv`. Each completed app run automatically posts its
+test accuracy, training duration, and repository URL to the unofficial class
+leaderboard as **TaylorT**, section **5000**. The result panel reports whether
+the form confirmed the submission. Local results are saved before posting;
+network failures do not discard them. Set `LEADERBOARD_ENABLED = False` in the
+setup cell to disable app submissions.
 
 Training holds out a seeded random 10% of the supplied training examples for
 validation. Each epoch prints training loss and accuracy plus validation loss
@@ -90,6 +95,10 @@ Each app run creates a unique directory under `runs/` containing:
 - `config.json`: task, seed, model architecture, split sizes, and training settings.
 - `curves.png`: loss and accuracy plots with the selected epoch marked, also
   shown in the app after training completes.
+- `leaderboard-submission.json`: submitted fields and confirmation/error status.
+  `leaderboard-confirmation.html` stores the server response when available.
+  Existing attempts are not retried automatically, avoiding duplicate posts
+  when a response is lost. Separate completed runs each receive a submission.
 
 The summary in `results.csv` includes the best epoch, validation accuracy, and
 run directory. Older summary rows remain available, with new columns blank.
@@ -168,8 +177,10 @@ external editor.
 
 `project1_harness.ipynb` is the grading notebook. Its setup cell's `PACKAGE_URL`
 points to `git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git`.
-Change that value if your submission repository changes. Set `SECTION` to your
-course section before submitting; leave `LEADERBOARD_ALIAS` empty to skip posting.
+Change that value if your submission repository changes. The harness defaults to
+`LEADERBOARD_ALIAS = "TaylorT"` and `SECTION = "5000"`; set its alias to an empty
+string to disable harness submissions. The app and harness submit their own
+completed evaluations; calling the package's `train()` alone does not post.
 The notebook also selects MPS on Macs when CUDA is unavailable.
 The marimo app uses the same dataset sources, cache format, and required
 `train()` / `predict()` interface. It uses the local model and training definitions

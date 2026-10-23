@@ -42,6 +42,13 @@ with app.setup:
     DAMPENING = 0.0
     VALIDATION_FRACTION = 0.1
 
+    # Post each completed app run's test result to the unofficial class leaderboard.
+    LEADERBOARD_ENABLED = True
+    LEADERBOARD_ALIAS = "TaylorT"
+    LEADERBOARD_SECTION = "5000"
+    LEADERBOARD_REPOSITORY = "git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git"
+    LEADERBOARD_FORM = "https://docs.google.com/forms/d/e/1FAIpQLScZjEdbLFtn1CNvsfwYEbM4YGRxdOU5cyJ7RANM7MrxT0a4oA/viewform"
+
     # MNIST-only augmentation defaults. Amounts are maxima, sampled per image.
     # No flips: they can change a digit's identity.
     DIGIT_AUGMENTATION_ENABLED = True
@@ -63,7 +70,11 @@ def _(available_devices):
     device = mo.ui.dropdown(available_devices, value=list(available_devices)[-1], label="Device")
     seed = mo.ui.number(start=0, stop=2**32 - 1, value=42, label="Seed")
     run_training = mo.ui.run_button(label="Run")
-    mo.hstack([task, device, seed, run_training], justify="start")
+    mo.vstack([
+        mo.hstack([task, device, seed, run_training], justify="start"),
+        mo.md(f"Completed runs post test accuracy as **{LEADERBOARD_ALIAS}**, section **{LEADERBOARD_SECTION}**."
+              if LEADERBOARD_ENABLED else "Leaderboard posting disabled."),
+    ])
     return device, run_training, seed, task
 
 
@@ -245,6 +256,9 @@ def _(
     elif device.value == "mps":
         torch.mps.empty_cache()
 
+    with mo.status.spinner(title="Submitting test accuracy to the leaderboard..."):
+        _leaderboard_status = submit_run_to_leaderboard(task.value, _accuracy, _minutes, _run_dir)
+
     mo.vstack([
         mo.md(
             f"**{task.value}: {_accuracy:.2%} test accuracy** · "
@@ -252,6 +266,7 @@ def _(
             f"Best epoch: **{_best_epoch}** · validation accuracy: **{_validation_accuracy:.2%}**  \n"
             f"Final scores use the best checkpoint. Train accuracy excludes the validation holdout.  \n"
             f"Saved summary to `results.csv`; metrics, checkpoint, and plots to `{_run_dir}`.  \n"
+            f"{_leaderboard_status}  \n"
             "Epoch train accuracy uses training batches (augmented when enabled); validation uses clean images and each epoch's final weights."
         ),
         _figure,
@@ -270,7 +285,9 @@ def _():
     the dataset; later runs reuse `data/`. Results append to `results.csv`.
     Each run holds out 10% of training examples for validation, records metrics
     every epoch, and evaluates the best validation checkpoint on the test set once.
-    Curves and checkpoints save under `runs/`. No leaderboard results are posted.
+    Curves and checkpoints save under `runs/`. Each completed run automatically
+    posts its test accuracy to the unofficial class leaderboard. Submission status
+    appears with the result; a network failure does not discard local results.
 
     ImageNet training needs substantial RAM because the baseline converts the
     entire training set to float32. Start with MNIST to check your environment.
@@ -317,21 +334,17 @@ def _():
 
 
 @app.class_definition
-class Block(nn.Module):
-    """One residual block:  x + Linear(tanh(Linear(LayerNorm(x))))
-
-    The block expands to `hidden` features, applies tanh, and projects back to
-    `width` features so its output can be added to its input (the skip connection).
-    """
-
-    def __init__(self, width, hidden):
+class Block3(nn.Module):
+    def __init__(self, width=256, hidden=512):
         super().__init__()
-        self.norm = nn.LayerNorm(width)       # pre-norm: normalize before the layers
-        self.fc1 = nn.Linear(width, hidden)   # expand:  width  -> hidden
-        self.fc2 = nn.Linear(hidden, width)   # project: hidden -> width
+        self.norm = nn.LayerNorm(width)
+        self.fc1 = nn.Linear(width, hidden)
+        self.fc2 = nn.Linear(hidden, width)
 
     def forward(self, x):
-        h = self.fc2(torch.tanh(self.fc1(self.norm(x))))
+        n = self.norm(x)
+        a = torch.gelu(self.fc1(n))
+        h = self.fc2(a)
         return x + h
 
 
@@ -353,10 +366,27 @@ class ResidualMLP(nn.Module):
 
         # Project the flattened image down to the backbone width.
         self.input_layer = nn.Linear(in_features, width)
-
-        # The residual backbone: `depth` identical blocks.
-        self.blocks = nn.ModuleList([Block(width, hidden) for _ in range(depth)])
-
+        self.norm = nn.LayerNorm(width)
+        self.fc1 = nn.Linear(width, hidden)
+        self.fc2 = nn.Linear(hidden, width)
+        self.norm_2 = nn.LayerNorm(width)
+        self.fc1_2 = nn.Linear(width, hidden)
+        self.fc2_2 = nn.Linear(hidden, width)
+        self.norm_3 = nn.LayerNorm(width)
+        self.fc1_3 = nn.Linear(width, hidden)
+        self.fc2_3 = nn.Linear(hidden, width)
+        self.norm_4 = nn.LayerNorm(width)
+        self.fc1_4 = nn.Linear(width, hidden)
+        self.fc2_4 = nn.Linear(hidden, width)
+        self.norm_5 = nn.LayerNorm(width)
+        self.fc1_5 = nn.Linear(width, hidden)
+        self.fc2_5 = nn.Linear(hidden, width)
+        self.norm_6 = nn.LayerNorm(width)
+        self.fc1_6 = nn.Linear(width, hidden)
+        self.fc2_6 = nn.Linear(hidden, width)
+        self.norm_7 = nn.LayerNorm(width)
+        self.fc1_7 = nn.Linear(width, hidden)
+        self.fc2_7 = nn.Linear(hidden, width)
         # The head: same layers as a block, but the last layer outputs class scores.
         self.head_norm = nn.LayerNorm(width)
         self.head_fc1 = nn.Linear(width, hidden)
@@ -373,12 +403,39 @@ class ResidualMLP(nn.Module):
 
         nn.CrossEntropyLoss applies the softmax itself, so training uses logits.
         """
-        x = x.flatten(start_dim=1)            # (N, C, H, W) -> (N, C*H*W)
+        x = x.flatten(start_dim=1)
         x = self.input_layer(x)
-        for block in self.blocks:
-            x = block(x)
-        x = self.head_fc2(torch.tanh(self.head_fc1(self.head_norm(x))))
-        return x
+        n = self.norm(x)
+        a = F.gelu(self.fc1(n))
+        h = self.fc2(a)
+        x = x + h
+        n = self.norm_2(x)
+        a = F.gelu(self.fc1_2(n))
+        h = self.fc2_2(a)
+        x = x + h
+        n = self.norm_3(x)
+        a = F.gelu(self.fc1_3(n))
+        h = self.fc2_3(a)
+        x = x + h
+        n = self.norm_4(x)
+        a = F.gelu(self.fc1_4(n))
+        h = self.fc2_4(a)
+        x = x + h
+        n = self.norm_5(x)
+        a = F.gelu(self.fc1_5(n))
+        h = self.fc2_5(a)
+        x = x + h
+        n = self.norm_6(x)
+        a = F.gelu(self.fc1_6(n))
+        h = self.fc2_6(a)
+        x = x + h
+        n = self.norm_7(x)
+        a = F.gelu(self.fc1_7(n))
+        h = self.fc2_7(a)
+        x = x + h
+        n = self.head_norm(x)
+        a = F.gelu(self.head_fc1(n))
+        return self.head_fc2(a)
 
     def predict(self, x):
         """Inference pass, never used during training. Returns class probabilities."""
@@ -391,6 +448,76 @@ class ResidualMLP(nn.Module):
 def prepare(X):
     """Convert uint8 images (0-255) to floats in roughly [-1, 1]."""
     return (torch.as_tensor(X).float() / 255.0 - 0.5) / 0.5
+
+
+@app.function
+def submit_run_to_leaderboard(task, accuracy, train_minutes, run_dir):
+    """Post one completed run, preserving a receipt and avoiding duplicate attempts.
+
+    Network failures leave local training results intact. An ambiguous POST is
+    never retried automatically because the form has no idempotency key.
+    """
+    import re
+    import urllib.parse
+    import urllib.request
+
+    if not LEADERBOARD_ENABLED:
+        return "Leaderboard posting disabled."
+    run_dir = Path(run_dir)
+    receipt_path = run_dir / "leaderboard-submission.json"
+    try:
+        if receipt_path.exists():
+            previous = json.loads(receipt_path.read_text())
+            if previous.get("confirmed"):
+                return f"Leaderboard submission confirmed as {previous['answers']['alias']} (already submitted)."
+            return "Leaderboard submission not confirmed; an earlier attempt exists. Check the run's receipt before retrying."
+        if task not in TASKS or not 0 <= accuracy <= 1 or not 0 <= train_minutes < float("inf"):
+            raise ValueError("Invalid task, test accuracy, or training duration")
+        if not LEADERBOARD_ALIAS.strip() or LEADERBOARD_SECTION not in ("4000", "5000"):
+            raise ValueError("Set a leaderboard alias and section 4000 or 5000")
+        answers = {
+            "alias": LEADERBOARD_ALIAS.strip(), "section": LEADERBOARD_SECTION,
+            "task": task, "accuracy": f"{accuracy:.4f}",
+            "train minutes": f"{train_minutes:.1f}", "repository": LEADERBOARD_REPOSITORY,
+        }
+        receipt = {"answers": answers, "confirmed": False, "status": "preparing",
+                   "submitted_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+        receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
+        with urllib.request.urlopen(LEADERBOARD_FORM, timeout=20) as response:
+            page = response.read().decode("utf-8")
+        match = re.search(r"FB_PUBLIC_LOAD_DATA_ = (.*?);\s*</script>", page, re.S)
+        if match is None:
+            raise ValueError("Could not read leaderboard form fields")
+        form = json.loads(match.group(1))
+        fields = {question[1].strip().lower(): f"entry.{question[4][0][0]}"
+                  for question in form[1][1] if question[4]}
+        if not set(answers).issubset(fields):
+            raise ValueError("Leaderboard form questions changed")
+        payload = urllib.parse.urlencode({fields[name]: value for name, value in answers.items()}).encode()
+        receipt["status"] = "posting"
+        receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
+        address = LEADERBOARD_FORM.partition("?")[0].replace("/viewform", "/formResponse")
+        request = urllib.request.Request(address, data=payload,
+                    headers={"Content-Type": "application/x-www-form-urlencoded"})
+        with urllib.request.urlopen(request, timeout=20) as response:
+            confirmation = response.read().decode("utf-8")
+            receipt["http_status"] = response.status
+        (run_dir / "leaderboard-confirmation.html").write_text(confirmation)
+        receipt["confirmed"] = "Your response has been recorded" in confirmation
+        receipt["status"] = "confirmed" if receipt["confirmed"] else "unconfirmed"
+        receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
+        if receipt["confirmed"]:
+            return f"Leaderboard submission confirmed as {answers['alias']}, section {answers['section']}."
+        return "Leaderboard submission not confirmed. Local results and the server response are saved in the run directory."
+    except Exception as error:
+        if "receipt" in locals():
+            receipt["status"] = "unconfirmed" if receipt["status"] == "posting" else "failed"
+            receipt["error"] = str(error)
+            try:
+                receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
+            except OSError:
+                pass
+        return f"Leaderboard submission not confirmed ({error}). Local results are saved; no automatic retry was sent."
 
 
 @app.function

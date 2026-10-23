@@ -2,6 +2,8 @@
 
 by Taylor Turner
 
+# MNIST 
+
 ## Baseline
 
 Stochastic Gradient Descent
@@ -473,6 +475,28 @@ epochs=50
 weight_decay=1e-4
 
 mnist: 98.24% test accuracy · 100.00% train accuracy · 1.0 minutes · mps
+
+> Today in class we discussed double descent. So, I tried training MORE with what worked. 
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=500
+weight_decay=1e-4
+
+mnist: 98.32% test accuracy
+
+> And it worked! I tried with 5000 too but that didn't work. Its performance was incredibly variable with loss so I decided to try checking whatever epoch was the winner. That epoch would have the perfect amount of training.
+
+> Then, also building from what we did in class I decided to add data augmentation. Move the image around, blur it, brighten it, etc. 
+
+> When I implemented augmentation, I used Codex and it made an executive decision I was initially confused by. It created a train/test/validation split. The issue it spotted and I didn't was that I was leaking information into the test set. By choosing the ideal epoch for the training set I wasn't leaving it independent as I was tuning the model to it. This was an important realization. As a competition, the flaw is that we're trying to maximize performance on data we have. Thus, it is incredibly liable to data leakage by using test to tune.
+
+> So, continuing with validation I had it choose the best epoch for the validation set. In one run, I achieved 99.32% accuracy after 384 epochs. Just when I was thinking about switching to CIFAR, I passed the 99% barrier twice. Then I tried setting all of the activations to GELU. Slight regression so I am finally moving on to CIFAR.
+
+# CIFAR
 
 # Planning
 
