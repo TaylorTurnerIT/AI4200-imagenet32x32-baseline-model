@@ -177,15 +177,6 @@ def _(
 ):
     mo.stop(not run_training.value, mo.md("Ready. Select a task and start training."))
 
-    def _accuracy_on(model, X, y, indices, chunk=1024):
-        """Accuracy of the model on (X, y), scored in chunks to save memory."""
-        correct = 0
-        for start in range(0, len(indices), chunk):
-            batch = indices[start:start + chunk]
-            probs = torch.as_tensor(predict(model, X[batch])).float().cpu()
-            correct += int((probs.argmax(1).numpy() == np.asarray(y[batch])).sum())
-        return correct / len(indices)
-
     with mo.status.spinner(title=f"Loading {task.value} and training on {device.value}..."):
         _X_train, _y_train, _X_test, _y_test = load_task(task.value)
         _start = time.perf_counter()
@@ -201,14 +192,23 @@ def _(
         assert (_probs >= 0).all(), "Predictions contain negative probabilities"
         assert torch.allclose(_probs.sum(1), torch.ones(len(_probs)), atol=1e-3), "Probabilities must sum to 1"
         _accuracy = float(np.mean(_probs.argmax(1).numpy() == _y_test))
-        _train_accuracy = _accuracy_on(_model, _X_train, _y_train, _model.training_indices.numpy())
+        _class_count = NUM_CLASSES[task.value]
+        _test_classes = per_class_accuracy(task.value, _y_test, _probs.argmax(1).numpy(), _class_count)
+        _train_classes = evaluate_per_class(
+            _model, task.value, _X_train, _y_train, _model.training_indices.numpy(), _class_count)
+        _validation_classes = evaluate_per_class(
+            _model, task.value, _X_train, _y_train, _model.validation_indices.numpy(), _class_count)
+        _train_accuracy = sum(row["correct"] for row in _train_classes) / len(_model.training_indices)
+        _class_rows = [dict(split=split, **row)
+                       for split, rows in (("train", _train_classes), ("validation", _validation_classes),
+                                           ("test", _test_classes)) for row in rows]
         _best_epoch = _model.best_epoch
         _validation_accuracy = _model.best_validation_accuracy
         _history = _model.training_history
 
     _summary = save_run_result(
         RESULTS_FILE, _run_dir, _model, _accuracy, _train_accuracy, _minutes,
-        test_examples=len(_y_test),
+        test_examples=len(_y_test), per_class=_class_rows,
     )
 
     import matplotlib.pyplot as plt
@@ -243,6 +243,17 @@ def _(
             f"Saved to `results.csv` and `{_run_dir}/summary.txt` / `summary.json`.  \n"
             f"{_leaderboard_status}  \n"
             "Epoch train accuracy uses training batches (augmented when enabled); validation uses clean images and each epoch's final weights."
+        ),
+        mo.md("### Per-class accuracy\n"
+              "Correct predictions / examples with that true class (recall). "
+              "All splits use clean images and the selected checkpoint. "
+              "Classes absent from a split show a blank accuracy. "
+              "Search, sort, or download the table as CSV."),
+        mo.ui.table(
+            [{**{key: value for key, value in row.items() if key != "accuracy"},
+              "accuracy_percent": None if row["accuracy"] is None else round(100 * row["accuracy"], 2)}
+             for row in _class_rows],
+            pagination=True, page_size=20, selection=None, label="Per-class accuracy",
         ),
         _figure,
     ])
@@ -380,7 +391,45 @@ def prepare(X):
 
 
 @app.function
-def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy, train_minutes, test_examples):
+def per_class_accuracy(task, labels, predictions, num_classes=None):
+    """Count correct predictions for each true class, including absent classes."""
+    num_classes = TASKS[task]["num_classes"] if num_classes is None else num_classes
+    labels, predictions = np.asarray(labels), np.asarray(predictions)
+    if labels.ndim != 1 or predictions.shape != labels.shape:
+        raise ValueError("Labels and predictions must be matching one-dimensional arrays")
+    for values in (labels, predictions):
+        if values.size and (not np.issubdtype(values.dtype, np.integer)
+                            or np.any(values < 0) or np.any(values >= num_classes)):
+            raise ValueError("Class IDs must be integers between 0 and num_classes - 1")
+    labels, predictions = labels.astype(np.int64), predictions.astype(np.int64)
+    totals = np.bincount(labels, minlength=num_classes)
+    correct = np.bincount(labels[labels == predictions], minlength=num_classes)
+    names = {
+        "mnist": [str(digit) for digit in range(10)],
+        "cifar10": ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"],
+    }.get(task)
+    return [{"class_id": class_id,
+             "class_name": names[class_id] if names is not None else f"class {class_id}",
+             "correct": int(correct[class_id]), "total": int(totals[class_id]),
+             "accuracy": float(correct[class_id] / totals[class_id]) if totals[class_id] else None}
+            for class_id in range(num_classes)]
+
+
+@app.function
+def evaluate_per_class(model, task, images, labels, indices, num_classes=None, chunk=1024):
+    """Score a clean split in bounded batches with the shared class metric."""
+    predictions = []
+    for start in range(0, len(indices), chunk):
+        batch = indices[start:start + chunk]
+        probabilities = torch.as_tensor(predict(model, images[batch])).cpu()
+        predictions.append(probabilities.argmax(1).numpy())
+    predicted = np.concatenate(predictions) if predictions else np.empty(0, dtype=np.int64)
+    return per_class_accuracy(task, np.asarray(labels)[indices], predicted, num_classes)
+
+
+@app.function
+def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy, train_minutes, test_examples,
+                    per_class=None):
     """Save a completed run's scores and the settings captured before training."""
     config = model.run_config
     result = {
@@ -404,6 +453,12 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
         "model": config["model"],
         "hyperparameters": json.dumps(config, sort_keys=True),
     }
+    if per_class is not None:
+        result["per_class_accuracy_file"] = str((run_dir / "per_class_accuracy.csv").relative_to(results_file.parent))
+        with (run_dir / "per_class_accuracy.csv").open("w", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=["split", "class_id", "class_name", "correct", "total", "accuracy"])
+            writer.writeheader()
+            writer.writerows(per_class)
     # Keep historical rows and unknown columns; unavailable old settings stay blank.
     old_rows, header = [], []
     if results_file.exists() and results_file.stat().st_size:
@@ -434,6 +489,8 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
         "All final scores use the best validation checkpoint. Train excludes the holdout.\n\n"
         "Hyperparameters and architecture:\n" + json.dumps(settings, indent=2)
     )
+    if per_class is not None:
+        summary += f"\n\nPer-class accuracy (all splits): {result['per_class_accuracy_file']}"
     (run_dir / "summary.txt").write_text(summary + "\n")
     (run_dir / "summary.json").write_text(json.dumps({
         "result": result,
@@ -441,6 +498,7 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
                         "validation_accuracy": model.best_validation_accuracy,
                         "test_accuracy": test_accuracy, "train_minutes": train_minutes},
         "hyperparameters": config,
+        **({"per_class_accuracy": per_class} if per_class is not None else {}),
     }, indent=2) + "\n")
     return summary
 

@@ -105,7 +105,8 @@ class LeaderboardTests(unittest.TestCase):
         results = self.run / 'results.csv'
         results.write_text('time,accuracy,old_note\n2026-01-01,0.5000,preserve me\n')
         history = [dict(epoch=1, train_loss=.1, train_accuracy=1., validation_loss=.2, validation_accuracy=.9)]
-        model = SimpleNamespace(training_indices=torch.arange(5), training_history=history,
+        model = SimpleNamespace(training_indices=torch.arange(5), validation_indices=torch.tensor([5]),
+                                training_history=history,
                                 best_epoch=1, best_validation_accuracy=.9,
                                 run_config=dict(
                                     task='mnist', seed=42, device='cpu', epochs=2,
@@ -143,6 +144,15 @@ class LeaderboardTests(unittest.TestCase):
             saved = json.loads((run_dir / 'summary.json').read_text())
             self.assertEqual(saved['performance']['test_accuracy'], .75)
             self.assertEqual(saved['hyperparameters'], model.run_config)
+            per_class = saved['per_class_accuracy']
+            test_rows = [row for row in per_class if row['split'] == 'test']
+            self.assertEqual([(row['correct'], row['total'], row['accuracy']) for row in test_rows],
+                             [(3, 3, 1.0), (0, 1, 0.0)])
+            self.assertEqual({row['split'] for row in per_class}, {'train', 'validation', 'test'})
+            with (run_dir / 'per_class_accuracy.csv').open() as file:
+                self.assertEqual(len(list(csv.DictReader(file))), 6)
+            self.assertEqual(rows[1]['per_class_accuracy_file'],
+                             str((run_dir / 'per_class_accuracy.csv').relative_to(self.run)))
             self.assertTrue((run_dir / 'curves.png').exists())
             return 'Leaderboard submission confirmed as TaylorT, section 5000.'
 
@@ -151,24 +161,28 @@ class LeaderboardTests(unittest.TestCase):
         namespace.update(
             mo=SimpleNamespace(stop=lambda *args: None, md=lambda value: value,
                                vstack=lambda value: displayed.extend(value),
-                               status=SimpleNamespace(spinner=lambda **kwargs: nullcontext())),
+                               status=SimpleNamespace(spinner=lambda **kwargs: nullcontext()),
+                               ui=SimpleNamespace(table=lambda values, **kwargs: values)),
             train_with_metrics=fake_train,
             predict=lambda model, images: torch.tensor([[1., 0.]]).repeat(len(images), 1),
         )
         with patch.dict('os.environ', {'MPLBACKEND': 'Agg'}):
             exec(compile(ast.Module(body=[cell], type_ignores=[]), notebook.__file__, 'exec'), namespace)
-            with patch.dict(namespace, submit_run_to_leaderboard=check_submission):
+            with patch.dict(namespace, submit_run_to_leaderboard=check_submission), \
+                    patch.object(notebook, 'predict', namespace['predict']):
                 namespace['_'](
                     NUM_CLASSES={'mnist': 2}, RESULTS_FILE=results,
                     augmentation_digits=SimpleNamespace(value={}), augmentation_enabled=SimpleNamespace(value=False),
                     device=SimpleNamespace(value='cpu'), run_training=SimpleNamespace(value=True),
                     seed=SimpleNamespace(value=42), task=SimpleNamespace(value='mnist'),
-                    load_task=lambda task: (np.zeros((5, 1, 28, 28)), np.zeros(5, dtype=int),
+                    load_task=lambda task: (np.zeros((6, 1, 28, 28)), np.zeros(6, dtype=int),
                                             np.zeros((4, 1, 28, 28)), np.array([0, 0, 0, 1])),
                 )
 
         summary_path = next(self.run.glob('runs/*/summary.txt'))
         self.assertIn(summary_path.read_text().strip(), displayed[0])
+        self.assertEqual(displayed[3][-1]['accuracy_percent'], 0.0)
+        self.assertEqual(len(displayed[3]), 6)
 
 
 if __name__ == '__main__':
