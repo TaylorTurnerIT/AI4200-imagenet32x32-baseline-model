@@ -547,6 +547,72 @@ Best epoch: 25 · validation accuracy: 52.84%
 cifar10: 51.78% test accuracy · 83.72% train accuracy · 0.8 minutes · mps
 Best epoch: 23 · validation accuracy: 52.28%
 
+> I made a new format so I can stop losing track of details. Tried 10x the amount of weight decay. Hurt train accuracy a lot in the long run. The strange thing that I can't get over is this ~52% accuracy. Why would the model even while hurting for train accuracy so badly remain firm on this 52%? If there was only two classes, it would be obvious that it was randomly guessing. But given ten options, it gets half of them wrong. I think we need to understand which classes its getting right and wrong.
+
+```
+Run: runs/cifar10-20261023-123652-808ffc8f
+Time: 2026-10-23 12:37:37
+Task: cifar10
+Train accuracy:      68.53% (45000 clean examples)
+Validation accuracy: 52.48% (5000 examples)
+Test accuracy:       52.09% (10000 examples)
+Best epoch: 10 / 30 completed (30 configured)
+Training time: 0.74 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+Hyperparameters and architecture:
+{
+  "task": "cifar10",
+  "seed": 42,
+  "device": "mps",
+  "epochs": 30,
+  "batch_size": 128,
+  "learning_rate": 0.05,
+  "weight_decay": 1e-05,
+  "momentum": 0.0,
+  "dampening": 0,
+  "optimizer": "SGD",
+  "loss": "CrossEntropyLoss()",
+  "learning_rate_schedule": "constant",
+  "shuffle": true,
+  "architecture": {
+    "width": 128,
+    "hidden": 128,
+    "depth": 7,
+    "functional_operations": [
+      "relu"
+    ],
+    "in_features": 3072,
+    "num_classes": 10,
+    "normalization": [
+      "LayerNorm"
+    ],
+    "parameters": 644362
+  },
+  "validation_fraction": 0.1,
+  "training_examples": 45000,
+  "validation_examples": 5000,
+  "selection_metric": "validation_accuracy",
+  "tie_break": "earliest_epoch",
+  "augmentation": {
+    "enabled": false
+  }
+}
+```
+
+test	0	airplane	  611	1000	61.1 (vs 74.83 test)
+test	1	automobile	632	1000	63.2 (vs 80.33 test)
+test	2	bird	      345	1000	34.5 (49.67 test)
+test	3	cat	        296	1000	29.6 (46.09 test)
+test	4	deer	      470	1000	47   (67.25)
+test	5	dog	        491	1000	49.1 (66.16
+test	6	frog	      583	1000	58.  (74.6)
+test	7	horse	      578	1000	57.8 (76.71)
+test	8	ship	      658	1000	65.8 (76.26)
+test	9	truck	      545	1000	54.5 (73.37)
+
+> Cat is incredibly far off but we haven't learned much here. It's learning something about all of these
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.
