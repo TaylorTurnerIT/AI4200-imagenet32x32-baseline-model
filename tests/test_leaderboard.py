@@ -145,14 +145,18 @@ class LeaderboardTests(unittest.TestCase):
             self.assertEqual(saved['performance']['test_accuracy'], .75)
             self.assertEqual(saved['hyperparameters'], model.run_config)
             per_class = saved['per_class_accuracy']
-            test_rows = [row for row in per_class if row['split'] == 'test']
-            self.assertEqual([(row['correct'], row['total'], row['accuracy']) for row in test_rows],
-                             [(3, 3, 1.0), (0, 1, 0.0)])
-            self.assertEqual({row['split'] for row in per_class}, {'train', 'validation', 'test'})
-            with (run_dir / 'per_class_accuracy.csv').open() as file:
-                self.assertEqual(len(list(csv.DictReader(file))), 6)
+            self.assertEqual(per_class, [
+                dict(class_id=0, class_name='0', train_accuracy=1., validation_accuracy=1., test_accuracy=1.),
+                dict(class_id=1, class_name='1', train_accuracy=None, validation_accuracy=None, test_accuracy=0.),
+            ])
+            markdown = (run_dir / 'per_class_accuracy.md').read_text()
+            self.assertIn('| Class | Train | Validation | Test |', markdown)
+            self.assertIn('| 0 | 100.00% | 100.00% | 100.00% |', markdown)
+            self.assertIn('| 1 | N/A | N/A | 0.00% |', markdown)
+            self.assertIn(markdown.strip(), summary)
+            self.assertFalse((run_dir / 'per_class_accuracy.csv').exists())
             self.assertEqual(rows[1]['per_class_accuracy_file'],
-                             str((run_dir / 'per_class_accuracy.csv').relative_to(self.run)))
+                             str((run_dir / 'per_class_accuracy.md').relative_to(self.run)))
             self.assertTrue((run_dir / 'curves.png').exists())
             return 'Leaderboard submission confirmed as TaylorT, section 5000.'
 
@@ -161,8 +165,7 @@ class LeaderboardTests(unittest.TestCase):
         namespace.update(
             mo=SimpleNamespace(stop=lambda *args: None, md=lambda value: value,
                                vstack=lambda value: displayed.extend(value),
-                               status=SimpleNamespace(spinner=lambda **kwargs: nullcontext()),
-                               ui=SimpleNamespace(table=lambda values, **kwargs: values)),
+                               status=SimpleNamespace(spinner=lambda **kwargs: nullcontext())),
             train_with_metrics=fake_train,
             predict=lambda model, images: torch.tensor([[1., 0.]]).repeat(len(images), 1),
         )
@@ -180,9 +183,12 @@ class LeaderboardTests(unittest.TestCase):
                 )
 
         summary_path = next(self.run.glob('runs/*/summary.txt'))
-        self.assertIn(summary_path.read_text().strip(), displayed[0])
-        self.assertEqual(displayed[3][-1]['accuracy_percent'], 0.0)
-        self.assertEqual(len(displayed[3]), 6)
+        summary_text, _, markdown = summary_path.read_text().partition('\n\nPer-class accuracy:\n\n')
+        self.assertIn(summary_text, displayed[0])
+        self.assertIn(markdown.strip(), displayed[2])
+        self.assertNotIn('| Class |', displayed[0])
+        self.assertIn('| Class | Train | Validation | Test |', displayed[2])
+        self.assertIn('| 1 | N/A | N/A | 0.00% |', displayed[2])
 
 
 if __name__ == '__main__':

@@ -210,6 +210,7 @@ def _(
         RESULTS_FILE, _run_dir, _model, _accuracy, _train_accuracy, _minutes,
         test_examples=len(_y_test), per_class=_class_rows,
     )
+    _summary_text, _, _class_markdown = _summary.partition("\n\nPer-class accuracy:\n\n")
 
     import matplotlib.pyplot as plt
 
@@ -238,23 +239,13 @@ def _(
         _leaderboard_status = submit_run_to_leaderboard(task.value, _accuracy, _minutes, _run_dir)
 
     mo.vstack([
-        mo.md(f"```text\n{_summary}\n```"),
+        mo.md(f"```text\n{_summary_text}\n```"),
         mo.md(
             f"Saved to `results.csv` and `{_run_dir}/summary.txt` / `summary.json`.  \n"
             f"{_leaderboard_status}  \n"
             "Epoch train accuracy uses training batches (augmented when enabled); validation uses clean images and each epoch's final weights."
         ),
-        mo.md("### Per-class accuracy\n"
-              "Correct predictions / examples with that true class (recall). "
-              "All splits use clean images and the selected checkpoint. "
-              "Classes absent from a split show a blank accuracy. "
-              "Search, sort, or download the table as CSV."),
-        mo.ui.table(
-            [{**{key: value for key, value in row.items() if key != "accuracy"},
-              "accuracy_percent": None if row["accuracy"] is None else round(100 * row["accuracy"], 2)}
-             for row in _class_rows],
-            pagination=True, page_size=20, selection=None, label="Per-class accuracy",
-        ),
+        mo.md("### Per-class accuracy\n\n" + _class_markdown),
         _figure,
     ])
     return
@@ -428,6 +419,31 @@ def evaluate_per_class(model, task, images, labels, indices, num_classes=None, c
 
 
 @app.function
+def class_accuracy_columns(per_class):
+    """Group split metrics into one row per class, without data counts."""
+    classes = {}
+    for row in per_class:
+        entry = classes.setdefault(row["class_id"], {
+            "class_id": row["class_id"], "class_name": row["class_name"],
+            "train_accuracy": None, "validation_accuracy": None, "test_accuracy": None,
+        })
+        entry[f"{row['split']}_accuracy"] = row["accuracy"]
+    return [classes[class_id] for class_id in sorted(classes)]
+
+
+@app.function
+def format_class_accuracy(per_class):
+    """Render each class's train, validation, and test accuracy as Markdown."""
+    lines = ["| Class | Train | Validation | Test |", "| --- | ---: | ---: | ---: |"]
+    for row in class_accuracy_columns(per_class):
+        name = row["class_name"].replace("|", "&#124;").replace("\n", " ")
+        scores = ["N/A" if row[f"{split}_accuracy"] is None else f"{row[f'{split}_accuracy']:.2%}"
+                  for split in ("train", "validation", "test")]
+        lines.append("| " + " | ".join([name, *scores]) + " |")
+    return "\n".join(lines)
+
+
+@app.function
 def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy, train_minutes, test_examples,
                     per_class=None):
     """Save a completed run's scores and the settings captured before training."""
@@ -454,11 +470,8 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
         "hyperparameters": json.dumps(config, sort_keys=True),
     }
     if per_class is not None:
-        result["per_class_accuracy_file"] = str((run_dir / "per_class_accuracy.csv").relative_to(results_file.parent))
-        with (run_dir / "per_class_accuracy.csv").open("w", newline="") as file:
-            writer = csv.DictWriter(file, fieldnames=["split", "class_id", "class_name", "correct", "total", "accuracy"])
-            writer.writeheader()
-            writer.writerows(per_class)
+        result["per_class_accuracy_file"] = str((run_dir / "per_class_accuracy.md").relative_to(results_file.parent))
+        (run_dir / "per_class_accuracy.md").write_text(format_class_accuracy(per_class) + "\n")
     # Keep historical rows and unknown columns; unavailable old settings stay blank.
     old_rows, header = [], []
     if results_file.exists() and results_file.stat().st_size:
@@ -490,7 +503,7 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
         "Hyperparameters and architecture:\n" + json.dumps(settings, indent=2)
     )
     if per_class is not None:
-        summary += f"\n\nPer-class accuracy (all splits): {result['per_class_accuracy_file']}"
+        summary += "\n\nPer-class accuracy:\n\n" + format_class_accuracy(per_class)
     (run_dir / "summary.txt").write_text(summary + "\n")
     (run_dir / "summary.json").write_text(json.dumps({
         "result": result,
@@ -498,7 +511,7 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
                         "validation_accuracy": model.best_validation_accuracy,
                         "test_accuracy": test_accuracy, "train_minutes": train_minutes},
         "hyperparameters": config,
-        **({"per_class_accuracy": per_class} if per_class is not None else {}),
+        **({"per_class_accuracy": class_accuracy_columns(per_class)} if per_class is not None else {}),
     }, indent=2) + "\n")
     return summary
 

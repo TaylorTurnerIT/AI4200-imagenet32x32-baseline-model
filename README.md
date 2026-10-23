@@ -98,11 +98,9 @@ Each app run creates a unique directory under `runs/` containing:
 - `summary.json`: full-precision final scores and the configuration captured
   before training, including model source and per-digit augmentation settings.
   Also includes per-class accuracy for each split.
-- `per_class_accuracy.csv`: split, class ID/name, correct predictions, total
-  examples, and accuracy for every class in the clean train, validation, and test
-  splits. Accuracy is correct / total for that true class (class recall), stored
-  as a fraction from 0 to 1. Absent classes have total 0 and blank accuracy
-  (`null` in JSON). All scores use the selected checkpoint.
+- `per_class_accuracy.md`: a Markdown table with one row per class and train,
+  validation, and test accuracy columns. Scores are percentages from the selected
+  checkpoint on clean images. Classes absent from a split show `N/A`.
 - `curves.png`: loss and accuracy plots with the selected epoch marked, also
   shown in the app after training completes.
 - `leaderboard-submission.json`: submitted fields and confirmation/error status.
@@ -120,13 +118,12 @@ that were not recorded are not inferred from the current model.
 Calls through the grading interface return the same selected model and expose
 metrics as `model.training_history`, but do not write run files.
 
-The **Per-class accuracy** table shows percentages and counts after every run.
-Search by class or split, sort by accuracy, or download the table as CSV. The
-same metric handles MNIST digits, CIFAR-10 class names, and ImageNet32 class IDs
-0–999; ImageNet names are not inferred from an external label ordering. Test
-counts reuse the existing test predictions. Train and validation counts use
-clean images in batches. Each `results.csv` row links to the full per-class CSV;
-`summary.txt` also records its path. No additional test evaluation is performed.
+The **Per-class accuracy** output is a Markdown table with one row per class:
+Class, Train, Validation, and Test. The same metric handles MNIST digits,
+CIFAR-10 class names, and ImageNet32 class IDs 0–999. Each `results.csv` row links
+to the saved Markdown table; `summary.txt` includes the table for copying into
+your journal. `summary.json` records the same columns as fractions from 0 to 1.
+Test scores reuse existing predictions; no additional test evaluation is performed.
 
 ### Per-digit MNIST augmentation
 
