@@ -334,7 +334,7 @@ def _():
 
 
 @app.class_definition
-class Block3(nn.Module):
+class Block(nn.Module):
     def __init__(self, width=256, hidden=512):
         super().__init__()
         self.norm = nn.LayerNorm(width)
@@ -343,7 +343,7 @@ class Block3(nn.Module):
 
     def forward(self, x):
         n = self.norm(x)
-        a = torch.gelu(self.fc1(n))
+        a = F.gelu(self.fc1(n))
         h = self.fc2(a)
         return x + h
 
@@ -354,7 +354,7 @@ class ResidualMLP(nn.Module):
 
     input -> Linear(in_features -> width)            project into the backbone
           -> depth x Block                           residual backbone, stays `width` wide
-          -> LayerNorm -> Linear -> tanh -> Linear   head: a block without the skip
+          -> LayerNorm -> Linear -> GELU -> Linear   head: a block without the skip
           -> logits (num_classes)
 
     The head has no skip connection because its output size (num_classes)
@@ -366,27 +366,7 @@ class ResidualMLP(nn.Module):
 
         # Project the flattened image down to the backbone width.
         self.input_layer = nn.Linear(in_features, width)
-        self.norm = nn.LayerNorm(width)
-        self.fc1 = nn.Linear(width, hidden)
-        self.fc2 = nn.Linear(hidden, width)
-        self.norm_2 = nn.LayerNorm(width)
-        self.fc1_2 = nn.Linear(width, hidden)
-        self.fc2_2 = nn.Linear(hidden, width)
-        self.norm_3 = nn.LayerNorm(width)
-        self.fc1_3 = nn.Linear(width, hidden)
-        self.fc2_3 = nn.Linear(hidden, width)
-        self.norm_4 = nn.LayerNorm(width)
-        self.fc1_4 = nn.Linear(width, hidden)
-        self.fc2_4 = nn.Linear(hidden, width)
-        self.norm_5 = nn.LayerNorm(width)
-        self.fc1_5 = nn.Linear(width, hidden)
-        self.fc2_5 = nn.Linear(hidden, width)
-        self.norm_6 = nn.LayerNorm(width)
-        self.fc1_6 = nn.Linear(width, hidden)
-        self.fc2_6 = nn.Linear(hidden, width)
-        self.norm_7 = nn.LayerNorm(width)
-        self.fc1_7 = nn.Linear(width, hidden)
-        self.fc2_7 = nn.Linear(hidden, width)
+        self.blocks = nn.Sequential(*(Block(width, hidden) for _ in range(depth)))
         # The head: same layers as a block, but the last layer outputs class scores.
         self.head_norm = nn.LayerNorm(width)
         self.head_fc1 = nn.Linear(width, hidden)
@@ -405,34 +385,7 @@ class ResidualMLP(nn.Module):
         """
         x = x.flatten(start_dim=1)
         x = self.input_layer(x)
-        n = self.norm(x)
-        a = F.gelu(self.fc1(n))
-        h = self.fc2(a)
-        x = x + h
-        n = self.norm_2(x)
-        a = F.gelu(self.fc1_2(n))
-        h = self.fc2_2(a)
-        x = x + h
-        n = self.norm_3(x)
-        a = F.gelu(self.fc1_3(n))
-        h = self.fc2_3(a)
-        x = x + h
-        n = self.norm_4(x)
-        a = F.gelu(self.fc1_4(n))
-        h = self.fc2_4(a)
-        x = x + h
-        n = self.norm_5(x)
-        a = F.gelu(self.fc1_5(n))
-        h = self.fc2_5(a)
-        x = x + h
-        n = self.norm_6(x)
-        a = F.gelu(self.fc1_6(n))
-        h = self.fc2_6(a)
-        x = x + h
-        n = self.norm_7(x)
-        a = F.gelu(self.fc1_7(n))
-        h = self.fc2_7(a)
-        x = x + h
+        x = self.blocks(x)
         n = self.head_norm(x)
         a = F.gelu(self.head_fc1(n))
         return self.head_fc2(a)
