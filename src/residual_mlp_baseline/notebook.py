@@ -35,7 +35,7 @@ with app.setup:
     # Baseline settings. Deliberately plain so they are easy to beat:
     # plain SGD, constant learning rate, no dropout, no schedule, no augmentation.
     LEARNING_RATE = 0.05
-    BATCH_SIZE = 256
+    BATCH_SIZE = 128
     EPOCHS = {"mnist": 500, "cifar10": 30, "imagenet32": 10}
     WEIGHT_DECAY = 1e-4
     MOMENTUM = 0.0
@@ -51,7 +51,7 @@ with app.setup:
 
     # MNIST-only augmentation defaults. Amounts are maxima, sampled per image.
     # No flips: they can change a digit's identity.
-    DIGIT_AUGMENTATION_ENABLED = True
+    DIGIT_AUGMENTATION_ENABLED = False
     AUGMENTATION_CATEGORIES = {
         # name: (label, unit, maximum slider value, step, default probability, default amount)
         "rotation": ("Rotation", "degrees", 30.0, 1.0, 0.5, 10.0),
@@ -343,7 +343,7 @@ class Block(nn.Module):
 
     def forward(self, x):
         n = self.norm(x)
-        a = F.gelu(self.fc1(n))
+        a = F.relu(self.fc1(n))
         h = self.fc2(a)
         return x + h
 
@@ -361,12 +361,12 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
-    def __init__(self, in_features, num_classes, width=256, hidden=512, depth=7):
+    def __init__(self, in_features, num_classes, width=128, hidden=128, depth=7):
         super().__init__()
 
         # Project the flattened image down to the backbone width.
         self.input_layer = nn.Linear(in_features, width)
-        self.blocks = nn.Sequential(*(Block(width, hidden) for _ in range(depth)))
+        self.blocks = nn.ModuleList([Block(width, hidden) for _ in range(7)])
         # The head: same layers as a block, but the last layer outputs class scores.
         self.head_norm = nn.LayerNorm(width)
         self.head_fc1 = nn.Linear(width, hidden)
@@ -385,9 +385,10 @@ class ResidualMLP(nn.Module):
         """
         x = x.flatten(start_dim=1)
         x = self.input_layer(x)
-        x = self.blocks(x)
+        for blk in self.blocks:
+            x = blk(x)
         n = self.head_norm(x)
-        a = F.gelu(self.head_fc1(n))
+        a = F.relu(self.head_fc1(n))
         return self.head_fc2(a)
 
     def predict(self, x):

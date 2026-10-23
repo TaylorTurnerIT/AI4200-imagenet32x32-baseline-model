@@ -498,6 +498,55 @@ mnist: 98.32% test accuracy
 
 # CIFAR
 
+## Baseline (inherited from MNIST)
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=500 (keep best)
+weight_decay=1e-4
+activation_function (all): GELU
+
+cifar10: 54.59% test accuracy · 99.99% train accuracy · 0.5 minutes · mps
+Best epoch: 28 · validation accuracy: 56.40%
+
+> Crazy stuff. Instantly pulls out 99.99% train accuracy? 54% test? This indicates to me that it has become so difficult to learn generalizable patterns that it learned what it could then instantly memorized. Very strange this didn't happen with MNIST. Perhaps there was more generalizable ideas here. Let's try tanh, not expecting much. At this size of network it should be pretty much interchangable. But at this overfitting I feel it's a bad idea to scale up further.
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=500 (keep best)
+weight_decay=1e-4
+activation_function (all): tanh
+
+cifar10: 52.00% test accuracy · 91.51% train accuracy · 0.5 minutes · mps
+Best epoch: 25 · validation accuracy: 52.84%
+
+> Worse. Reverting. Let's try some more.
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=500 (keep best)
+weight_decay=1e-4
+activation_function (all): ReLU
+
+cifar10: 52.00% test accuracy · 91.51% train accuracy · 0.5 minutes · mps
+Best epoch: 25 · validation accuracy: 52.84%
+
+> Clearly there's more to the story of CIFAR than there was with MNIST.
+
+> I applied a shrink to the residual stream to 64. Didn't do much. Did that + shrank batch size:
+
+cifar10: 51.78% test accuracy · 83.72% train accuracy · 0.8 minutes · mps
+Best epoch: 23 · validation accuracy: 52.28%
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.
