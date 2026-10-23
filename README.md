@@ -92,7 +92,11 @@ Each app run creates a unique directory under `runs/` containing:
 - `best.pt`: best weights, epoch, validation accuracy, configuration, and exact
   training/validation indices. This is an analysis artifact; `train()` always
   starts from scratch and never loads weights from disk.
-- `config.json`: task, seed, model architecture, split sizes, and training settings.
+- `config.json`: task, seed, model architecture and source, split sizes, and training settings.
+- `summary.txt`: the same copyable text shown in the final output, with clean
+  train, validation, and test accuracy plus the hyperparameter breakdown.
+- `summary.json`: full-precision final scores and the configuration captured
+  before training, including model source and per-digit augmentation settings.
 - `curves.png`: loss and accuracy plots with the selected epoch marked, also
   shown in the app after training completes.
 - `leaderboard-submission.json`: submitted fields and confirmation/error status.
@@ -100,8 +104,13 @@ Each app run creates a unique directory under `runs/` containing:
   Existing attempts are not retried automatically, avoiding duplicate posts
   when a response is lost. Separate completed runs each receive a submission.
 
-The summary in `results.csv` includes the best epoch, validation accuracy, and
-run directory. Older summary rows remain available, with new columns blank.
+The final output includes a text block you can copy into your experiment journal.
+The summary in `results.csv` includes train, validation, and test accuracy,
+best epoch, device, seed, configured and completed epochs, optimizer settings,
+actual model dimensions and functional operations, split sizes, augmentation,
+and the full configuration as JSON. The existing `accuracy` column remains test
+accuracy. Older summary rows remain available, with new columns blank; settings
+that were not recorded are not inferred from the current model.
 Calls through the grading interface return the same selected model and expose
 metrics as `model.training_history`, but do not write run files.
 

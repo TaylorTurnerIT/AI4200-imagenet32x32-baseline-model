@@ -103,9 +103,20 @@ class LeaderboardTests(unittest.TestCase):
                     and node.args.args[0].arg == 'NUM_CLASSES')
         cell.decorator_list = []
         results = self.run / 'results.csv'
+        results.write_text('time,accuracy,old_note\n2026-01-01,0.5000,preserve me\n')
         history = [dict(epoch=1, train_loss=.1, train_accuracy=1., validation_loss=.2, validation_accuracy=.9)]
         model = SimpleNamespace(training_indices=torch.arange(5), training_history=history,
-                                best_epoch=1, best_validation_accuracy=.9)
+                                best_epoch=1, best_validation_accuracy=.9,
+                                run_config=dict(
+                                    task='mnist', seed=42, device='cpu', epochs=2,
+                                    batch_size=128, learning_rate=.05, weight_decay=.0001,
+                                    momentum=0., dampening=0., optimizer='SGD',
+                                    loss='CrossEntropyLoss()', learning_rate_schedule='constant', shuffle=True,
+                                    validation_fraction=.1, training_examples=5, validation_examples=1,
+                                    architecture=dict(width=128, hidden=128, depth=7, functional_operations=['relu']),
+                                    augmentation={'enabled': False, 'digits': {}}, model='ResidualMLP()',
+                                    model_source='class ResidualMLP: pass', block_source='class Block: pass',
+                                ))
 
         def fake_train(*args, run_dir, **kwargs):
             run_dir.mkdir(parents=True)
@@ -116,14 +127,30 @@ class LeaderboardTests(unittest.TestCase):
             self.assertEqual(accuracy, .75)
             self.assertGreaterEqual(minutes, 0)
             with results.open() as file:
-                self.assertEqual(list(csv.DictReader(file))[0]['accuracy'], '0.7500')
+                rows = list(csv.DictReader(file))
+                self.assertEqual(rows[0]['old_note'], 'preserve me')
+                self.assertEqual(rows[0]['batch_size'], '')
+                self.assertEqual(rows[1]['accuracy'], '0.7500')
+                self.assertEqual(rows[1]['test_accuracy'], '0.7500')
+                self.assertEqual(rows[1]['depth'], '7')
+                self.assertEqual(json.loads(rows[1]['hyperparameters']), model.run_config)
+            summary = (run_dir / 'summary.txt').read_text()
+            self.assertIn('Test accuracy:       75.00%', summary)
+            self.assertIn('Train accuracy:      100.00%', summary)
+            self.assertIn('Validation accuracy: 90.00%', summary)
+            self.assertIn('"batch_size": 128', summary)
+            self.assertIn('relu', summary)
+            saved = json.loads((run_dir / 'summary.json').read_text())
+            self.assertEqual(saved['performance']['test_accuracy'], .75)
+            self.assertEqual(saved['hyperparameters'], model.run_config)
             self.assertTrue((run_dir / 'curves.png').exists())
             return 'Leaderboard submission confirmed as TaylorT, section 5000.'
 
+        displayed = []
         namespace = dict(vars(notebook))
         namespace.update(
             mo=SimpleNamespace(stop=lambda *args: None, md=lambda value: value,
-                               vstack=lambda value: None,
+                               vstack=lambda value: displayed.extend(value),
                                status=SimpleNamespace(spinner=lambda **kwargs: nullcontext())),
             train_with_metrics=fake_train,
             predict=lambda model, images: torch.tensor([[1., 0.]]).repeat(len(images), 1),
@@ -139,6 +166,9 @@ class LeaderboardTests(unittest.TestCase):
                     load_task=lambda task: (np.zeros((5, 1, 28, 28)), np.zeros(5, dtype=int),
                                             np.zeros((4, 1, 28, 28)), np.array([0, 0, 0, 1])),
                 )
+
+        summary_path = next(self.run.glob('runs/*/summary.txt'))
+        self.assertIn(summary_path.read_text().strip(), displayed[0])
 
 
 if __name__ == '__main__':

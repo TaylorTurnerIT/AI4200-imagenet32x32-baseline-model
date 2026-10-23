@@ -6,12 +6,15 @@ __generated_with = "0.25.1"
 app = marimo.App(width="medium")
 
 with app.setup:
+    import ast
     import csv
+    import inspect
     import json
     import os
     import platform
     import sys
     import time
+    import textwrap
     import zipfile
     from uuid import uuid4
     from pathlib import Path
@@ -203,35 +206,10 @@ def _(
         _validation_accuracy = _model.best_validation_accuracy
         _history = _model.training_history
 
-    _result = {
-        "time": time.strftime("%Y-%m-%d %H:%M"),
-        "package_url": str(RESULTS_FILE.parent), "import_name": "residual_mlp_baseline",
-        "task": task.value, "accuracy": f"{_accuracy:.4f}",
-        "train_accuracy": f"{_train_accuracy:.4f}", "train_minutes": f"{_minutes:.1f}",
-        "seed": int(seed.value), "best_epoch": _best_epoch,
-        "validation_accuracy": f"{_validation_accuracy:.4f}",
-        "run_dir": str(_run_dir.relative_to(RESULTS_FILE.parent)),
-    }
-    _header = list(_result)
-    _new_file = not RESULTS_FILE.exists() or RESULTS_FILE.stat().st_size == 0
-    if not _new_file:
-        # Older results.csv files have no train_accuracy column; rewrite them so
-        # every row has the same number of columns.
-        with RESULTS_FILE.open(newline="") as _file:
-            _reader = csv.DictReader(_file)
-            _old_header = _reader.fieldnames or []
-            _old_rows = list(_reader)
-        _header = _old_header + [c for c in _header if c not in _old_header]
-        if _header != _old_header:
-            with RESULTS_FILE.open("w", newline="") as _file:
-                _writer = csv.DictWriter(_file, fieldnames=_header)
-                _writer.writeheader()
-                _writer.writerows(_old_rows)
-    with RESULTS_FILE.open("a", newline="") as _file:
-        _writer = csv.DictWriter(_file, fieldnames=_header)
-        if _new_file:
-            _writer.writeheader()
-        _writer.writerow(_result)
+    _summary = save_run_result(
+        RESULTS_FILE, _run_dir, _model, _accuracy, _train_accuracy, _minutes,
+        test_examples=len(_y_test),
+    )
 
     import matplotlib.pyplot as plt
 
@@ -260,12 +238,9 @@ def _(
         _leaderboard_status = submit_run_to_leaderboard(task.value, _accuracy, _minutes, _run_dir)
 
     mo.vstack([
+        mo.md(f"```text\n{_summary}\n```"),
         mo.md(
-            f"**{task.value}: {_accuracy:.2%} test accuracy** · "
-            f"**{_train_accuracy:.2%} train accuracy** · {_minutes:.1f} minutes · {device.value}  \n"
-            f"Best epoch: **{_best_epoch}** · validation accuracy: **{_validation_accuracy:.2%}**  \n"
-            f"Final scores use the best checkpoint. Train accuracy excludes the validation holdout.  \n"
-            f"Saved summary to `results.csv`; metrics, checkpoint, and plots to `{_run_dir}`.  \n"
+            f"Saved to `results.csv` and `{_run_dir}/summary.txt` / `summary.json`.  \n"
             f"{_leaderboard_status}  \n"
             "Epoch train accuracy uses training batches (augmented when enabled); validation uses clean images and each epoch's final weights."
         ),
@@ -402,6 +377,72 @@ class ResidualMLP(nn.Module):
 def prepare(X):
     """Convert uint8 images (0-255) to floats in roughly [-1, 1]."""
     return (torch.as_tensor(X).float() / 255.0 - 0.5) / 0.5
+
+
+@app.function
+def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy, train_minutes, test_examples):
+    """Save a completed run's scores and the settings captured before training."""
+    config = model.run_config
+    result = {
+        "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "package_url": str(results_file.parent), "import_name": "residual_mlp_baseline",
+        "task": config["task"], "accuracy": f"{test_accuracy:.4f}",
+        "test_accuracy": f"{test_accuracy:.4f}",
+        "train_accuracy": f"{train_accuracy:.4f}", "train_minutes": f"{train_minutes:.1f}",
+        "seed": config["seed"], "best_epoch": model.best_epoch,
+        "validation_accuracy": f"{model.best_validation_accuracy:.4f}",
+        "run_dir": str(run_dir.relative_to(results_file.parent)),
+        "device": config["device"], "epochs_completed": len(model.training_history),
+        **{key: config[key] for key in (
+            "epochs", "batch_size", "learning_rate", "weight_decay", "momentum",
+            "dampening", "optimizer", "loss", "learning_rate_schedule", "shuffle",
+            "validation_fraction", "training_examples", "validation_examples",
+        )},
+        "test_examples": test_examples,
+        **config["architecture"],
+        "augmentation": json.dumps(config["augmentation"], sort_keys=True),
+        "model": config["model"],
+        "hyperparameters": json.dumps(config, sort_keys=True),
+    }
+    # Keep historical rows and unknown columns; unavailable old settings stay blank.
+    old_rows, header = [], []
+    if results_file.exists() and results_file.stat().st_size:
+        with results_file.open(newline="") as file:
+            reader = csv.DictReader(file)
+            header, old_rows = reader.fieldnames or [], list(reader)
+    new_header = header + [key for key in result if key not in header]
+    if new_header != header:
+        with results_file.open("w", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=new_header)
+            writer.writeheader()
+            writer.writerows(old_rows)
+    with results_file.open("a", newline="") as file:
+        csv.DictWriter(file, fieldnames=new_header).writerow(result)
+
+    # Source captures include functional activations omitted by PyTorch's repr.
+    settings = {key: value for key, value in config.items()
+                if key not in ("model", "model_source", "block_source", "train_accuracy_kind")}
+    if not config["augmentation"]["enabled"]:
+        settings["augmentation"] = {"enabled": False}
+    summary = (
+        f"Run: {result['run_dir']}\nTime: {result['time']}\nTask: {config['task']}\n"
+        f"Train accuracy:      {train_accuracy:.2%} ({config['training_examples']} clean examples)\n"
+        f"Validation accuracy: {model.best_validation_accuracy:.2%} ({config['validation_examples']} examples)\n"
+        f"Test accuracy:       {test_accuracy:.2%} ({test_examples} examples)\n"
+        f"Best epoch: {model.best_epoch} / {len(model.training_history)} completed "
+        f"({config['epochs']} configured)\nTraining time: {train_minutes:.2f} minutes\n"
+        "All final scores use the best validation checkpoint. Train excludes the holdout.\n\n"
+        "Hyperparameters and architecture:\n" + json.dumps(settings, indent=2)
+    )
+    (run_dir / "summary.txt").write_text(summary + "\n")
+    (run_dir / "summary.json").write_text(json.dumps({
+        "result": result,
+        "performance": {"train_accuracy": train_accuracy,
+                        "validation_accuracy": model.best_validation_accuracy,
+                        "test_accuracy": test_accuracy, "train_minutes": train_minutes},
+        "hyperparameters": config,
+    }, indent=2) + "\n")
+    return summary
 
 
 @app.function
@@ -610,7 +651,29 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     metadata = {
         "task": task, "seed": seed, "device": str(device), "epochs": EPOCHS[task],
         "batch_size": BATCH_SIZE, "learning_rate": LEARNING_RATE,
-        "weight_decay": WEIGHT_DECAY, "momentum": MOMENTUM,
+        "weight_decay": optimizer.param_groups[0]["weight_decay"],
+        "momentum": optimizer.param_groups[0]["momentum"],
+        "dampening": optimizer.param_groups[0]["dampening"],
+        "optimizer": type(optimizer).__name__, "loss": repr(loss_fn),
+        "learning_rate_schedule": "constant", "shuffle": True,
+        "architecture": {
+            "width": model.input_layer.out_features,
+            "hidden": model.head_fc1.out_features,
+            "depth": len(model.blocks),
+            "functional_operations": sorted({
+                node.func.attr for cls in (type(model), Block)
+                for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(cls))))
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                and isinstance(node.func.value, ast.Name) and node.func.value.id == "F"
+            }),
+            "in_features": model.input_layer.in_features,
+            "num_classes": model.head_fc2.out_features,
+            "normalization": sorted({type(layer).__name__ for layer in model.modules()
+                                     if "Norm" in type(layer).__name__}),
+            "parameters": sum(parameter.numel() for parameter in model.parameters()),
+        },
+        "model_source": inspect.getsource(type(model)),
+        "block_source": inspect.getsource(Block),
         "validation_fraction": VALIDATION_FRACTION,
         "training_examples": len(training_indices), "validation_examples": validation_size,
         "selection_metric": "validation_accuracy", "tie_break": "earliest_epoch",
@@ -687,6 +750,7 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     # Restore weights from this run's memory, never from a previous run's saved file.
     model.load_state_dict(best_state)
     model.eval()
+    model.run_config = metadata
     model.training_history = history
     model.best_epoch = best_epoch
     model.best_validation_accuracy = best_accuracy
