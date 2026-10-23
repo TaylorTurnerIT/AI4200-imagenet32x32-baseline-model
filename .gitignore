@@ -8,6 +8,7 @@ dist/
 .cache/
 data/
 results.csv
+runs/
 harness_run.ipynb
 __marimo__/
 .DS_Store

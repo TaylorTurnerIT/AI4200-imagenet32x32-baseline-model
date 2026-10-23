@@ -7,18 +7,21 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import csv
+    import json
     import os
     import platform
     import sys
     import time
     import zipfile
+    from uuid import uuid4
     from pathlib import Path
 
     import marimo as mo
     import numpy as np
     import torch
     import torch.nn as nn
-    from torch.utils.data import DataLoader, TensorDataset
+    import torch.nn.functional as F
+    from torch.utils.data import DataLoader, Subset, TensorDataset
 
     # Each task differs only in its input size and its number of classes.
     # The same model class is used for all three.
@@ -33,48 +36,150 @@ with app.setup:
     # plain SGD, constant learning rate, no dropout, no schedule, no augmentation.
     LEARNING_RATE = 0.05
     BATCH_SIZE = 256
-    EPOCHS = {"mnist": 100, "cifar10": 30, "imagenet32": 10}
+    EPOCHS = {"mnist": 500, "cifar10": 30, "imagenet32": 10}
     WEIGHT_DECAY = 1e-4
     MOMENTUM = 0.0
     DAMPENING = 0.0
+    VALIDATION_FRACTION = 0.1
+
+    # MNIST-only augmentation defaults. Amounts are maxima, sampled per image.
+    # No flips: they can change a digit's identity.
+    DIGIT_AUGMENTATION_ENABLED = True
+    AUGMENTATION_CATEGORIES = {
+        # name: (label, unit, maximum slider value, step, default probability, default amount)
+        "rotation": ("Rotation", "degrees", 30.0, 1.0, 0.5, 10.0),
+        "translation": ("Translation", "pixels per axis", 7.0, 0.5, 0.5, 2.0),
+        "scale": ("Scale", "fraction around 1", 0.4, 0.01, 0.5, 0.1),
+        "shear": ("Horizontal shear", "degrees", 25.0, 1.0, 0.25, 5.0),
+        "brightness": ("Brightness", "fraction around 1", 0.5, 0.01, 0.25, 0.1),
+        "noise": ("Gaussian noise", "std on 0–1 intensity", 0.3, 0.01, 0.25, 0.05),
+        "erasing": ("Random square erasing", "fraction of image area", 0.25, 0.01, 0.1, 0.05),
+    }
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(available_devices):
     task = mo.ui.dropdown(["mnist", "cifar10", "imagenet32"], value="mnist", label="Task")
     device = mo.ui.dropdown(available_devices, value=list(available_devices)[-1], label="Device")
     seed = mo.ui.number(start=0, stop=2**32 - 1, value=42, label="Seed")
-    run_training = mo.ui.run_button(label="Train and evaluate")
+    run_training = mo.ui.run_button(label="Run")
     mo.hstack([task, device, seed, run_training], justify="start")
     return device, run_training, seed, task
 
 
-@app.cell
+@app.cell(hide_code=True)
+def _():
+    augmentation_enabled = mo.ui.switch(value=DIGIT_AUGMENTATION_ENABLED, label="Enable MNIST augmentation")
+    preview_digit = mo.ui.dropdown([str(digit) for digit in range(10)], value="0", label="Preview digit")
+    preview_seed = mo.ui.number(start=0, stop=2**32 - 1, value=42, label="Preview seed")
+    _defaults = digit_augmentation_config()["digits"]
+    augmentation_digits = mo.ui.dictionary({
+        str(digit): mo.ui.dictionary({
+            category: mo.ui.dictionary({
+                "probability": mo.ui.slider(0.0, 1.0, step=0.05,
+                    value=_defaults[str(digit)][category]["probability"], show_value=True,
+                    label="Probability per image"),
+                "amount": mo.ui.slider(0.0, spec[2], step=spec[3],
+                    value=_defaults[str(digit)][category]["amount"], show_value=True,
+                    label=f"Maximum amount ({spec[1]})"),
+            }) for category, spec in AUGMENTATION_CATEGORIES.items()
+        }) for digit in range(10)
+    })
+    mo.vstack([
+        mo.md("""
+        ## Digit augmentation
+
+        Enable augmentation, then choose a digit tab to tune its categories.
+        Each category has an independent probability and maximum strength.
+        Probability 0 or amount 0 disables that category for that digit.
+        Geometry and brightness sample within ±amount; noise samples a standard
+        deviation up to its amount. Erasing removes a square up to the chosen area.
+        Changes take effect on the next **Run**. Augmentation applies only to MNIST
+        training batches; validation and test images stay unchanged.
+        Large transforms can make digits ambiguous. No flips are applied.
+        """),
+        augmentation_enabled,
+        mo.ui.tabs({f"Digit {digit}": mo.vstack([
+            mo.vstack([mo.md(f"**{spec[0]}**"),
+                       augmentation_digits[str(digit)][category].hstack()])
+            for category, spec in AUGMENTATION_CATEGORIES.items()
+        ]) for digit in range(10)}),
+        mo.hstack([preview_digit, preview_seed], justify="start"),
+    ])
+    return (
+        augmentation_digits,
+        augmentation_enabled,
+        preview_digit,
+        preview_seed,
+    )
+
+
+@app.cell(hide_code=True)
+def _(
+    DATA_DIR,
+    augmentation_digits,
+    augmentation_enabled,
+    preview_digit,
+    preview_seed,
+):
+    _folder = Path(DATA_DIR) / "mnist"
+    mo.stop(not (_folder / "X_train.npy").exists() or not (_folder / "y_train.npy").exists(),
+            mo.md("Run MNIST once to cache images for the augmentation preview. No preview downloads are started."))
+    _images = np.load(_folder / "X_train.npy", mmap_mode="c")
+    _labels = np.load(_folder / "y_train.npy", mmap_mode="c")
+    _indices = np.flatnonzero(_labels == int(preview_digit.value))[:6]
+    mo.stop(len(_indices) == 0, mo.md("No cached examples for this digit."))
+    _original = prepare(_images[_indices])
+    _augmenter = DigitAugmenter({"enabled": augmentation_enabled.value,
+                                "digits": augmentation_digits.value}, seed=int(preview_seed.value))
+    _augmented = _augmenter(_original, torch.as_tensor(_labels[_indices]).long())
+    import matplotlib.pyplot as _plt
+
+    _figure, _axes = _plt.subplots(2, len(_indices), figsize=(9, 3), squeeze=False)
+    for _column in range(len(_indices)):
+        for _row, _batch in enumerate([_original, _augmented]):
+            _axes[_row, _column].imshow(_batch[_column, 0].numpy(), cmap="gray", vmin=-1, vmax=1)
+            _axes[_row, _column].set_xticks([])
+            _axes[_row, _column].set_yticks([])
+    _axes[0, 0].set_ylabel("Original")
+    _axes[1, 0].set_ylabel("Augmented")
+    _figure.tight_layout()
+    _plt.close(_figure)
+    mo.vstack([mo.md("Change the preview seed for fresh samples. The master toggle also controls this preview."), _figure])
+    return
+
+
+@app.cell(hide_code=True)
 def _(
     NUM_CLASSES,
     RESULTS_FILE,
+    augmentation_digits,
+    augmentation_enabled,
     device,
     load_task,
-    predict,
     run_training,
     seed,
     task,
-    train,
 ):
     mo.stop(not run_training.value, mo.md("Ready. Select a task and start training."))
 
-    def _accuracy_on(model, X, y, chunk=1024):
+    def _accuracy_on(model, X, y, indices, chunk=1024):
         """Accuracy of the model on (X, y), scored in chunks to save memory."""
         correct = 0
-        for start in range(0, len(X), chunk):
-            probs = torch.as_tensor(predict(model, X[start:start + chunk])).float().cpu()
-            correct += int((probs.argmax(1).numpy() == np.asarray(y[start:start + chunk])).sum())
-        return correct / len(X)
+        for start in range(0, len(indices), chunk):
+            batch = indices[start:start + chunk]
+            probs = torch.as_tensor(predict(model, X[batch])).float().cpu()
+            correct += int((probs.argmax(1).numpy() == np.asarray(y[batch])).sum())
+        return correct / len(indices)
 
     with mo.status.spinner(title=f"Loading {task.value} and training on {device.value}..."):
         _X_train, _y_train, _X_test, _y_test = load_task(task.value)
         _start = time.perf_counter()
-        _model = train(task.value, _X_train, _y_train, seed=int(seed.value), device=device.value)
+        _run_dir = RESULTS_FILE.parent / "runs" / f"{task.value}-{time.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:8]}"
+        _model = train_with_metrics(task.value, _X_train, _y_train, seed=int(seed.value),
+                                    device=device.value, run_dir=_run_dir,
+                                    augmentation={"enabled": augmentation_enabled.value,
+                                                  "digits": augmentation_digits.value})
         _minutes = (time.perf_counter() - _start) / 60
         _probs = torch.as_tensor(predict(_model, _X_test)).float().cpu()
         assert _probs.shape == (len(_y_test), NUM_CLASSES[task.value]), "Unexpected prediction shape"
@@ -82,30 +187,57 @@ def _(
         assert (_probs >= 0).all(), "Predictions contain negative probabilities"
         assert torch.allclose(_probs.sum(1), torch.ones(len(_probs)), atol=1e-3), "Probabilities must sum to 1"
         _accuracy = float(np.mean(_probs.argmax(1).numpy() == _y_test))
-        _train_accuracy = _accuracy_on(_model, _X_train, _y_train)
+        _train_accuracy = _accuracy_on(_model, _X_train, _y_train, _model.training_indices.numpy())
+        _best_epoch = _model.best_epoch
+        _validation_accuracy = _model.best_validation_accuracy
+        _history = _model.training_history
 
-    _header = ["time", "package_url", "import_name", "task", "accuracy", "train_accuracy", "train_minutes", "seed"]
+    _result = {
+        "time": time.strftime("%Y-%m-%d %H:%M"),
+        "package_url": str(RESULTS_FILE.parent), "import_name": "residual_mlp_baseline",
+        "task": task.value, "accuracy": f"{_accuracy:.4f}",
+        "train_accuracy": f"{_train_accuracy:.4f}", "train_minutes": f"{_minutes:.1f}",
+        "seed": int(seed.value), "best_epoch": _best_epoch,
+        "validation_accuracy": f"{_validation_accuracy:.4f}",
+        "run_dir": str(_run_dir.relative_to(RESULTS_FILE.parent)),
+    }
+    _header = list(_result)
     _new_file = not RESULTS_FILE.exists() or RESULTS_FILE.stat().st_size == 0
     if not _new_file:
         # Older results.csv files have no train_accuracy column; rewrite them so
         # every row has the same number of columns.
         with RESULTS_FILE.open(newline="") as _file:
-            _old_rows = list(csv.reader(_file))
-        _old_header = _old_rows[0] if _old_rows else []
-        if "train_accuracy" not in _old_header:
-            _missing = [c for c in _header if c not in _old_header]
+            _reader = csv.DictReader(_file)
+            _old_header = _reader.fieldnames or []
+            _old_rows = list(_reader)
+        _header = _old_header + [c for c in _header if c not in _old_header]
+        if _header != _old_header:
             with RESULTS_FILE.open("w", newline="") as _file:
-                _writer = csv.writer(_file)
-                _writer.writerow(_old_header + _missing)
-                for _row in _old_rows[1:]:
-                    _writer.writerow(_row + [""] * len(_missing))
+                _writer = csv.DictWriter(_file, fieldnames=_header)
+                _writer.writeheader()
+                _writer.writerows(_old_rows)
     with RESULTS_FILE.open("a", newline="") as _file:
-        _writer = csv.writer(_file)
+        _writer = csv.DictWriter(_file, fieldnames=_header)
         if _new_file:
-            _writer.writerow(_header)
-        _writer.writerow([time.strftime("%Y-%m-%d %H:%M"), str(RESULTS_FILE.parent),
-                          "residual_mlp_baseline", task.value, f"{_accuracy:.4f}",
-                          f"{_train_accuracy:.4f}", f"{_minutes:.1f}", int(seed.value)])
+            _writer.writeheader()
+        _writer.writerow(_result)
+
+    import matplotlib.pyplot as plt
+
+    _figure, _axes = plt.subplots(1, 2, figsize=(10, 3.5))
+    _epochs = [row["epoch"] for row in _history]
+    for _name, _label in [("train", "Train"), ("validation", "Validation")]:
+        _axes[0].plot(_epochs, [row[f"{_name}_loss"] for row in _history], label=_label)
+        _axes[1].plot(_epochs, [100 * row[f"{_name}_accuracy"] for row in _history], label=_label)
+    _axes[0].set_ylabel("Cross-entropy loss")
+    _axes[1].set_ylabel("Accuracy (%)")
+    for _axis in _axes:
+        _axis.set_xlabel("Epoch")
+        _axis.axvline(_best_epoch, color="gray", linestyle="--", label="Best epoch")
+        _axis.legend()
+    _figure.tight_layout()
+    _figure.savefig(_run_dir / "curves.png", dpi=150)
+    plt.close(_figure)
 
     del _model, _X_train, _y_train, _X_test, _y_test, _probs
     if device.value == "cuda":
@@ -113,24 +245,32 @@ def _(
     elif device.value == "mps":
         torch.mps.empty_cache()
 
-    mo.md(
-        f"**{task.value}: {_accuracy:.2%} test accuracy** · "
-        f"**{_train_accuracy:.2%} train accuracy** · {_minutes:.1f} minutes · {device.value}  \n"
-        f"Train-test gap: {(_train_accuracy - _accuracy):.2%}  \nSaved to `results.csv`."
-    )
+    mo.vstack([
+        mo.md(
+            f"**{task.value}: {_accuracy:.2%} test accuracy** · "
+            f"**{_train_accuracy:.2%} train accuracy** · {_minutes:.1f} minutes · {device.value}  \n"
+            f"Best epoch: **{_best_epoch}** · validation accuracy: **{_validation_accuracy:.2%}**  \n"
+            f"Final scores use the best checkpoint. Train accuracy excludes the validation holdout.  \n"
+            f"Saved summary to `results.csv`; metrics, checkpoint, and plots to `{_run_dir}`.  \n"
+            "Epoch train accuracy uses training batches (augmented when enabled); validation uses clean images and each epoch's final weights."
+        ),
+        _figure,
+    ])
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     mo.md("""
     # Residual MLP development
 
     Edit the model and training functions below, then use the controls above.
     Train your local code on MNIST, CIFAR-10, or ImageNet 32×32.
-    Choose a task, then click **Train and evaluate**. The first run downloads
+    Choose a task, then click **Run**. The first run downloads
     the dataset; later runs reuse `data/`. Results append to `results.csv`.
-    No leaderboard results are posted.
+    Each run holds out 10% of training examples for validation, records metrics
+    every epoch, and evaluates the best validation checkpoint on the test set once.
+    Curves and checkpoints save under `runs/`. No leaderboard results are posted.
 
     ImageNet training needs substantial RAM because the baseline converts the
     entire training set to float32. Start with MNIST to check your environment.
@@ -138,7 +278,7 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     available_devices = {"CPU": "cpu"}
     _metal_status = "Unavailable"
@@ -163,7 +303,7 @@ def _():
     return (available_devices,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     mo.md("""
     ## Model and training
@@ -247,7 +387,6 @@ class ResidualMLP(nn.Module):
             return torch.softmax(self.forward(x), dim=1)
 
 
-
 @app.function
 def prepare(X):
     """Convert uint8 images (0-255) to floats in roughly [-1, 1]."""
@@ -255,26 +394,167 @@ def prepare(X):
 
 
 @app.function
+def digit_augmentation_config():
+    """Default settings shared by the notebook controls and grading entry point."""
+    return {
+        "enabled": DIGIT_AUGMENTATION_ENABLED,
+        "digits": {str(digit): {
+            name: {"probability": spec[4], "amount": spec[5]}
+            for name, spec in AUGMENTATION_CATEGORIES.items()
+        } for digit in range(10)},
+    }
+
+
+@app.class_definition
+class DigitAugmenter:
+    """Fresh, label-specific MNIST transforms on normalized CPU training batches.
+
+    Uses a private RNG so augmentation does not alter data shuffling or the
+    holdout split. Affine transforms share one resampling pass. Black fill is
+    -1 in the model's normalized input range. Source images are never mutated.
+    """
+
+    def __init__(self, config, seed):
+        self.config = json.loads(json.dumps(config))
+        if not isinstance(self.config.get("enabled"), bool):
+            raise ValueError("Augmentation enabled must be a boolean")
+        self.names = list(AUGMENTATION_CATEGORIES)
+        values = []
+        for digit in range(10):
+            row = []
+            for name, spec in AUGMENTATION_CATEGORIES.items():
+                settings = self.config["digits"][str(digit)][name]
+                probability, amount = settings["probability"], settings["amount"]
+                if not 0 <= probability <= 1 or not 0 <= amount <= spec[2]:
+                    raise ValueError(f"Invalid {name} settings for digit {digit}")
+                row.append([probability, amount])
+            values.append(row)
+        self.parameters = torch.tensor(values, dtype=torch.float32)
+        self.generator = torch.Generator().manual_seed(seed)
+        self.active = self.config["enabled"] and bool(
+            ((self.parameters[:, :, 0] > 0) & (self.parameters[:, :, 1] > 0)).any())
+
+    def __call__(self, images, labels):
+        if not self.active:
+            return images
+        if images.device.type != "cpu" or images.ndim != 4 or images.shape[1] != 1:
+            raise ValueError("Digit augmentation expects normalized NCHW grayscale CPU images")
+        if bool(((labels < 0) | (labels > 9)).any()):
+            raise ValueError("Digit augmentation expects labels from 0 to 9")
+        count, _, height, width = images.shape
+        parameters = self.parameters[labels]
+        gates = torch.rand((count, len(self.names)), generator=self.generator) < parameters[:, :, 0]
+        strengths = parameters[:, :, 1] * gates
+        amounts = {name: strengths[:, i] for i, name in enumerate(self.names)}
+
+        def signed(name):
+            return (2 * torch.rand(count, generator=self.generator) - 1) * amounts[name]
+
+        # Invert the sampled forward rotation/shear/scale/translation for affine_grid.
+        angle = torch.deg2rad(signed("rotation"))
+        shear = torch.tan(torch.deg2rad(signed("shear")))
+        scale = 1 + signed("scale")
+        cosine, sine = angle.cos(), angle.sin()
+        a = (cosine + sine * shear) / scale
+        b = (sine - cosine * shear) / scale
+        c, d = -sine / scale, cosine / scale
+        tx = signed("translation") * (2 / width)
+        ty = signed("translation") * (2 / height)
+        theta = torch.stack([a, b, -a * tx - b * ty, c, d, -c * tx - d * ty], dim=1).reshape(-1, 2, 3)
+        geometric = sum(amounts[name] for name in ("rotation", "translation", "scale", "shear")) > 0
+        output = images
+        if bool(geometric.any()):
+            grid = F.affine_grid(theta, images.shape, align_corners=False)
+            warped = F.grid_sample(images + 1, grid, align_corners=False, padding_mode="zeros") - 1
+            output = torch.where(geometric[:, None, None, None], warped, images)
+        brightness = signed("brightness")[:, None, None, None]
+        output = (output + 1) * (1 + brightness) - 1
+        noise_std = torch.rand(count, generator=self.generator) * amounts["noise"]
+        output = output + 2 * noise_std[:, None, None, None] * torch.randn(images.shape, generator=self.generator)
+        output = output.clamp(-1, 1)
+
+        area = torch.rand(count, generator=self.generator) * amounts["erasing"]
+        side = (area.sqrt() * min(height, width)).floor().long()
+        top = (torch.rand(count, generator=self.generator) * (height - side + 1)).floor().long()
+        left = (torch.rand(count, generator=self.generator) * (width - side + 1)).floor().long()
+        rows = torch.arange(height)[None, :, None]
+        cols = torch.arange(width)[None, None, :]
+        mask = ((rows >= top[:, None, None]) & (rows < (top + side)[:, None, None]) &
+                (cols >= left[:, None, None]) & (cols < (left + side)[:, None, None]))
+        output = output.masked_fill(mask[:, None], -1)
+        # Preserve exact inputs for digits whose categories are all disabled.
+        changed = (strengths > 0).any(dim=1)
+        return torch.where(changed[:, None, None, None], output, images)
+
+
+@app.function
 def train(task, X_train, y_train, seed=0, device="cuda"):
-    """Build a new model and train it from scratch. Returns the trained model."""
+    """Train from scratch and return the best validation checkpoint's model."""
+    return train_with_metrics(task, X_train, y_train, seed=seed, device=device)
+
+
+@app.function
+def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=None, augmentation=None):
+    """Train with a seeded holdout; optionally persist each epoch and best weights.
+
+    No test data enters training or checkpoint selection. Tied validation
+    accuracies keep the earlier epoch. The grading entry point remains train().
+    """
     torch.manual_seed(seed)                   # makes the run reproducible
+    if len(X_train) != len(y_train) or len(X_train) < 2:
+        raise ValueError("Training needs at least two examples and matching labels")
+    if not 0 < VALIDATION_FRACTION < 1 or EPOCHS[task] < 1:
+        raise ValueError("Use a validation fraction between 0 and 1 and at least one epoch")
+
+    augmentation = digit_augmentation_config() if augmentation is None else augmentation
+    augmenter = DigitAugmenter(augmentation, seed=seed + 1)
+    if task != "mnist":
+        augmenter.active = False
+        augmenter.config["enabled"] = False
 
     # 1. Build the model for this task. Only input size and class count differ.
     model = ResidualMLP(**TASKS[task]).to(device)
 
     # 2. Wrap the data so we can loop over shuffled mini-batches.
     dataset = TensorDataset(prepare(X_train), torch.as_tensor(y_train).long())
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    split = torch.randperm(len(dataset), generator=torch.Generator().manual_seed(seed))
+    validation_size = min(len(dataset) - 1, max(1, int(len(dataset) * VALIDATION_FRACTION)))
+    validation_indices, training_indices = split[:validation_size], split[validation_size:]
+    loader = DataLoader(Subset(dataset, training_indices.tolist()), batch_size=BATCH_SIZE, shuffle=True)
+    validation_loader = DataLoader(Subset(dataset, validation_indices.tolist()), batch_size=BATCH_SIZE)
 
     # 3. Choose the loss and the optimizer.
     loss_fn = nn.CrossEntropyLoss()           # expects raw logits
     optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=MOMENTUM)
+    metadata = {
+        "task": task, "seed": seed, "device": str(device), "epochs": EPOCHS[task],
+        "batch_size": BATCH_SIZE, "learning_rate": LEARNING_RATE,
+        "weight_decay": WEIGHT_DECAY, "momentum": MOMENTUM,
+        "validation_fraction": VALIDATION_FRACTION,
+        "training_examples": len(training_indices), "validation_examples": validation_size,
+        "selection_metric": "validation_accuracy", "tie_break": "earliest_epoch",
+        "model": repr(model),
+        "augmentation": augmenter.config,
+        "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update",
+    }
+    fields = ["epoch", "train_loss", "train_accuracy", "validation_loss", "validation_accuracy", "elapsed_seconds"]
+    if run_dir is not None:
+        run_dir = Path(run_dir)
+        run_dir.mkdir(parents=True, exist_ok=False)
+        (run_dir / "config.json").write_text(json.dumps(metadata, indent=2) + "\n")
+        with (run_dir / "metrics.csv").open("w", newline="") as file:
+            csv.DictWriter(file, fieldnames=fields).writeheader()
 
     # 4. The training loop.
-    model.train()
+    history = []
+    best_accuracy, best_epoch, best_state = -1.0, 0, None
+    started = time.perf_counter()
     for epoch in range(EPOCHS[task]):
-        total_loss = 0.0
+        model.train()
+        total_loss = torch.zeros((), device=device)
+        correct = torch.zeros((), dtype=torch.long, device=device)
         for X_batch, y_batch in loader:
+            X_batch = augmenter(X_batch, y_batch)
             X_batch, y_batch = X_batch.to(device), y_batch.to(device)
 
             logits = model(X_batch)           # forward pass
@@ -284,10 +564,53 @@ def train(task, X_train, y_train, seed=0, device="cuda"):
             loss.backward()                   # backward pass: compute gradients
             optimizer.step()                  # update the weights
 
-            total_loss += loss.item() * len(X_batch)
+            total_loss += loss.detach() * len(X_batch)
+            correct += (logits.detach().argmax(1) == y_batch).sum()
 
-        print(f"epoch {epoch + 1}: train loss {total_loss / len(dataset):.4f}")
+        model.eval()
+        validation_loss = torch.zeros((), device=device)
+        validation_correct = torch.zeros((), dtype=torch.long, device=device)
+        with torch.inference_mode():
+            for X_batch, y_batch in validation_loader:
+                X_batch, y_batch = X_batch.to(device), y_batch.to(device)
+                logits = model(X_batch)
+                validation_loss += loss_fn(logits, y_batch) * len(X_batch)
+                validation_correct += (logits.argmax(1) == y_batch).sum()
+        row = {
+            "epoch": epoch + 1,
+            "train_loss": total_loss.item() / len(training_indices),
+            "train_accuracy": correct.item() / len(training_indices),
+            "validation_loss": validation_loss.item() / validation_size,
+            "validation_accuracy": validation_correct.item() / validation_size,
+            "elapsed_seconds": time.perf_counter() - started,
+        }
+        history.append(row)
+        if row["validation_accuracy"] > best_accuracy:
+            best_accuracy, best_epoch = row["validation_accuracy"], epoch + 1
+            best_state = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
+            if run_dir is not None:
+                torch.save({"state_dict": best_state, "epoch": best_epoch,
+                            "validation_accuracy": best_accuracy, "config": metadata,
+                            "training_indices": training_indices, "validation_indices": validation_indices},
+                           run_dir / "best.pt.partial")
+                (run_dir / "best.pt.partial").replace(run_dir / "best.pt")
+        if run_dir is not None:
+            with (run_dir / "metrics.csv").open("a", newline="") as file:
+                csv.DictWriter(file, fieldnames=fields).writerow(row)
+        print(f"epoch {epoch + 1}: train loss {row['train_loss']:.4f}, "
+              f"train accuracy {row['train_accuracy']:.2%}, "
+              f"validation loss {row['validation_loss']:.4f}, "
+              f"validation accuracy {row['validation_accuracy']:.2%} (best epoch {best_epoch})",
+              flush=True)
 
+    # Restore weights from this run's memory, never from a previous run's saved file.
+    model.load_state_dict(best_state)
+    model.eval()
+    model.training_history = history
+    model.best_epoch = best_epoch
+    model.best_validation_accuracy = best_accuracy
+    model.training_indices = training_indices
+    model.validation_indices = validation_indices
     return model
 
 
@@ -299,7 +622,6 @@ def predict(model, X):
     # Predict in chunks so a large test set does not run out of GPU memory.
     chunks = [model.predict(X[i:i + 1024].to(device)).cpu() for i in range(0, len(X), 1024)]
     return torch.cat(chunks)
-
 
 
 @app.cell

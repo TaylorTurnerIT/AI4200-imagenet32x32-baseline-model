@@ -72,6 +72,58 @@ and shows the Python interpreter. Select **Apple Metal (MPS)** to train on this
 Mac's GPU. CUDA is NVIDIA-specific and is not required on macOS.
 Results append to `results.csv`; the app never posts to the leaderboard.
 
+Training holds out a seeded random 10% of the supplied training examples for
+validation. Each epoch prints training loss and accuracy plus validation loss
+and accuracy. Training accuracy counts predictions already computed during
+training; validation scores use the weights at the end of the epoch. The model
+returned by `train()` uses the epoch with the highest validation accuracy,
+keeping the earliest epoch on ties. The app evaluates test accuracy only once,
+after selecting that checkpoint. Final training accuracy excludes the holdout.
+
+Each app run creates a unique directory under `runs/` containing:
+
+- `metrics.csv`: epoch, train/validation loss and accuracy, and elapsed seconds.
+  Accuracies are fractions from 0 to 1; rows are saved after every epoch.
+- `best.pt`: best weights, epoch, validation accuracy, configuration, and exact
+  training/validation indices. This is an analysis artifact; `train()` always
+  starts from scratch and never loads weights from disk.
+- `config.json`: task, seed, model architecture, split sizes, and training settings.
+- `curves.png`: loss and accuracy plots with the selected epoch marked, also
+  shown in the app after training completes.
+
+The summary in `results.csv` includes the best epoch, validation accuracy, and
+run directory. Older summary rows remain available, with new columns blank.
+Calls through the grading interface return the same selected model and expose
+metrics as `model.training_history`, but do not write run files.
+
+### Per-digit MNIST augmentation
+
+The **Digit augmentation** cell has a master toggle (off by default) and one
+tab for each digit, 0–9. Each digit has independent probability and maximum
+amount controls for rotation, translation, scale, horizontal shear, brightness,
+Gaussian noise, and square erasing. Setting either control to zero disables
+that category for that digit. For example, reduce rotation for 6 and 9 while
+keeping stronger rotation for other digits. Categories can combine on an image.
+
+Rotation and shear amounts are degrees; translation is pixels per axis. Scale
+and brightness sample factors within `1 ± amount`. Noise samples a standard
+deviation from zero to the amount, measured on the 0–1 intensity scale. Erasing
+samples a square up to the chosen fraction of image area. All settings sample
+fresh values for each training image on every pass. No flips are applied.
+
+The preview shows original and augmented cached MNIST examples without training
+or downloading data. Choose a digit and change the preview seed to inspect
+different samples. Enable the master toggle to see its effects. Settings take
+effect on the next **Run** and are recorded in `config.json` and `best.pt`.
+Validation, final training-set scoring, and test prediction use clean images.
+These controls apply only to MNIST; other tasks keep their original images.
+
+Edit `DIGIT_AUGMENTATION_ENABLED` and `AUGMENTATION_CATEGORIES` in the setup cell
+to change defaults shared by the app and grading entry point. The
+`digit_augmentation_config()` cell defines per-digit defaults; edit it to give
+specific digits different starting settings. The `DigitAugmenter` cell contains
+the transform code and uses PyTorch without adding dependencies.
+
 The app defaults to MNIST. CIFAR-10 and ImageNet 32×32 are available in the task
 selector. ImageNet requires several GB of disk space and substantially more RAM
 during training: the baseline converts the full training array to float32.
