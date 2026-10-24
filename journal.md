@@ -751,6 +751,129 @@ Hyperparameters and architecture:
 
 > No magic bullet of AdamW will work it seems. Let's try data augmentaton that we learned in class.
 
+> After adding the ability to use data augmentation on any data set, I also added a ability to preview the data. I'm theorizing that there is a connection between this 50 to 60% failure rate and the actual shape of the data. My thought is there is sixty percent of the data that's rather normal, obvious offerings, while there's 40% confounding data. For example, an image with the cat having its mouth wide open taking up five percent of it. 
+
+Run: runs/cifar10-20261024-180552-79892e5e
+Time: 2026-10-24 18:06:40
+Task: cifar10
+Train accuracy:      58.16% (45000 clean examples)
+Validation accuracy: 55.18% (5000 examples)
+Test accuracy:       54.14% (10000 examples)
+Best epoch: 10 / 10 completed (10 configured)
+Training time: 0.80 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+Hyperparameters and architecture:
+{
+  "task": "cifar10",
+  "seed": 42,
+  "device": "mps",
+  "epochs": 10,
+  "batch_size": 128,
+  "learning_rate": 0.001,
+  "weight_decay": 1e-05,
+  "momentum": null,
+  "dampening": null,
+  "betas": [
+    0.9,
+    0.999
+  ],
+  "eps": 1e-08,
+  "optimizer": "AdamW",
+  "loss": "CrossEntropyLoss()",
+  "optimizer_settings": {
+    "name": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "eps": 1e-08,
+    "amsgrad": false
+  },
+  "optimizer_groups": [
+    {
+      "optimizer": "AdamW",
+      "lr": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "weight_decay": 1e-05,
+      "amsgrad": false,
+      "maximize": false,
+      "foreach": null,
+      "capturable": false,
+      "differentiable": false,
+      "fused": null,
+      "decoupled_weight_decay": true,
+      "parameter_count": 644362
+    }
+  ],
+  "learning_rate_schedule": "constant",
+  "shuffle": true,
+  "architecture": {
+    "width": 128,
+    "hidden": 128,
+    "depth": 7,
+    "functional_operations": [
+      "relu"
+    ],
+    "in_features": 3072,
+    "num_classes": 10,
+    "normalization": [
+      "LayerNorm"
+    ],
+    "parameters": 644362
+  },
+  "validation_fraction": 0.1,
+  "training_examples": 45000,
+  "validation_examples": 5000,
+  "selection_metric": "validation_accuracy",
+  "tie_break": "earliest_epoch",
+  "augmentation": {
+    "enabled": true,
+    "default": {
+      "rotation": {
+        "probability": 0.25,
+        "amount": 10.0
+      },
+      "translation": {
+        "probability": 0.5,
+        "amount": 4.0
+      },
+      "scale": {
+        "probability": 0.25,
+        "amount": 0.1
+      },
+      "shear": {
+        "probability": 0.25,
+        "amount": 5.0
+      },
+      "brightness": {
+        "probability": 0.25,
+        "amount": 0.1
+      },
+      "noise": {
+        "probability": 0.25,
+        "amount": 0.05
+      },
+      "erasing": {
+        "probability": 0.25,
+        "amount": 0.05
+      },
+      "horizontal_flip": {
+        "probability": 0.5,
+        "amount": 1.0
+      }
+    },
+    "classes": {},
+    "task": "cifar10"
+  }
+}
+
+> Well, Overfitting decreased.  
+
 
 # Planning
 

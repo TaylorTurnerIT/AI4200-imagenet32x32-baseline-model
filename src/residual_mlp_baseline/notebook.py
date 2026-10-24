@@ -35,7 +35,7 @@ with app.setup:
     }
 
     LEARNING_RATE = 1e-3
-    BATCH_SIZE = 128
+    BATCH_SIZE = 256
     EPOCHS = {"mnist": 500, "cifar10": 10, "imagenet32": 10}
     WEIGHT_DECAY = 1e-5
     MOMENTUM = 0.0
