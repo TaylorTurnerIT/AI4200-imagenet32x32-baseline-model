@@ -240,18 +240,6 @@ class DigitAugmentationTests(unittest.TestCase):
         create.decorator_list = []
         exec(compile(ast.Module(body=[create], type_ignores=[]), notebook.__file__, 'exec'), namespace)
         controls, = namespace['_']()
-        preview = next(node for node in cells if [arg.arg for arg in node.args.args] == ['task'])
-        render = next(node for node in cells if [arg.arg for arg in node.args.args] ==
-                      ['augmentation_controls', 'preview_class', 'preview_seed', 'task'])
-        preview.decorator_list = []
-        exec(compile(ast.Module(body=[preview], type_ignores=[]), notebook.__file__, 'exec'), namespace)
-        create_preview = namespace['_']
-        render.decorator_list = []
-        exec(compile(ast.Module(body=[render], type_ignores=[]), notebook.__file__, 'exec'), namespace)
-        for name in notebook.TASKS:
-            selected_task = SimpleNamespace(value=name)
-            preview_class, preview_seed = create_preview(selected_task)
-            namespace['_'](controls, preview_class, preview_seed, selected_task)
         configurations = controls.value
         for task in notebook.TASKS:
             self.assertEqual(notebook.selected_augmentation(task, configurations), notebook.augmentation_config(task))

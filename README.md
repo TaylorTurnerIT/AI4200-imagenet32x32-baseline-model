@@ -194,11 +194,17 @@ deviation up to the amount on the 0–1 intensity scale. Erasing samples a squar
 up to the chosen fraction of image area. Flip amount 1 enables flipping at its
 selected probability. Transforms sample fresh values for each training image.
 
-The preview uses cached examples from the selected dataset. Choose a class ID
-and change the preview seed to inspect samples in grayscale or color. It uses
-the same configuration as **Run**, including that dataset's toggle, and starts
-no downloads. Only training batches are augmented; validation, final training
-accuracy, and test prediction use clean images.
+The **Class preview** picker shows a labeled thumbnail for each class in the
+selected dataset. Select a row to compare up to six original and augmented
+examples. Search by class name or ID, and page through large datasets such as
+ImageNet32. Classes without cached examples show **Not cached**. MNIST uses digit
+labels, CIFAR-10 uses class names, and ImageNet32 uses numeric class IDs.
+
+Previews use cached training images and start no downloads. After downloading a
+dataset for the first time, click **Refresh cached previews**. Change the preview
+seed for fresh augmentation. The preview uses the same configuration as **Run**,
+including the dataset's toggle. Only training batches are augmented; validation,
+final training accuracy, and test prediction use clean images.
 
 The complete selected configuration is saved in `config.json`, `best.pt`,
 `summary.json`, and `results.csv`. Edit `AUGMENTATION_ENABLED` in the setup cell

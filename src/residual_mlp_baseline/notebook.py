@@ -174,15 +174,39 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(task):
-    preview_class = mo.ui.number(start=0, stop=TASKS[task.value]["num_classes"] - 1,
-                                 step=1, value=0, label="Preview class ID")
+def _():
     preview_seed = mo.ui.number(start=0, stop=2**32 - 1, value=42, label="Preview seed")
-    return preview_class, preview_seed
+    preview_refresh = mo.ui.button(label="Refresh cached previews")
+    return preview_refresh, preview_seed
 
 
 @app.cell(hide_code=True)
-def _(augmentation_controls, preview_class, preview_seed, task):
+def _(DATA_DIR, preview_refresh, task):
+    _refresh = preview_refresh.value
+    _folder = Path(DATA_DIR) / task.value
+    preview_images = None
+    preview_labels = np.empty(0, dtype=np.int64)
+    if (_folder / "X_train.npy").exists() and (_folder / "y_train.npy").exists():
+        preview_images = np.load(_folder / "X_train.npy", mmap_mode="c")
+        preview_labels = np.load(_folder / "y_train.npy", mmap_mode="c")
+    _initial = int(preview_labels.min()) if len(preview_labels) else 0
+    preview_class = mo.ui.table(
+        class_preview_rows(task.value, preview_images, preview_labels),
+        selection="single", initial_selection=[_initial], pagination=True, page_size=10,
+        hidden_columns=["class_id"], show_column_summaries=False, show_data_types=False,
+        show_download=False, label="Select a class to preview", max_height=550,
+    )
+    return preview_class, preview_images, preview_labels
+
+
+@app.cell(hide_code=True)
+def _(
+    augmentation_controls,
+    preview_class,
+    preview_refresh,
+    preview_seed,
+    task,
+):
     _controls = augmentation_controls[task.value]
     _categories = augmentation_categories(task.value)
 
@@ -212,19 +236,29 @@ def _(augmentation_controls, preview_class, preview_seed, task):
         Only training batches are augmented; final scoring uses clean images.
         """),
         _controls["enabled"], _settings,
-        mo.hstack([preview_class, preview_seed], justify="start"),
+        mo.md("### Class preview\nSelect a row to compare original and augmented examples. "
+              "Search or page through classes. Previews use cached training images; "
+              "after the first dataset download, click **Refresh cached previews**."),
+        preview_refresh, preview_class, preview_seed,
     ])
     return
 
 
 @app.cell(hide_code=True)
-def _(DATA_DIR, augmentation_controls, preview_class, preview_seed, task):
-    _folder = Path(DATA_DIR) / task.value
-    mo.stop(not (_folder / "X_train.npy").exists() or not (_folder / "y_train.npy").exists(),
-            mo.md(f"Run {task.value} once to cache images for the preview. No preview downloads are started."))
-    _images = np.load(_folder / "X_train.npy", mmap_mode="c")
-    _labels = np.load(_folder / "y_train.npy", mmap_mode="c")
-    _indices = np.flatnonzero(_labels == int(preview_class.value))[:6]
+def _(
+    augmentation_controls,
+    preview_class,
+    preview_images,
+    preview_labels,
+    preview_seed,
+    task,
+):
+    mo.stop(preview_images is None,
+            mo.md(f"Run {task.value} once, then refresh cached previews. No preview downloads are started."))
+    mo.stop(not preview_class.value, mo.md("Select a class in the preview table."))
+    _selected = preview_class.value[0]
+    _images, _labels = preview_images, preview_labels
+    _indices = np.flatnonzero(_labels == int(_selected["class_id"]))[:6]
     mo.stop(len(_indices) == 0, mo.md("No cached examples for this class."))
     _original = prepare(_images[_indices])
     _augmenter = ImageAugmenter(task.value, selected_augmentation(task.value, augmentation_controls.value),
@@ -246,7 +280,8 @@ def _(DATA_DIR, augmentation_controls, preview_class, preview_seed, task):
     _axes[1, 0].set_ylabel("Augmented")
     _figure.tight_layout()
     _plt.close(_figure)
-    mo.vstack([mo.md("Change the preview seed for fresh samples. The dataset's toggle also controls this preview."), _figure])
+    mo.vstack([mo.md(f"**{_selected['Class']}** · Original and augmented samples. "
+                     "Change the seed for fresh augmentation. The dataset's toggle controls this preview."), _figure])
     return
 
 
@@ -287,9 +322,10 @@ def _(
         _validation_classes = evaluate_per_class(
             _model, task.value, _X_train, _y_train, _model.validation_indices.numpy(), _class_count)
         _train_accuracy = sum(row["correct"] for row in _train_classes) / len(_model.training_indices)
-        _class_rows = [dict(split=split, **row)
-                       for split, rows in (("train", _train_classes), ("validation", _validation_classes),
-                                           ("test", _test_classes)) for row in rows]
+        _class_rows = []
+        for _split, _rows in (("train", _train_classes), ("validation", _validation_classes), ("test", _test_classes)):
+            for _row in _rows:
+                _class_rows.append(dict(split=_split, **_row))
         _best_epoch = _model.best_epoch
         _validation_accuracy = _model.best_validation_accuracy
         _history = _model.training_history
@@ -470,6 +506,33 @@ def prepare(X):
 
 
 @app.function
+def dataset_class_names(task):
+    """Names in the dataset's label order; ImageNet32 retains its numeric IDs."""
+    names = {
+        "mnist": [str(digit) for digit in range(10)],
+        "cifar10": ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"],
+    }.get(task)
+    return names if names is not None else [f"class {class_id}" for class_id in range(TASKS[task]["num_classes"])]
+
+
+@app.function
+def class_preview_rows(task, images, labels):
+    """One cached thumbnail per class, without scanning the full image array."""
+    class_ids, indices = np.unique(np.asarray(labels), return_index=True)
+    first = dict(zip(class_ids.tolist(), indices.tolist()))
+    rows = []
+    for class_id, name in enumerate(dataset_class_names(task)):
+        thumbnail = "Not cached"
+        if class_id in first:
+            image = np.asarray(images[first[class_id]])
+            image = image[0] if image.shape[0] == 1 else image.transpose(1, 2, 0)
+            thumbnail = mo.image(image, alt=f"{name} example", width=56, height=56,
+                                 style={"image-rendering": "pixelated"})
+        rows.append({"class_id": class_id, "Class": name, "Preview": thumbnail})
+    return rows
+
+
+@app.function
 def per_class_accuracy(task, labels, predictions, num_classes=None):
     """Count correct predictions for each true class, including absent classes."""
     num_classes = TASKS[task]["num_classes"] if num_classes is None else num_classes
@@ -483,12 +546,9 @@ def per_class_accuracy(task, labels, predictions, num_classes=None):
     labels, predictions = labels.astype(np.int64), predictions.astype(np.int64)
     totals = np.bincount(labels, minlength=num_classes)
     correct = np.bincount(labels[labels == predictions], minlength=num_classes)
-    names = {
-        "mnist": [str(digit) for digit in range(10)],
-        "cifar10": ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"],
-    }.get(task)
+    names = dataset_class_names(task)
     return [{"class_id": class_id,
-             "class_name": names[class_id] if names is not None else f"class {class_id}",
+             "class_name": names[class_id],
              "correct": int(correct[class_id]), "total": int(totals[class_id]),
              "accuracy": float(correct[class_id] / totals[class_id]) if totals[class_id] else None}
             for class_id in range(num_classes)]
@@ -527,7 +587,7 @@ def format_class_accuracy(per_class):
         name = row["class_name"].replace("|", "&#124;").replace("\n", " ")
         scores = ["N/A" if row[f"{split}_accuracy"] is None else f"{row[f'{split}_accuracy']:.2%}"
                   for split in ("train", "validation", "test")]
-        lines.append("| " + " | ".join([name, *scores]) + " |")
+        lines.append("| " + " | ".join([name] + scores) + " |")
     return "\n".join(lines)
 
 
@@ -732,11 +792,13 @@ def build_optimizers(model, settings=None):
             kwargs["betas"] = (kwargs.pop("beta1"), kwargs.pop("beta2"))
         optimizers = [getattr(torch.optim, name)([parameter for _, parameter in named], **kwargs)]
     parameter_names = {id(parameter): key for key, parameter in named}
-    groups = [{"optimizer": type(optimizer).__name__,
-               **{key: value for key, value in group.items() if key != "params"},
-               "parameter_names": [parameter_names[id(parameter)] for parameter in group["params"]],
-               "parameter_count": sum(parameter.numel() for parameter in group["params"])}
-              for optimizer in optimizers for group in optimizer.param_groups]
+    groups = []
+    for optimizer in optimizers:
+        for group in optimizer.param_groups:
+            groups.append({"optimizer": type(optimizer).__name__,
+                           **{key: value for key, value in group.items() if key != "params"},
+                           "parameter_names": [parameter_names[id(parameter)] for parameter in group["params"]],
+                           "parameter_count": sum(parameter.numel() for parameter in group["params"])})
     # Normalize tuples so in-memory configuration agrees with saved JSON.
     return optimizers, config, json.loads(json.dumps(groups))
 
@@ -755,7 +817,7 @@ def augmentation_categories(task):
             "brightness": (0.25, 0.1 if task == "cifar10" else 0.2),
             "noise": (0.0, 0.05), "erasing": (0.0, 0.05),
         }
-        categories = {name: (*spec[:4], *defaults[name]) for name, spec in categories.items()}
+        categories = {name: spec[:4] + defaults[name] for name, spec in categories.items()}
         categories["horizontal_flip"] = ("Horizontal flip", "1 = enabled", 1.0, 1.0, 0.5, 1.0)
     return categories
 
@@ -915,6 +977,12 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     # 3. Choose the loss and the optimizer.
     loss_fn = nn.CrossEntropyLoss()           # expects raw logits
     optimizers, optimizer_settings, optimizer_groups = build_optimizers(model, optimizer_settings)
+    functional_operations = set()
+    for cls in (type(model), Block):
+        for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(cls)))):
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                    and isinstance(node.func.value, ast.Name) and node.func.value.id == "F"):
+                functional_operations.add(node.func.attr)
     metadata = {
         "task": task, "seed": seed, "device": str(device), "epochs": EPOCHS[task],
         "batch_size": BATCH_SIZE, "learning_rate": optimizer_groups[0]["lr"],
@@ -930,12 +998,7 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
             "width": model.input_layer.out_features,
             "hidden": model.head_fc1.out_features,
             "depth": len(model.blocks),
-            "functional_operations": sorted({
-                node.func.attr for cls in (type(model), Block)
-                for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(cls))))
-                if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
-                and isinstance(node.func.value, ast.Name) and node.func.value.id == "F"
-            }),
+            "functional_operations": sorted(functional_operations),
             "in_features": model.input_layer.in_features,
             "num_classes": model.head_fc2.out_features,
             "normalization": sorted({type(layer).__name__ for layer in model.modules()
