@@ -600,18 +600,86 @@ Hyperparameters and architecture:
 }
 ```
 
-test	0	airplane	  611	1000	61.1 (vs 74.83 test)
-test	1	automobile	632	1000	63.2 (vs 80.33 test)
-test	2	bird	      345	1000	34.5 (49.67 test)
-test	3	cat	        296	1000	29.6 (46.09 test)
-test	4	deer	      470	1000	47   (67.25)
-test	5	dog	        491	1000	49.1 (66.16
-test	6	frog	      583	1000	58.  (74.6)
-test	7	horse	      578	1000	57.8 (76.71)
-test	8	ship	      658	1000	65.8 (76.26)
-test	9	truck	      545	1000	54.5 (73.37)
+Per-class accuracy
+
+Class	Train	Validation	Test
+airplane	74.83%	62.11%	61.10%
+automobile	80.33%	62.38%	63.20%
+bird	49.67%	35.74%	34.50%
+cat	46.09%	32.70%	29.60%
+deer	67.24%	45.96%	47.00%
+dog	66.16%	47.93%	49.10%
+frog	74.60%	57.25%	58.30%
+horse	76.71%	61.48%	57.80%
+ship	76.26%	64.03%	65.80%
+truck	73.37%	55.34%	54.50%
 
 > Cat is incredibly far off but we haven't learned much here. It's learning something about all of these
+
+> I am changing the runs to use less epochs since performance is worsening on average after 10%. Likely the point at which it starts memorizing given thats where loss diverges.
+
+Run: runs/cifar10-20261023-134752-02729c78
+Time: 2026-10-23 13:48:09
+Task: cifar10
+Train accuracy:      68.53% (45000 clean examples)
+Validation accuracy: 52.48% (5000 examples)
+Test accuracy:       52.09% (10000 examples)
+Best epoch: 10 / 10 completed (10 configured)
+Training time: 0.29 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+Hyperparameters and architecture:
+{
+  "task": "cifar10",
+  "seed": 42,
+  "device": "mps",
+  "epochs": 10,
+  "batch_size": 128,
+  "learning_rate": 0.05,
+  "weight_decay": 1e-05,
+  "momentum": 0.0,
+  "dampening": 0,
+  "optimizer": "SGD",
+  "loss": "CrossEntropyLoss()",
+  "learning_rate_schedule": "constant",
+  "shuffle": true,
+  "architecture": {
+    "width": 128,
+    "hidden": 128,
+    "depth": 7,
+    "functional_operations": [
+      "relu"
+    ],
+    "in_features": 3072,
+    "num_classes": 10,
+    "normalization": [
+      "LayerNorm"
+    ],
+    "parameters": 644362
+  },
+  "validation_fraction": 0.1,
+  "training_examples": 45000,
+  "validation_examples": 5000,
+  "selection_metric": "validation_accuracy",
+  "tie_break": "earliest_epoch",
+  "augmentation": {
+    "enabled": false
+  }
+}
+
+| Class | Train | Validation | Test |
+| --- | ---: | ---: | ---: |
+| airplane | 74.83% | 62.11% | 61.10% |
+| automobile | 80.33% | 62.38% | 63.20% |
+| bird | 49.67% | 35.74% | 34.50% |
+| cat | 46.09% | 32.70% | 29.60% |
+| deer | 67.24% | 45.96% | 47.00% |
+| dog | 66.16% | 47.93% | 49.10% |
+| frog | 74.60% | 57.25% | 58.30% |
+| horse | 76.71% | 61.48% | 57.80% |
+| ship | 76.26% | 64.03% | 65.80% |
+| truck | 73.37% | 55.34% | 54.50% |
+
 
 # Planning
 

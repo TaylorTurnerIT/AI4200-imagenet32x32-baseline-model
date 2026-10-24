@@ -34,13 +34,10 @@ with app.setup:
         "imagenet32": {"in_features": 3 * 32 * 32, "num_classes": 1000},  # 32x32 color
     }
 
-
-    # Baseline settings. Deliberately plain so they are easy to beat:
-    # plain SGD, constant learning rate, no dropout, no schedule, no augmentation.
     LEARNING_RATE = 0.05
     BATCH_SIZE = 128
-    EPOCHS = {"mnist": 500, "cifar10": 30, "imagenet32": 10}
-    WEIGHT_DECAY = 1e-4
+    EPOCHS = {"mnist": 500, "cifar10": 10, "imagenet32": 10}
+    WEIGHT_DECAY = 1e-5
     MOMENTUM = 0.0
     DAMPENING = 0.0
     VALIDATION_FRACTION = 0.1
@@ -245,7 +242,7 @@ def _(
             f"{_leaderboard_status}  \n"
             "Epoch train accuracy uses training batches (augmented when enabled); validation uses clean images and each epoch's final weights."
         ),
-        mo.md("### Per-class accuracy\n\n" + _class_markdown),
+        mo.md(f"### Per-class accuracy\n\n```markdown\n{_class_markdown}\n```"),
         _figure,
     ])
     return
