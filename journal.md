@@ -680,6 +680,77 @@ Hyperparameters and architecture:
 | ship | 76.26% | 64.03% | 65.80% |
 | truck | 73.37% | 55.34% | 54.50% |
 
+> I decided to switch from SGD with weight decay to ADAMW. I saw no immediate ways forward from the previous and learned more about how ADAMW works. We will hopefully see some really nice improvements to accuracy and keep our weight decay to avoid overfitting. Turning down learning rate to match the lowerer needs of ADAMW as well. Let's see!
+
+Run: runs/cifar10-20261024-151753-14698b08
+Time: 2026-10-24 15:18:21
+Task: cifar10
+Train accuracy:      68.88% (45000 clean examples)
+Validation accuracy: 54.36% (5000 examples)
+Test accuracy:       53.32% (10000 examples)
+Best epoch: 8 / 10 completed (10 configured)
+Training time: 0.45 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+Hyperparameters and architecture:
+{
+  "task": "cifar10",
+  "seed": 42,
+  "device": "mps",
+  "epochs": 10,
+  "batch_size": 128,
+  "learning_rate": 0.001,
+  "weight_decay": 1e-05,
+  "momentum": null,
+  "dampening": null,
+  "betas": [
+    0.9,
+    0.999
+  ],
+  "eps": 1e-08,
+  "optimizer": "AdamW",
+  "loss": "CrossEntropyLoss()",
+  "learning_rate_schedule": "constant",
+  "shuffle": true,
+  "architecture": {
+    "width": 128,
+    "hidden": 128,
+    "depth": 7,
+    "functional_operations": [
+      "relu"
+    ],
+    "in_features": 3072,
+    "num_classes": 10,
+    "normalization": [
+      "LayerNorm"
+    ],
+    "parameters": 644362
+  },
+  "validation_fraction": 0.1,
+  "training_examples": 45000,
+  "validation_examples": 5000,
+  "selection_metric": "validation_accuracy",
+  "tie_break": "earliest_epoch",
+  "augmentation": {
+    "enabled": false
+  }
+}
+
+| Class | Train | Validation | Test |
+| --- | ---: | ---: | ---: |
+| airplane | 75.32% | 59.21% | 61.10% |
+| automobile | 75.22% | 58.02% | 58.80% |
+| bird | 58.09% | 43.37% | 42.60% |
+| cat | 57.93% | 42.97% | 38.70% |
+| deer | 51.83% | 38.09% | 36.20% |
+| dog | 55.03% | 39.46% | 41.60% |
+| frog | 76.63% | 64.58% | 64.10% |
+| horse | 79.37% | 65.07% | 62.20% |
+| ship | 81.82% | 68.58% | 67.70% |
+| truck | 77.74% | 62.61% | 60.20% |
+
+> No magic bullet of AdamW will work it seems. Let's try data augmentaton that we learned in class.
+
 
 # Planning
 

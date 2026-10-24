@@ -34,13 +34,31 @@ with app.setup:
         "imagenet32": {"in_features": 3 * 32 * 32, "num_classes": 1000},  # 32x32 color
     }
 
-    LEARNING_RATE = 0.05
+    LEARNING_RATE = 1e-3
     BATCH_SIZE = 128
     EPOCHS = {"mnist": 500, "cifar10": 10, "imagenet32": 10}
     WEIGHT_DECAY = 1e-5
     MOMENTUM = 0.0
     DAMPENING = 0.0
     VALIDATION_FRACTION = 0.1
+
+    OPTIMIZER_NAME = "AdamW"
+    OPTIMIZER_DEFAULTS = {
+        "SGD": {"lr": 0.05, "weight_decay": WEIGHT_DECAY, "momentum": MOMENTUM,
+                "dampening": DAMPENING, "nesterov": False},
+        "Adam": {"lr": LEARNING_RATE, "weight_decay": WEIGHT_DECAY,
+                 "beta1": 0.9, "beta2": 0.999, "eps": 1e-8, "amsgrad": False},
+        "AdamW": {"lr": LEARNING_RATE, "weight_decay": WEIGHT_DECAY,
+                  "beta1": 0.9, "beta2": 0.999, "eps": 1e-8, "amsgrad": False},
+        "Muon": {"lr": 0.02, "weight_decay": WEIGHT_DECAY, "momentum": 0.95,
+                 "nesterov": True, "ns_steps": 5, "eps": 1e-7, "adjust_lr_fn": "original",
+                 "auxiliary_lr": LEARNING_RATE, "auxiliary_weight_decay": WEIGHT_DECAY,
+                 "auxiliary_beta1": 0.9, "auxiliary_beta2": 0.999, "auxiliary_eps": 1e-8},
+        "RMSprop": {"lr": LEARNING_RATE, "weight_decay": WEIGHT_DECAY,
+                    "momentum": 0.0, "alpha": 0.99, "eps": 1e-8, "centered": False},
+        "Adagrad": {"lr": 0.01, "weight_decay": WEIGHT_DECAY, "lr_decay": 0.0,
+                    "initial_accumulator_value": 0.0, "eps": 1e-10},
+    }
 
     # Post each completed app run's test result to the unofficial class leaderboard.
     LEADERBOARD_ENABLED = True
@@ -49,9 +67,9 @@ with app.setup:
     LEADERBOARD_REPOSITORY = "git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git"
     LEADERBOARD_FORM = "https://docs.google.com/forms/d/e/1FAIpQLScZjEdbLFtn1CNvsfwYEbM4YGRxdOU5cyJ7RANM7MrxT0a4oA/viewform"
 
-    # MNIST-only augmentation defaults. Amounts are maxima, sampled per image.
-    # No flips: they can change a digit's identity.
-    DIGIT_AUGMENTATION_ENABLED = False
+    # Dataset-specific augmentation defaults. Amounts are maxima, sampled per image.
+    # No MNIST flips: they can change a digit's identity.
+    AUGMENTATION_ENABLED = {"mnist": False, "cifar10": False, "imagenet32": False}
     AUGMENTATION_CATEGORIES = {
         # name: (label, unit, maximum slider value, step, default probability, default amount)
         "rotation": ("Rotation", "degrees", 30.0, 1.0, 0.5, 10.0),
@@ -80,83 +98,155 @@ def _(available_devices):
 
 @app.cell(hide_code=True)
 def _():
-    augmentation_enabled = mo.ui.switch(value=DIGIT_AUGMENTATION_ENABLED, label="Enable MNIST augmentation")
-    preview_digit = mo.ui.dropdown([str(digit) for digit in range(10)], value="0", label="Preview digit")
-    preview_seed = mo.ui.number(start=0, stop=2**32 - 1, value=42, label="Preview seed")
-    _defaults = digit_augmentation_config()["digits"]
-    augmentation_digits = mo.ui.dictionary({
-        str(digit): mo.ui.dictionary({
-            category: mo.ui.dictionary({
-                "probability": mo.ui.slider(0.0, 1.0, step=0.05,
-                    value=_defaults[str(digit)][category]["probability"], show_value=True,
-                    label="Probability per image"),
-                "amount": mo.ui.slider(0.0, spec[2], step=spec[3],
-                    value=_defaults[str(digit)][category]["amount"], show_value=True,
-                    label=f"Maximum amount ({spec[1]})"),
-            }) for category, spec in AUGMENTATION_CATEGORIES.items()
-        }) for digit in range(10)
-    })
-    mo.vstack([
-        mo.md("""
-        ## Digit augmentation
+    optimizer_choice = mo.ui.dropdown(available_optimizer_names(), value=OPTIMIZER_NAME, label="Optimizer")
 
-        Enable augmentation, then choose a digit tab to tune its categories.
-        Each category has an independent probability and maximum strength.
-        Probability 0 or amount 0 disables that category for that digit.
-        Geometry and brightness sample within ±amount; noise samples a standard
-        deviation up to its amount. Erasing removes a square up to the chosen area.
-        Changes take effect on the next **Run**. Augmentation applies only to MNIST
-        training batches; validation and test images stay unchanged.
-        Large transforms can make digits ambiguous. No flips are applied.
-        """),
-        augmentation_enabled,
-        mo.ui.tabs({f"Digit {digit}": mo.vstack([
-            mo.vstack([mo.md(f"**{spec[0]}**"),
-                       augmentation_digits[str(digit)][category].hstack()])
-            for category, spec in AUGMENTATION_CATEGORIES.items()
-        ]) for digit in range(10)}),
-        mo.hstack([preview_digit, preview_seed], justify="start"),
-    ])
-    return (
-        augmentation_digits,
-        augmentation_enabled,
-        preview_digit,
-        preview_seed,
-    )
+    def _optimizer_control(key, value):
+        _labels = {
+            "lr": "Learning rate", "weight_decay": "Weight decay", "eps": "Epsilon",
+            "beta1": "Beta 1", "beta2": "Beta 2", "lr_decay": "Learning rate decay",
+            "ns_steps": "Newton–Schulz steps", "adjust_lr_fn": "Muon learning rate scaling",
+        }
+        _base_key = key.removeprefix("auxiliary_")
+        _label = _labels.get(_base_key, _base_key.replace("_", " ").capitalize())
+        if key.startswith("auxiliary_"):
+            _label = f"AdamW: {_label}"
+        if isinstance(value, bool):
+            return mo.ui.switch(value=value, label=_label)
+        if key == "adjust_lr_fn":
+            return mo.ui.dropdown(["original", "match_rms_adamw"], value=value, label=_label)
+        if key == "ns_steps":
+            return mo.ui.number(start=1, stop=50, step=1, value=value, label=_label)
+        _stop = 0.999999 if _base_key in ("beta1", "beta2") else None
+        _step = (value if _base_key == "eps" else
+                 1e-5 if _base_key == "weight_decay" else
+                 1e-4 if _base_key == "lr" else 0.001)
+        return mo.ui.number(start=0, stop=_stop, step=_step, value=value, label=_label)
+
+    # Keep each optimizer's edited values while switching the dropdown.
+    optimizer_controls = mo.ui.dictionary({
+        name: mo.ui.dictionary({key: _optimizer_control(key, value)
+                               for key, value in OPTIMIZER_DEFAULTS[name].items()})
+        for name in available_optimizer_names()
+    })
+    return optimizer_choice, optimizer_controls
 
 
 @app.cell(hide_code=True)
-def _(
-    DATA_DIR,
-    augmentation_digits,
-    augmentation_enabled,
-    preview_digit,
-    preview_seed,
-):
-    _folder = Path(DATA_DIR) / "mnist"
+def _(optimizer_choice, optimizer_controls):
+    _note = ("Muon updates hidden matrices; AdamW updates input/output weights, biases, and normalization parameters."
+             if optimizer_choice.value == "Muon" else "")
+    mo.vstack([
+        mo.md("## Optimizer\nChoose an optimizer and adjust its settings before pressing **Run**."),
+        optimizer_choice, optimizer_controls[optimizer_choice.value], mo.md(_note),
+        mo.md("Muon requires a PyTorch build with `torch.optim.Muon`."
+              if "Muon" not in available_optimizer_names() else ""),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    # Construct all controls once so task switches preserve each dataset's edits.
+    def _settings_controls(settings, categories):
+        return mo.ui.dictionary({
+            category: mo.ui.dictionary({
+                "probability": mo.ui.slider(0.0, 1.0, step=0.05,
+                    value=settings[category]["probability"], show_value=True,
+                    label="Probability per image"),
+                "amount": mo.ui.slider(0.0, spec[2], step=spec[3],
+                    value=settings[category]["amount"], show_value=True,
+                    label=f"Maximum amount ({spec[1]})"),
+            }) for category, spec in categories.items()
+        })
+
+    augmentation_controls = mo.ui.dictionary({
+        name: mo.ui.dictionary({
+            "enabled": mo.ui.switch(value=augmentation_config(name)["enabled"],
+                                    label=f"Enable {name} augmentation"),
+            "default": _settings_controls(augmentation_config(name)["default"], augmentation_categories(name)),
+            "classes": mo.ui.dictionary({
+                class_id: _settings_controls(settings, augmentation_categories(name))
+                for class_id, settings in augmentation_config(name)["classes"].items()
+            }),
+        }) for name in TASKS
+    })
+    return (augmentation_controls,)
+
+
+@app.cell(hide_code=True)
+def _(task):
+    preview_class = mo.ui.number(start=0, stop=TASKS[task.value]["num_classes"] - 1,
+                                 step=1, value=0, label="Preview class ID")
+    preview_seed = mo.ui.number(start=0, stop=2**32 - 1, value=42, label="Preview seed")
+    return preview_class, preview_seed
+
+
+@app.cell(hide_code=True)
+def _(augmentation_controls, preview_class, preview_seed, task):
+    _controls = augmentation_controls[task.value]
+    _categories = augmentation_categories(task.value)
+
+    def _panel(settings):
+        return mo.vstack([
+            mo.vstack([mo.md(f"**{spec[0]}**"), settings[category].hstack()])
+            for category, spec in _categories.items()
+        ])
+
+    _settings = (mo.ui.tabs({f"Digit {digit}": _panel(_controls["classes"][str(digit)])
+                            for digit in range(10)})
+                 if task.value == "mnist" else _panel(_controls["default"]))
+    mo.vstack([
+        mo.md(f"""
+        ## {task.value} augmentation
+
+        {"Each digit has its own settings. No flips are applied." if task.value == "mnist" else
+         "Settings apply to every class in this dataset. Horizontal flips are available."}
+        Each category has an independent probability and maximum strength.
+        Probability 0 or amount 0 disables a category. Geometry and brightness
+        sample within ±amount; noise samples a standard deviation up to its amount.
+        Erasing removes a square up to the chosen area. Flip amount 1 enables
+        flipping at the selected probability.
+
+        Changes apply on the next **Run** for the selected dataset. Switching
+        datasets preserves each dataset's settings for this app session.
+        Only training batches are augmented; final scoring uses clean images.
+        """),
+        _controls["enabled"], _settings,
+        mo.hstack([preview_class, preview_seed], justify="start"),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _(DATA_DIR, augmentation_controls, preview_class, preview_seed, task):
+    _folder = Path(DATA_DIR) / task.value
     mo.stop(not (_folder / "X_train.npy").exists() or not (_folder / "y_train.npy").exists(),
-            mo.md("Run MNIST once to cache images for the augmentation preview. No preview downloads are started."))
+            mo.md(f"Run {task.value} once to cache images for the preview. No preview downloads are started."))
     _images = np.load(_folder / "X_train.npy", mmap_mode="c")
     _labels = np.load(_folder / "y_train.npy", mmap_mode="c")
-    _indices = np.flatnonzero(_labels == int(preview_digit.value))[:6]
-    mo.stop(len(_indices) == 0, mo.md("No cached examples for this digit."))
+    _indices = np.flatnonzero(_labels == int(preview_class.value))[:6]
+    mo.stop(len(_indices) == 0, mo.md("No cached examples for this class."))
     _original = prepare(_images[_indices])
-    _augmenter = DigitAugmenter({"enabled": augmentation_enabled.value,
-                                "digits": augmentation_digits.value}, seed=int(preview_seed.value))
+    _augmenter = ImageAugmenter(task.value, selected_augmentation(task.value, augmentation_controls.value),
+                               seed=int(preview_seed.value))
     _augmented = _augmenter(_original, torch.as_tensor(_labels[_indices]).long())
     import matplotlib.pyplot as _plt
 
     _figure, _axes = _plt.subplots(2, len(_indices), figsize=(9, 3), squeeze=False)
     for _column in range(len(_indices)):
         for _row, _batch in enumerate([_original, _augmented]):
-            _axes[_row, _column].imshow(_batch[_column, 0].numpy(), cmap="gray", vmin=-1, vmax=1)
+            _image = ((_batch[_column] + 1) / 2).clamp(0, 1)
+            if _image.shape[0] == 1:
+                _axes[_row, _column].imshow(_image[0].numpy(), cmap="gray", vmin=0, vmax=1)
+            else:
+                _axes[_row, _column].imshow(_image.permute(1, 2, 0).numpy())
             _axes[_row, _column].set_xticks([])
             _axes[_row, _column].set_yticks([])
     _axes[0, 0].set_ylabel("Original")
     _axes[1, 0].set_ylabel("Augmented")
     _figure.tight_layout()
     _plt.close(_figure)
-    mo.vstack([mo.md("Change the preview seed for fresh samples. The master toggle also controls this preview."), _figure])
+    mo.vstack([mo.md("Change the preview seed for fresh samples. The dataset's toggle also controls this preview."), _figure])
     return
 
 
@@ -164,10 +254,11 @@ def _(
 def _(
     NUM_CLASSES,
     RESULTS_FILE,
-    augmentation_digits,
-    augmentation_enabled,
+    augmentation_controls,
     device,
     load_task,
+    optimizer_choice,
+    optimizer_controls,
     run_training,
     seed,
     task,
@@ -180,8 +271,8 @@ def _(
         _run_dir = RESULTS_FILE.parent / "runs" / f"{task.value}-{time.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:8]}"
         _model = train_with_metrics(task.value, _X_train, _y_train, seed=int(seed.value),
                                     device=device.value, run_dir=_run_dir,
-                                    augmentation={"enabled": augmentation_enabled.value,
-                                                  "digits": augmentation_digits.value})
+                                    augmentation=selected_augmentation(task.value, augmentation_controls.value),
+                                    optimizer_settings=selected_optimizer(optimizer_choice.value, optimizer_controls.value))
         _minutes = (time.perf_counter() - _start) / 60
         _probs = torch.as_tensor(predict(_model, _X_test)).float().cpu()
         assert _probs.shape == (len(_y_test), NUM_CLASSES[task.value]), "Unexpected prediction shape"
@@ -461,6 +552,9 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
             "validation_fraction", "training_examples", "validation_examples",
         )},
         "test_examples": test_examples,
+        "betas": config.get("betas"), "eps": config.get("eps"),
+        "optimizer_settings": json.dumps(config.get("optimizer_settings"), sort_keys=True),
+        "optimizer_groups": json.dumps(config.get("optimizer_groups"), sort_keys=True),
         **config["architecture"],
         "augmentation": json.dumps(config["augmentation"], sort_keys=True),
         "model": config["model"],
@@ -487,6 +581,9 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
     # Source captures include functional activations omitted by PyTorch's repr.
     settings = {key: value for key, value in config.items()
                 if key not in ("model", "model_source", "block_source", "train_accuracy_kind")}
+    if "optimizer_groups" in settings:
+        settings["optimizer_groups"] = [{key: value for key, value in group.items() if key != "parameter_names"}
+                                         for group in settings["optimizer_groups"]]
     if not config["augmentation"]["enabled"]:
         settings["augmentation"] = {"enabled": False}
     summary = (
@@ -584,39 +681,140 @@ def submit_run_to_leaderboard(task, accuracy, train_minutes, run_dir):
 
 
 @app.function
-def digit_augmentation_config():
-    """Default settings shared by the notebook controls and grading entry point."""
+def available_optimizer_names():
+    """Offer supported presets without requiring optional optimizer packages."""
+    return [name for name in OPTIMIZER_DEFAULTS if hasattr(torch.optim, name)]
+
+
+@app.function
+def optimizer_config(name=None):
+    """A fresh preset shared by the dashboard and grading entry point."""
+    name = OPTIMIZER_NAME if name is None else name
+    if name not in OPTIMIZER_DEFAULTS:
+        raise ValueError(f"Unknown optimizer: {name}")
+    if name not in available_optimizer_names():
+        raise ValueError(f"{name} requires a PyTorch build providing torch.optim.{name}")
+    return {"name": name, **json.loads(json.dumps(OPTIMIZER_DEFAULTS[name]))}
+
+
+@app.function
+def selected_optimizer(name, configurations):
+    """Snapshot the selected optimizer's controls without mixing presets."""
+    return {**optimizer_config(name), **json.loads(json.dumps(configurations[name])), "name": name}
+
+
+@app.function
+def build_optimizers(model, settings=None):
+    """Build optimizers and record effective settings plus parameter assignments."""
+    settings = {} if settings is None else json.loads(json.dumps(settings))
+    config = optimizer_config(settings.get("name"))
+    if set(settings) - set(config):
+        raise ValueError(f"Unknown settings for {config['name']}: {sorted(set(settings) - set(config))}")
+    config.update(settings)
+    name = config["name"]
+    kwargs = {key: value for key, value in config.items() if key != "name"}
+    named = [(key, parameter) for key, parameter in model.named_parameters() if parameter.requires_grad]
+    if name == "Muon":
+        matrices = [parameter for key, parameter in named if parameter.ndim == 2
+                    and not key.startswith(("input_layer.", "head_fc2."))]
+        matrix_ids = {id(parameter) for parameter in matrices}
+        other = [parameter for _, parameter in named if id(parameter) not in matrix_ids]
+        if not matrices:
+            raise ValueError("Muon needs at least one hidden 2D weight matrix")
+        auxiliary = {key.removeprefix("auxiliary_"): kwargs.pop(key)
+                     for key in list(kwargs) if key.startswith("auxiliary_")}
+        auxiliary["betas"] = (auxiliary.pop("beta1"), auxiliary.pop("beta2"))
+        optimizers = [torch.optim.Muon(matrices, **kwargs)]
+        if other:
+            optimizers.append(torch.optim.AdamW(other, **auxiliary))
+    else:
+        if name in ("Adam", "AdamW"):
+            kwargs["betas"] = (kwargs.pop("beta1"), kwargs.pop("beta2"))
+        optimizers = [getattr(torch.optim, name)([parameter for _, parameter in named], **kwargs)]
+    parameter_names = {id(parameter): key for key, parameter in named}
+    groups = [{"optimizer": type(optimizer).__name__,
+               **{key: value for key, value in group.items() if key != "params"},
+               "parameter_names": [parameter_names[id(parameter)] for parameter in group["params"]],
+               "parameter_count": sum(parameter.numel() for parameter in group["params"])}
+              for optimizer in optimizers for group in optimizer.param_groups]
+    # Normalize tuples so in-memory configuration agrees with saved JSON.
+    return optimizers, config, json.loads(json.dumps(groups))
+
+
+@app.function
+def augmentation_categories(task):
+    """Slider ranges and distinct defaults for grayscale digits and RGB images."""
+    if task not in TASKS:
+        raise ValueError(f"Unknown augmentation task: {task}")
+    categories = dict(AUGMENTATION_CATEGORIES)
+    if task != "mnist":
+        # Color datasets share transforms, but keep independent strengths.
+        defaults = {
+            "rotation": (0.0, 10.0), "translation": (0.5, 4.0 if task == "cifar10" else 2.0),
+            "scale": (0.0, 0.1), "shear": (0.0, 5.0),
+            "brightness": (0.25, 0.1 if task == "cifar10" else 0.2),
+            "noise": (0.0, 0.05), "erasing": (0.0, 0.05),
+        }
+        categories = {name: (*spec[:4], *defaults[name]) for name, spec in categories.items()}
+        categories["horizontal_flip"] = ("Horizontal flip", "1 = enabled", 1.0, 1.0, 0.5, 1.0)
+    return categories
+
+
+@app.function
+def augmentation_config(task):
+    """Dataset-tagged defaults shared by dashboard controls and training."""
+    settings = {name: {"probability": spec[4], "amount": spec[5]}
+                for name, spec in augmentation_categories(task).items()}
     return {
-        "enabled": DIGIT_AUGMENTATION_ENABLED,
-        "digits": {str(digit): {
-            name: {"probability": spec[4], "amount": spec[5]}
-            for name, spec in AUGMENTATION_CATEGORIES.items()
-        } for digit in range(10)},
+        "task": task, "enabled": AUGMENTATION_ENABLED[task], "default": settings,
+        "classes": {str(digit): json.loads(json.dumps(settings)) for digit in range(10)}
+                   if task == "mnist" else {},
     }
 
 
+@app.function
+def selected_augmentation(task, configurations):
+    """Snapshot only the selected dataset's controls for a run or preview."""
+    config = json.loads(json.dumps(configurations[task]))
+    if config.get("task", task) != task:
+        raise ValueError("Augmentation configuration does not match the selected dataset")
+    config["task"] = task
+    return config
+
+
 @app.class_definition
-class DigitAugmenter:
-    """Fresh, label-specific MNIST transforms on normalized CPU training batches.
+class ImageAugmenter:
+    """Fresh dataset-aware transforms on normalized grayscale or RGB CPU batches.
 
     Uses a private RNG so augmentation does not alter data shuffling or the
     holdout split. Affine transforms share one resampling pass. Black fill is
     -1 in the model's normalized input range. Source images are never mutated.
     """
 
-    def __init__(self, config, seed):
-        self.config = json.loads(json.dumps(config))
+    def __init__(self, task, config=None, seed=0):
+        self.task = task
+        self.config = json.loads(json.dumps(augmentation_config(task) if config is None else config))
+        if self.config.get("task") != task:
+            raise ValueError("Augmentation configuration does not match the selected dataset")
         if not isinstance(self.config.get("enabled"), bool):
             raise ValueError("Augmentation enabled must be a boolean")
-        self.names = list(AUGMENTATION_CATEGORIES)
+        self.num_classes = TASKS[task]["num_classes"]
+        self.channels = 1 if task == "mnist" else 3
+        categories = augmentation_categories(task)
+        self.names = list(categories)
+        overrides = self.config["classes"]
+        valid_classes = {str(i) for i in range(self.num_classes)}
+        if any(class_id not in valid_classes for class_id in overrides):
+            raise ValueError("Augmentation override has an invalid class ID")
         values = []
-        for digit in range(10):
+        for class_id in range(self.num_classes):
             row = []
-            for name, spec in AUGMENTATION_CATEGORIES.items():
-                settings = self.config["digits"][str(digit)][name]
+            class_settings = overrides.get(str(class_id), self.config["default"])
+            for name, spec in categories.items():
+                settings = class_settings[name]
                 probability, amount = settings["probability"], settings["amount"]
                 if not 0 <= probability <= 1 or not 0 <= amount <= spec[2]:
-                    raise ValueError(f"Invalid {name} settings for digit {digit}")
+                    raise ValueError(f"Invalid {name} settings for class {class_id}")
                 row.append([probability, amount])
             values.append(row)
         self.parameters = torch.tensor(values, dtype=torch.float32)
@@ -627,10 +825,10 @@ class DigitAugmenter:
     def __call__(self, images, labels):
         if not self.active:
             return images
-        if images.device.type != "cpu" or images.ndim != 4 or images.shape[1] != 1:
-            raise ValueError("Digit augmentation expects normalized NCHW grayscale CPU images")
-        if bool(((labels < 0) | (labels > 9)).any()):
-            raise ValueError("Digit augmentation expects labels from 0 to 9")
+        if images.device.type != "cpu" or images.ndim != 4 or images.shape[1] != self.channels:
+            raise ValueError(f"{self.task} augmentation expects normalized NCHW CPU images with {self.channels} channels")
+        if labels.ndim != 1 or len(labels) != len(images) or bool(((labels < 0) | (labels >= self.num_classes)).any()):
+            raise ValueError(f"Augmentation expects one label per image, from 0 to {self.num_classes - 1}")
         count, _, height, width = images.shape
         parameters = self.parameters[labels]
         gates = torch.rand((count, len(self.names)), generator=self.generator) < parameters[:, :, 0]
@@ -657,6 +855,9 @@ class DigitAugmenter:
             grid = F.affine_grid(theta, images.shape, align_corners=False)
             warped = F.grid_sample(images + 1, grid, align_corners=False, padding_mode="zeros") - 1
             output = torch.where(geometric[:, None, None, None], warped, images)
+        if "horizontal_flip" in amounts:
+            flip = amounts["horizontal_flip"] > 0
+            output = torch.where(flip[:, None, None, None], output.flip(-1), output)
         brightness = signed("brightness")[:, None, None, None]
         output = (output + 1) * (1 + brightness) - 1
         noise_std = torch.rand(count, generator=self.generator) * amounts["noise"]
@@ -672,7 +873,7 @@ class DigitAugmenter:
         mask = ((rows >= top[:, None, None]) & (rows < (top + side)[:, None, None]) &
                 (cols >= left[:, None, None]) & (cols < (left + side)[:, None, None]))
         output = output.masked_fill(mask[:, None], -1)
-        # Preserve exact inputs for digits whose categories are all disabled.
+        # Preserve exact inputs for classes whose categories are all disabled.
         changed = (strengths > 0).any(dim=1)
         return torch.where(changed[:, None, None, None], output, images)
 
@@ -684,7 +885,8 @@ def train(task, X_train, y_train, seed=0, device="cuda"):
 
 
 @app.function
-def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=None, augmentation=None):
+def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=None, augmentation=None,
+                       optimizer_settings=None):
     """Train with a seeded holdout; optionally persist each epoch and best weights.
 
     No test data enters training or checkpoint selection. Tied validation
@@ -696,11 +898,8 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     if not 0 < VALIDATION_FRACTION < 1 or EPOCHS[task] < 1:
         raise ValueError("Use a validation fraction between 0 and 1 and at least one epoch")
 
-    augmentation = digit_augmentation_config() if augmentation is None else augmentation
-    augmenter = DigitAugmenter(augmentation, seed=seed + 1)
-    if task != "mnist":
-        augmenter.active = False
-        augmenter.config["enabled"] = False
+    augmentation = augmentation_config(task) if augmentation is None else augmentation
+    augmenter = ImageAugmenter(task, augmentation, seed=seed + 1)
 
     # 1. Build the model for this task. Only input size and class count differ.
     model = ResidualMLP(**TASKS[task]).to(device)
@@ -715,14 +914,17 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
 
     # 3. Choose the loss and the optimizer.
     loss_fn = nn.CrossEntropyLoss()           # expects raw logits
-    optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=MOMENTUM)
+    optimizers, optimizer_settings, optimizer_groups = build_optimizers(model, optimizer_settings)
     metadata = {
         "task": task, "seed": seed, "device": str(device), "epochs": EPOCHS[task],
-        "batch_size": BATCH_SIZE, "learning_rate": LEARNING_RATE,
-        "weight_decay": optimizer.param_groups[0]["weight_decay"],
-        "momentum": optimizer.param_groups[0]["momentum"],
-        "dampening": optimizer.param_groups[0]["dampening"],
-        "optimizer": type(optimizer).__name__, "loss": repr(loss_fn),
+        "batch_size": BATCH_SIZE, "learning_rate": optimizer_groups[0]["lr"],
+        "weight_decay": optimizer_groups[0]["weight_decay"],
+        "momentum": optimizer_groups[0].get("momentum"),
+        "dampening": optimizer_groups[0].get("dampening"),
+        "betas": optimizer_groups[0].get("betas"),
+        "eps": optimizer_groups[0].get("eps"),
+        "optimizer": optimizer_settings["name"], "loss": repr(loss_fn),
+        "optimizer_settings": optimizer_settings, "optimizer_groups": optimizer_groups,
         "learning_rate_schedule": "constant", "shuffle": True,
         "architecture": {
             "width": model.input_layer.out_features,
@@ -772,9 +974,11 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
             logits = model(X_batch)           # forward pass
             loss = loss_fn(logits, y_batch)   # how wrong are we?
 
-            optimizer.zero_grad()             # clear old gradients
+            for optimizer in optimizers:
+                optimizer.zero_grad()             # clear old gradients
             loss.backward()                   # backward pass: compute gradients
-            optimizer.step()                  # update the weights
+            for optimizer in optimizers:
+                optimizer.step()                  # update the weights
 
             total_loss += loss.detach() * len(X_batch)
             correct += (logits.detach().argmax(1) == y_batch).sum()

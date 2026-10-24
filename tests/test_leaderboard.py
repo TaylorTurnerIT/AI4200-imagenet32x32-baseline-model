@@ -115,7 +115,7 @@ class LeaderboardTests(unittest.TestCase):
                                     loss='CrossEntropyLoss()', learning_rate_schedule='constant', shuffle=True,
                                     validation_fraction=.1, training_examples=5, validation_examples=1,
                                     architecture=dict(width=128, hidden=128, depth=7, functional_operations=['relu']),
-                                    augmentation={'enabled': False, 'digits': {}}, model='ResidualMLP()',
+                                    augmentation=notebook.augmentation_config('mnist'), model='ResidualMLP()',
                                     model_source='class ResidualMLP: pass', block_source='class Block: pass',
                                 ))
 
@@ -175,7 +175,11 @@ class LeaderboardTests(unittest.TestCase):
                     patch.object(notebook, 'predict', namespace['predict']):
                 namespace['_'](
                     NUM_CLASSES={'mnist': 2}, RESULTS_FILE=results,
-                    augmentation_digits=SimpleNamespace(value={}), augmentation_enabled=SimpleNamespace(value=False),
+                    augmentation_controls=SimpleNamespace(value={
+                        'mnist': notebook.augmentation_config('mnist'),
+                    }),
+                    optimizer_choice=SimpleNamespace(value='SGD'),
+                    optimizer_controls=SimpleNamespace(value={'SGD': notebook.OPTIMIZER_DEFAULTS['SGD']}),
                     device=SimpleNamespace(value='cpu'), run_training=SimpleNamespace(value=True),
                     seed=SimpleNamespace(value=42), task=SimpleNamespace(value='mnist'),
                     load_task=lambda task: (np.zeros((6, 1, 28, 28)), np.zeros(6, dtype=int),
