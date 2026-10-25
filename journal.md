@@ -986,6 +986,12 @@ All final scores use the best validation checkpoint. Train excludes the holdout.
 
 > The most interesting part of this paper is the scores. The vision transformer they benchmarked only got65 %. I might be approaching the boundary of what's possible without attention or convolution. That is not going to stop me. 
 
+> I'll get to that paper's findings in time. For now I'm trying bilinear, since I think it's the most interesting. So far it's really not producing results much different than our previous layers. I think I'm going to come back to this after I've done...
+
+## Pooling
+
+> I'm wondering if I can create many feed forward networks. The idea being I take the32 by32 input image. Then subdivide it twice. That would then create many four by four sub images. Then run a multi-layer perceptron to create some new representation. We then apply all of those and flatten it. that becomes the new residual stream. Let's try it out. 
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.
