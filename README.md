@@ -125,13 +125,45 @@ to the saved Markdown table; `summary.txt` includes the table for copying into
 your journal. `summary.json` records the same columns as fractions from 0 to 1.
 Test scores reuse existing predictions; no additional test evaluation is performed.
 
+The default model restores the original 54.59% CIFAR-10 configuration: seven
+residual blocks, backbone width 256, hidden width 512, LayerNorm, and GELU in
+the blocks and head. CIFAR-10 uses 30 epochs, batch size 256, SGD with learning
+rate 0.05, weight decay `1e-4`, zero momentum, and no augmentation. The dashboard
+starts with seed 42 and selects the best validation checkpoint. Model depth
+follows the `depth` constructor argument.
+
+### Reloading previous experiments
+
+The **Saved runs** panel lists saved configurations for the selected dataset,
+with validation and test scores. Pick a run and click **Load selected settings**,
+or click **Load best settings**. **Best by** defaults to validation accuracy;
+choose test accuracy to load the highest test-scoring run. Only completed runs
+with a recorded score qualify for the shortcut. Ties use the earliest run ID.
+Click **Refresh saved runs** after completing another experiment.
+
+Loading updates the notebook's model classes, dimensions, optimizer preset,
+augmentation settings, batch size, epochs, validation fraction, seed, and device
+preference. The notebook reloads, and Torch Canvas can follow the restored model
+code. If the original device is unavailable, the dashboard uses an available
+device. Loading does not start training or load checkpoint weights; press
+**Run** to train a new model from scratch. New runs record their parent run in
+`restored_from`.
+
+Recent runs restore their saved model source. Older runs can recover dimensions
+from the saved model representation, including unrolled residual blocks.
+Unrecorded activation, optimizer, or augmentation values require an explicit
+choice under **Older runs with missing settings**. Recorded values take
+precedence. Runs without `config.json` cannot be reconstructed from a score
+alone. Unrelated notebook text is preserved; loading stops if the file changes
+during restoration.
+
 ### Optimizer selection
 
 Choose **SGD**, **Adam**, **AdamW**, **Muon**, **RMSprop**, or **Adagrad** in the
 **Optimizer** panel before pressing **Run**. Each optimizer has its own controls
 and learning rate preset; edits persist when switching optimizers in the app
-session. AdamW remains the default. The selected settings apply to whichever
-dataset you run.
+session. SGD is the default for the restored CIFAR-10 experiment. The selected
+settings apply to whichever dataset you run.
 
 | Optimizer | Initial learning rate | Additional controls |
 | --- | ---: | --- |
@@ -141,8 +173,8 @@ dataset you run.
 | RMSprop | 0.001 | Alpha, momentum, epsilon, centered |
 | Adagrad | 0.01 | Learning rate decay, initial accumulator, epsilon |
 
-All presets expose weight decay, initially `1e-5`. These are starting points for
-experiments. SGD's Nesterov option requires positive momentum and zero dampening.
+All presets expose weight decay. SGD starts at `1e-4`; other presets start at
+`1e-5`. These are starting points for experiments. SGD's Nesterov option requires positive momentum and zero dampening.
 
 Muon uses native `torch.optim.Muon` and is offered only when the installed
 PyTorch provides it. It updates hidden 2D weight matrices. A separate AdamW
@@ -212,7 +244,7 @@ and `augmentation_categories(task)` to change dataset defaults shared by the app
 and grading entry point. `augmentation_config(task)` defines defaults and
 per-class overrides; `ImageAugmenter` contains the shared PyTorch transforms.
 
-The app defaults to MNIST. CIFAR-10 and ImageNet 32×32 are available in the task
+The app defaults to CIFAR-10. MNIST and ImageNet 32×32 are available in the task
 selector. ImageNet requires several GB of disk space and substantially more RAM
 during training: the baseline converts the full training array to float32.
 Dataset downloads require internet access.

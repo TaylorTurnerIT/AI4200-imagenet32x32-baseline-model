@@ -111,7 +111,7 @@ class OptimizerTests(unittest.TestCase):
         configs['SGD']['lr'] = .0123
         selected = notebook.selected_optimizer('SGD', configs)
         self.assertEqual(selected['lr'], .0123)
-        self.assertEqual(notebook.selected_optimizer('AdamW', configs)['lr'], notebook.LEARNING_RATE)
+        self.assertEqual(notebook.selected_optimizer('AdamW', configs)['lr'], notebook.OPTIMIZER_DEFAULTS['AdamW']['lr'])
         selected['lr'] = .9
         self.assertEqual(configs['SGD']['lr'], .0123)
 

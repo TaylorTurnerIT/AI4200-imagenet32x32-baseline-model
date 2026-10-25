@@ -34,29 +34,35 @@ with app.setup:
         "imagenet32": {"in_features": 3 * 32 * 32, "num_classes": 1000},  # 32x32 color
     }
 
-    LEARNING_RATE = 1e-3
+    DEFAULT_TASK = "cifar10"
+    DEFAULT_SEED = 42
+    DEFAULT_DEVICE = None
+    RESTORED_FROM = None
+    AUGMENTATION_CONFIG_OVERRIDES = {}
+
+    LEARNING_RATE = 0.05
     BATCH_SIZE = 256
-    EPOCHS = {"mnist": 500, "cifar10": 15, "imagenet32": 10}
-    WEIGHT_DECAY = 1e-5
+    EPOCHS = {"mnist": 500, "cifar10": 30, "imagenet32": 10}
+    WEIGHT_DECAY = 1e-4
     MOMENTUM = 0.0
     DAMPENING = 0.0
     VALIDATION_FRACTION = 0.1
 
-    OPTIMIZER_NAME = "AdamW"
+    OPTIMIZER_NAME = "SGD"
     OPTIMIZER_DEFAULTS = {
-        "SGD": {"lr": 0.05, "weight_decay": WEIGHT_DECAY, "momentum": MOMENTUM,
+        "SGD": {"lr": LEARNING_RATE, "weight_decay": WEIGHT_DECAY, "momentum": MOMENTUM,
                 "dampening": DAMPENING, "nesterov": False},
-        "Adam": {"lr": LEARNING_RATE, "weight_decay": WEIGHT_DECAY,
+        "Adam": {"lr": 1e-3, "weight_decay": 1e-5,
                  "beta1": 0.9, "beta2": 0.999, "eps": 1e-8, "amsgrad": False},
-        "AdamW": {"lr": LEARNING_RATE, "weight_decay": WEIGHT_DECAY,
+        "AdamW": {"lr": 1e-3, "weight_decay": 1e-5,
                   "beta1": 0.9, "beta2": 0.999, "eps": 1e-8, "amsgrad": False},
-        "Muon": {"lr": 0.02, "weight_decay": WEIGHT_DECAY, "momentum": 0.95,
+        "Muon": {"lr": 0.02, "weight_decay": 1e-5, "momentum": 0.95,
                  "nesterov": True, "ns_steps": 5, "eps": 1e-7, "adjust_lr_fn": "original",
-                 "auxiliary_lr": LEARNING_RATE, "auxiliary_weight_decay": WEIGHT_DECAY,
+                 "auxiliary_lr": 1e-3, "auxiliary_weight_decay": 1e-5,
                  "auxiliary_beta1": 0.9, "auxiliary_beta2": 0.999, "auxiliary_eps": 1e-8},
-        "RMSprop": {"lr": LEARNING_RATE, "weight_decay": WEIGHT_DECAY,
+        "RMSprop": {"lr": 1e-3, "weight_decay": 1e-5,
                     "momentum": 0.0, "alpha": 0.99, "eps": 1e-8, "centered": False},
-        "Adagrad": {"lr": 0.01, "weight_decay": WEIGHT_DECAY, "lr_decay": 0.0,
+        "Adagrad": {"lr": 0.01, "weight_decay": 1e-5, "lr_decay": 0.0,
                     "initial_accumulator_value": 0.0, "eps": 1e-10},
     }
 
@@ -273,9 +279,11 @@ def _(
 
 @app.cell(hide_code=True)
 def _(available_devices):
-    task = mo.ui.dropdown(["mnist", "cifar10", "imagenet32"], value="mnist", label="Task")
-    device = mo.ui.dropdown(available_devices, value=list(available_devices)[-1], label="Device")
-    seed = mo.ui.number(start=0, stop=2**32 - 1, value=42, label="Seed")
+    task = mo.ui.dropdown(["mnist", "cifar10", "imagenet32"], value=DEFAULT_TASK, label="Task")
+    _device_label = next((label for label, backend in available_devices.items() if backend == DEFAULT_DEVICE),
+                         list(available_devices)[-1])
+    device = mo.ui.dropdown(available_devices, value=_device_label, label="Device")
+    seed = mo.ui.number(start=0, stop=2**32 - 1, value=DEFAULT_SEED, label="Seed")
     run_training = mo.ui.run_button(label="Run")
     mo.vstack([
         mo.hstack([task, device, seed, run_training], justify="start"),
@@ -283,6 +291,94 @@ def _(available_devices):
               if LEADERBOARD_ENABLED else "Leaderboard posting disabled."),
     ])
     return device, run_training, seed, task
+
+
+@app.cell(hide_code=True)
+def _():
+    saved_runs_refresh = mo.ui.button(label="Refresh saved runs")
+    load_saved = mo.ui.run_button(label="Load selected settings")
+    load_best = mo.ui.run_button(label="Load best settings")
+    best_metric = mo.ui.dropdown({"Validation accuracy": "validation_accuracy", "Test accuracy": "test_accuracy"},
+                                 value="Validation accuracy", label="Best by")
+    legacy_activation = mo.ui.dropdown(["gelu", "relu", "silu", "tanh", "sigmoid"],
+                                       value=None, allow_select_none=True, label="Legacy activation (if missing)")
+    legacy_optimizer = mo.ui.dropdown(available_optimizer_names(), value=None, allow_select_none=True,
+                                      label="Legacy optimizer (if missing)")
+    return (
+        best_metric,
+        legacy_activation,
+        legacy_optimizer,
+        load_best,
+        load_saved,
+        saved_runs_refresh,
+    )
+
+
+@app.cell(hide_code=True)
+def _(RESULTS_FILE, saved_runs_refresh, task):
+    _refresh = saved_runs_refresh.value
+    saved_run_catalog = list_saved_runs(RESULTS_FILE, task.value)
+    _options = {}
+    for _entry in reversed(saved_run_catalog):
+        _validation = "N/A" if _entry["validation_accuracy"] is None else f"{_entry['validation_accuracy']:.2%}"
+        _test = "N/A" if _entry["test_accuracy"] is None else f"{_entry['test_accuracy']:.2%}"
+        _status = "" if _entry["completed"] else " · unfinished"
+        _options[f"{_entry['id']} · validation {_validation} · test {_test}{_status}"] = _entry["id"]
+    saved_run_choice = mo.ui.dropdown(_options, value=next(iter(_options), None), searchable=True,
+                                      label="Saved run", full_width=True)
+    return saved_run_catalog, saved_run_choice
+
+
+@app.cell(hide_code=True)
+def _(
+    best_metric,
+    legacy_activation,
+    legacy_augmentation,
+    legacy_optimizer,
+    load_best,
+    load_saved,
+    saved_run_catalog,
+    saved_run_choice,
+    saved_runs_refresh,
+):
+    _best = best_saved_run(saved_run_catalog, best_metric.value)
+    _best_note = f"Best completed run: **{_best['id']}** ({_best[best_metric.value]:.2%})." if _best else "No scored completed run available."
+    mo.vstack([
+        mo.md("## Saved runs\nLoad a previous run's model code, optimizer, augmentation, seed, and training settings. "
+              "Loading updates this notebook on disk. The next **Run** trains a fresh model."),
+        saved_runs_refresh, saved_run_choice,
+        mo.hstack([load_saved, best_metric, load_best], justify="start"), mo.md(_best_note),
+        mo.accordion({"Older runs with missing settings": mo.vstack([
+            mo.md("Older snapshots may lack activation code, optimizer names, or augmentation settings. "
+                  "Choose the missing values here before loading; recorded settings take precedence."),
+            legacy_activation, legacy_optimizer, legacy_augmentation,
+        ])}),
+    ])
+    return
+
+
+@app.cell(hide_code=True)
+def _(
+    best_metric,
+    legacy_activation,
+    legacy_augmentation,
+    legacy_optimizer,
+    load_best,
+    load_saved,
+    saved_run_catalog,
+    saved_run_choice,
+):
+    mo.stop(not (load_saved.value or load_best.value))
+    _entry = best_saved_run(saved_run_catalog, best_metric.value) if load_best.value else next(
+        (entry for entry in saved_run_catalog if entry["id"] == saved_run_choice.value), None)
+    mo.stop(_entry is None, mo.md("Choose a saved run with available settings."))
+    try:
+        _loaded = apply_saved_run(Path(__file__), _entry, legacy_activation.value, legacy_optimizer.value,
+                                  legacy_augmentation.value)
+    except (ValueError, OSError, SyntaxError, StopIteration, KeyError, TypeError) as _error:
+        mo.stop(True, mo.md(f"Could not load settings: {_error}"))
+    mo.md(f"Loaded **{_loaded}**. The notebook will reload with its settings. Press **Run** when ready.")
+    return
 
 
 @app.cell(hide_code=True)
@@ -435,7 +531,7 @@ def _():
 
 
 @app.class_definition
-class Block(nn.Module):
+class Block4(nn.Module):
     def __init__(self, width=256, hidden=512):
         super().__init__()
         self.norm = nn.LayerNorm(width)
@@ -444,7 +540,7 @@ class Block(nn.Module):
 
     def forward(self, x):
         n = self.norm(x)
-        a = F.silu(self.fc1(n))
+        a = F.gelu(self.fc1(n))
         h = self.fc2(a)
         return x + h
 
@@ -467,7 +563,7 @@ class ResidualMLP(nn.Module):
 
         # Project the flattened image down to the backbone width.
         self.input_layer = nn.Linear(in_features, width)
-        self.blocks = nn.ModuleList([Block(width, hidden) for _ in range(50)])
+        self.blocks = nn.ModuleList([Block4(width, hidden) for _ in range(depth)])
         # The head: same layers as a block, but the last layer outputs class scores.
         self.head_norm = nn.LayerNorm(width)
         self.head_fc1 = nn.Linear(width, hidden)
@@ -489,7 +585,7 @@ class ResidualMLP(nn.Module):
         for blk in self.blocks:
             x = blk(x)
         n = self.head_norm(x)
-        a = F.silu(self.head_fc1(n))
+        a = F.gelu(self.head_fc1(n))
         return self.head_fc2(a)
 
     def predict(self, x):
@@ -613,6 +709,7 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
         )},
         "test_examples": test_examples,
         "betas": config.get("betas"), "eps": config.get("eps"),
+        "restored_from_run": (config.get("restored_from") or {}).get("run_id", ""),
         "optimizer_settings": json.dumps(config.get("optimizer_settings"), sort_keys=True),
         "optimizer_groups": json.dumps(config.get("optimizer_groups"), sort_keys=True),
         **config["architecture"],
@@ -741,6 +838,326 @@ def submit_run_to_leaderboard(task, accuracy, train_minutes, run_dir):
 
 
 @app.function
+def list_saved_runs(results_file, task):
+    """Read local configuration snapshots and scores without loading weights."""
+    results_file = Path(results_file)
+    rows = {}
+    if results_file.exists():
+        with results_file.open(newline="") as file:
+            for row in csv.DictReader(file):
+                if row.get("task") == task and row.get("run_dir"):
+                    rows[Path(row["run_dir"]).name] = row
+    entries = []
+    for path in sorted((results_file.parent / "runs").glob("*/config.json")):
+        try:
+            config = json.loads(path.read_text())
+            if config.get("task") != task:
+                continue
+            summary = {}
+            summary_path = path.parent / "summary.json"
+            if summary_path.exists():
+                try:
+                    summary = json.loads(summary_path.read_text())
+                except (OSError, ValueError):
+                    summary = {}
+            row = rows.get(path.parent.name, {})
+            performance = summary.get("performance", {})
+            validation = performance.get("validation_accuracy", row.get("validation_accuracy"))
+            test = performance.get("test_accuracy", row.get("test_accuracy") or row.get("accuracy"))
+            if validation in (None, "") and (path.parent / "metrics.csv").exists():
+                with (path.parent / "metrics.csv").open(newline="") as file:
+                    scores = []
+                    for epoch in csv.DictReader(file):
+                        score = recorded_accuracy(epoch.get("validation_accuracy"))
+                        if score is not None:
+                            scores.append(score)
+                    validation = max(scores) if scores else None
+            entries.append({"id": path.parent.name, "config": config,
+                            "validation_accuracy": recorded_accuracy(validation),
+                            "test_accuracy": recorded_accuracy(test),
+                            "completed": bool(row or summary.get("result")),
+                            "time": row.get("time", path.parent.name)})
+        except (OSError, ValueError, TypeError, AttributeError):
+            # An interrupted or malformed run must not hide other saved runs.
+            continue
+    return entries
+
+
+@app.function
+def recorded_accuracy(value):
+    """Return a valid saved score, keeping missing scores distinct from zero."""
+    try:
+        value = float(value)
+    except (TypeError, ValueError):
+        return None
+    return value if 0 <= value <= 1 else None
+
+
+@app.function
+def best_saved_run(entries, metric="validation_accuracy"):
+    """Rank completed runs by the chosen score; ties keep the earliest run ID."""
+    if metric not in ("validation_accuracy", "test_accuracy"):
+        raise ValueError("Choose validation or test accuracy")
+    eligible = []
+    for entry in sorted(entries, key=lambda row: row["id"]):
+        if entry["completed"] and entry.get(metric) is not None:
+            eligible.append(entry)
+    return max(eligible, key=lambda entry: entry[metric]) if eligible else None
+
+
+@app.function
+def replace_source_span(source, node, replacement, include_decorators=False):
+    """Patch one AST span while preserving unrelated notebook text and comments."""
+    lines = source.splitlines(keepends=True)
+    start_line = node.lineno
+    start_column = node.col_offset
+    if include_decorators and node.decorator_list:
+        start_line = node.decorator_list[0].lineno
+        start_column = node.decorator_list[0].col_offset - 1
+    start = sum(len(line) for line in lines[:start_line - 1]) + start_column
+    end = sum(len(line) for line in lines[:node.end_lineno - 1]) + node.end_col_offset
+    return source[:start] + replacement + source[end:]
+
+
+@app.function
+def setup_value(source, name):
+    """Read a literal setup value for preservation during a preset load."""
+    setup = next(node for node in ast.parse(source).body if isinstance(node, ast.With))
+    node = next(node for node in setup.body if isinstance(node, ast.Assign)
+                and any(isinstance(target, ast.Name) and target.id == name for target in node.targets))
+    return ast.literal_eval(node.value)
+
+
+@app.function
+def patch_setup_value(source, name, value):
+    """Replace a setup assignment's value, retaining its comments and location."""
+    import pprint
+
+    setup = next(node for node in ast.parse(source).body if isinstance(node, ast.With))
+    node = next(node for node in setup.body if isinstance(node, ast.Assign)
+                and any(isinstance(target, ast.Name) and target.id == name for target in node.targets))
+    literal = pprint.pformat(value, width=100, sort_dicts=False)
+    literal = literal.replace("\n", "\n" + " " * node.col_offset)
+    return replace_source_span(source, node.value, literal)
+
+
+@app.function
+def restored_architecture(config):
+    """Recover dimensions from explicit metadata or an older model repr."""
+    import re
+
+    if config.get("architecture"):
+        architecture = dict(config["architecture"])
+    else:
+        model = config.get("model", "")
+        projection = re.search(r"\(input_layer\): Linear\(in_features=(\d+), out_features=(\d+)", model)
+        head = re.search(r"\(head_fc1\): Linear\(in_features=(\d+), out_features=(\d+)", model)
+        repeated = re.search(r"(\d+) x \w+\(", model)
+        depth = int(repeated.group(1)) if repeated else len(re.findall(r"\(\d+\): \w+\(", model))
+        if not depth:
+            depth = len(re.findall(r"\(fc1(?:_\d+)?\): Linear\(", model))
+        if not projection or not head or not depth:
+            raise ValueError("This run did not save enough architecture information to restore")
+        architecture = {"width": int(projection.group(2)), "hidden": int(head.group(2)), "depth": depth}
+    for key in ("width", "hidden", "depth"):
+        if not isinstance(architecture.get(key), int) or architecture[key] < 1:
+            raise ValueError(f"Invalid saved architecture: {key}")
+    return architecture
+
+
+@app.function
+def class_snapshot(source):
+    """Extract a single saved class without evaluating the saved Python."""
+    source = textwrap.dedent(source)
+    tree = ast.parse(source)
+    if len(tree.body) != 1 or not isinstance(tree.body[0], ast.ClassDef):
+        raise ValueError("Saved model source must contain exactly one class")
+    node = tree.body[0]
+    return node.name, "\n".join(source.splitlines()[node.lineno - 1:node.end_lineno])
+
+
+@app.function
+def configure_class_snapshot(source, architecture, activation=None):
+    """Set actual dimensions, and normalize historical hardcoded block counts."""
+    tree = ast.parse(source)
+    cls = tree.body[0]
+    constructor = next(node for node in cls.body if isinstance(node, ast.FunctionDef) and node.name == "__init__")
+    replacements = []
+    defaults = constructor.args.defaults
+    arguments = constructor.args.args[len(constructor.args.args) - len(defaults):]
+    for argument, default in zip(arguments, defaults):
+        if argument.arg in architecture:
+            replacements.append((default, str(architecture[argument.arg])))
+    for node in ast.walk(constructor):
+        if isinstance(node, ast.Assign) and any(isinstance(target, ast.Attribute) and target.attr == "blocks"
+                                               for target in node.targets):
+            for child in ast.walk(node.value):
+                if (isinstance(child, ast.Call) and isinstance(child.func, ast.Name) and child.func.id == "range"
+                        and len(child.args) == 1 and isinstance(child.args[0], ast.Constant)):
+                    replacements.append((child.args[0], "depth"))
+    if activation is not None:
+        for method in cls.body:
+            if isinstance(method, ast.FunctionDef) and method.name == "forward":
+                for node in ast.walk(method):
+                    if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                            and isinstance(node.func.value, ast.Name) and node.func.value.id == "F"
+                            and node.func.attr in ("relu", "gelu", "silu", "tanh", "sigmoid")):
+                        replacements.append((node.func, f"F.{activation}"))
+    replacements.sort(key=lambda edit: (edit[0].lineno, edit[0].col_offset), reverse=True)
+    for node, replacement in replacements:
+        source = replace_source_span(source, node, replacement)
+    return source
+
+
+@app.function
+def restored_optimizer(config, legacy_optimizer=None):
+    """Use recorded optimizer settings; require a choice if its name was not saved."""
+    if config.get("optimizer_settings"):
+        recorded = dict(config["optimizer_settings"])
+        settings = {**optimizer_config(recorded["name"]), **recorded}
+        validate_restored_optimizer(settings)
+        return settings
+    name = config.get("optimizer") or legacy_optimizer
+    if not name:
+        raise ValueError("This older run did not record its optimizer. Choose a legacy optimizer below.")
+    settings = optimizer_config(name)
+    mapping = {"learning_rate": "lr", "weight_decay": "weight_decay", "momentum": "momentum",
+               "dampening": "dampening", "eps": "eps"}
+    for recorded, key in mapping.items():
+        if config.get(recorded) is not None and key in settings:
+            settings[key] = config[recorded]
+    if config.get("betas") and "beta1" in settings:
+        settings["beta1"], settings["beta2"] = config["betas"]
+    validate_restored_optimizer(settings)
+    return settings
+
+
+@app.function
+def validate_restored_optimizer(settings):
+    """Reject unusable settings before updating the notebook, preserving RNG state."""
+    for key, value in settings.items():
+        if isinstance(value, (int, float)) and not np.isfinite(value):
+            raise ValueError(f"Saved optimizer setting {key} must be finite")
+    with torch.random.fork_rng(devices=[]):
+        build_optimizers(nn.Linear(1, 1), settings)
+
+
+@app.function
+def restored_augmentation(config, legacy_augmentation=None):
+    """Translate legacy digit controls to the dataset-aware configuration schema."""
+    task = config["task"]
+    saved = config.get("augmentation")
+    if saved is None:
+        if legacy_augmentation not in ("off", "current"):
+            raise ValueError("This older run did not record augmentation. Choose a legacy augmentation setting below.")
+        normalized = augmentation_config(task)
+        normalized["enabled"] = legacy_augmentation == "current"
+        return normalized
+    if "default" in saved and "classes" in saved:
+        normalized = dict(saved)
+        normalized["task"] = task
+    else:
+        normalized = augmentation_config(task)
+        normalized["enabled"] = saved["enabled"]
+        if task == "mnist" and "digits" in saved:
+            normalized["classes"] = saved["digits"]
+        elif task != "mnist" and saved["enabled"]:
+            raise ValueError("This older run did not record a supported RGB augmentation configuration")
+    ImageAugmenter(task, normalized)
+    return normalized
+
+
+@app.function
+def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=None, legacy_augmentation=None):
+    """Restore architecture and experiment defaults, preserving the rest of the notebook."""
+    config = entry["config"]
+    task = config["task"]
+    if task not in TASKS:
+        raise ValueError("Unknown saved dataset")
+    architecture = restored_architecture(config)
+    classes = [node for node in ast.parse(source).body if isinstance(node, ast.ClassDef)]
+    model = next(node for node in classes if node.name == "ResidualMLP")
+    blocks = [node for node in classes if node.name not in ("ResidualMLP", "ImageAugmenter")]
+    if len(blocks) != 1:
+        raise ValueError("The current notebook must have one residual block class")
+    block = blocks[0]
+    if config.get("model_source") and config.get("block_source"):
+        model_name, model_source = class_snapshot(config["model_source"])
+        block_name, block_source = class_snapshot(config["block_source"])
+        if model_name != "ResidualMLP":
+            raise ValueError("The saved model class is not ResidualMLP")
+        model_source = configure_class_snapshot(model_source, architecture)
+        block_source = configure_class_snapshot(block_source, architecture)
+    else:
+        if legacy_activation not in ("gelu", "relu", "silu", "tanh", "sigmoid"):
+            raise ValueError("This older run did not record activation code. Choose a legacy activation below.")
+        model_source = ast.get_source_segment(source, model)
+        block_source = ast.get_source_segment(source, block)
+        model_source = configure_class_snapshot(model_source, architecture, legacy_activation)
+        block_source = configure_class_snapshot(block_source, architecture, legacy_activation)
+    replacements = [(model, model_source), (block, block_source)]
+    replacements.sort(key=lambda edit: edit[0].lineno, reverse=True)
+    for node, replacement in replacements:
+        source = replace_source_span(source, node, "@app.class_definition\n" + replacement, include_decorators=True)
+    settings = restored_optimizer(config, legacy_optimizer)
+    augmentation = restored_augmentation(config, legacy_augmentation)
+    for key in ("batch_size", "epochs", "seed"):
+        if not isinstance(config.get(key), int) or config[key] < (0 if key == "seed" else 1):
+            raise ValueError(f"Invalid or missing saved {key}")
+    if config["seed"] > 2**32 - 1:
+        raise ValueError("Saved seed is outside the dashboard's supported range")
+    if not 0 < config.get("validation_fraction", 0) < 1:
+        raise ValueError("Invalid saved validation fraction")
+    epochs = setup_value(source, "EPOCHS")
+    epochs[task] = config["epochs"]
+    presets = dict(OPTIMIZER_DEFAULTS)
+    presets[settings["name"]] = {key: value for key, value in settings.items() if key != "name"}
+    overrides = setup_value(source, "AUGMENTATION_CONFIG_OVERRIDES")
+    overrides[task] = augmentation
+    values = {"DEFAULT_TASK": task, "DEFAULT_SEED": config["seed"],
+              "DEFAULT_DEVICE": config.get("device"), "BATCH_SIZE": config["batch_size"],
+              "EPOCHS": epochs, "VALIDATION_FRACTION": config["validation_fraction"],
+              "LEARNING_RATE": settings["lr"], "WEIGHT_DECAY": settings["weight_decay"],
+              "OPTIMIZER_NAME": settings["name"], "OPTIMIZER_DEFAULTS": presets,
+              "AUGMENTATION_CONFIG_OVERRIDES": overrides,
+              "RESTORED_FROM": {"run_id": entry["id"], "task": task,
+                                "legacy_activation": legacy_activation, "legacy_optimizer": legacy_optimizer,
+                                "legacy_augmentation": legacy_augmentation}}
+    for name, value in values.items():
+        source = patch_setup_value(source, name, value)
+    ast.parse(source)
+    return source
+
+
+@app.function
+def apply_saved_run(notebook_path, entry, legacy_activation=None, legacy_optimizer=None, legacy_augmentation=None):
+    """Atomically apply a preset without reading checkpoint weights or running training."""
+    import tempfile
+
+    notebook_path = Path(notebook_path)
+    before = notebook_path.read_text()
+    restored = restore_run_source(before, entry, legacy_activation, legacy_optimizer, legacy_augmentation)
+    if notebook_path.read_text() != before:
+        raise ValueError("The notebook changed during loading. Refresh saved runs and try again.")
+    if restored == before:
+        return entry["id"]
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", dir=notebook_path.parent,
+                                         prefix=".notebook-restore-", suffix=".py", delete=False) as file:
+            temporary = Path(file.name)
+            file.write(restored)
+        temporary.chmod(notebook_path.stat().st_mode & 0o777)
+        if notebook_path.read_text() != before:
+            raise ValueError("The notebook changed during loading. Refresh saved runs and try again.")
+        temporary.replace(notebook_path)
+    finally:
+        if temporary is not None and temporary.exists():
+            temporary.unlink()
+    return entry["id"]
+
+
+@app.function
 def available_optimizer_names():
     """Offer supported presets without requiring optional optimizer packages."""
     return [name for name in OPTIMIZER_DEFAULTS if hasattr(torch.optim, name)]
@@ -825,6 +1242,8 @@ def augmentation_categories(task):
 @app.function
 def augmentation_config(task):
     """Dataset-tagged defaults shared by dashboard controls and training."""
+    if task in AUGMENTATION_CONFIG_OVERRIDES:
+        return json.loads(json.dumps(AUGMENTATION_CONFIG_OVERRIDES[task]))
     settings = {name: {"probability": spec[4], "amount": spec[5]}
                 for name, spec in augmentation_categories(task).items()}
     return {
@@ -978,13 +1397,18 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     loss_fn = nn.CrossEntropyLoss()           # expects raw logits
     optimizers, optimizer_settings, optimizer_groups = build_optimizers(model, optimizer_settings)
     functional_operations = set()
-    for cls in (type(model), Block):
+    block_cls = type(model.blocks[0]) if len(model.blocks) else None
+    model_types = [type(model)]
+    if block_cls is not None:
+        model_types.append(block_cls)
+    for cls in model_types:
         for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(cls)))):
             if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
                     and isinstance(node.func.value, ast.Name) and node.func.value.id == "F"):
                 functional_operations.add(node.func.attr)
     metadata = {
         "task": task, "seed": seed, "device": str(device), "epochs": EPOCHS[task],
+        "restored_from": RESTORED_FROM if RESTORED_FROM and RESTORED_FROM["task"] == task else None,
         "batch_size": BATCH_SIZE, "learning_rate": optimizer_groups[0]["lr"],
         "weight_decay": optimizer_groups[0]["weight_decay"],
         "momentum": optimizer_groups[0].get("momentum"),
@@ -1006,7 +1430,7 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
             "parameters": sum(parameter.numel() for parameter in model.parameters()),
         },
         "model_source": inspect.getsource(type(model)),
-        "block_source": inspect.getsource(Block),
+        "block_source": inspect.getsource(block_cls) if block_cls else None,
         "validation_fraction": VALIDATION_FRACTION,
         "training_examples": len(training_indices), "validation_examples": validation_size,
         "selection_metric": "validation_accuracy", "tie_break": "earliest_epoch",

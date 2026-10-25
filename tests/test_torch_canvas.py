@@ -31,7 +31,7 @@ const source = fs.readFileSync(process.argv[2], 'utf8');
 const result = context.api.importPython(source);
 assert.equal(result.graph.name, 'ResidualMLP');
 assert.ok(result.graph.nodes.length > 0);
-assert.ok(result.usedClasses.includes('Block'));
+assert.ok(result.usedClasses.some(name => /^Block[0-9]*$/.test(name)));
 assert.equal(context.api.syncSource(source, result.graph), source);
 '''
         result = subprocess.run(['node', '-e', script, str(CANVAS / 'web' / 'index.html'), notebook.__file__],

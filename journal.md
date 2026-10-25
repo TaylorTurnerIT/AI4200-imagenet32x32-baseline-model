@@ -874,6 +874,14 @@ Hyperparameters and architecture:
 
 > Well, Overfitting decreased. Performance is bad. I'm now going to do the opposite. I'm gonna scale up the model. Let's turn up batching a little bit. Let's increase the size of the residual stream, more layers, the whole shebang until we start overfitting again. Then we'll increase the chance of augmenting the data. Hopefully if we do that in a loop enough times, we will extract all we can out of a resnet.
 
+> I have increased the net size and dramatically increased the regularization and only seen minimal changes. Interestingly Muon had better results than AdamW. We are still seeing 80% accuracy on training by the end of 15 epochs which tells me we're not giving enough signal to avoid the problem of accuracy. 
+
+> Let's try shrinking the residual stream. I am wondering if we're allowing too much information through which is allowing for easy memorization. This thought is driven by the earlier memorization that we're seeing. Eh the other side of that is the layer counts too. I turned them up quite a bit earlier. I'll try tinkering with both. If I increase the size of the residual stream, but leave the number of layers the same, then we are transforming a higher dimensional representation. If I decrease the number of layers and leave the residual stream the same, then we're transforming a lower dimensional representation. Ideally, we want to find the lowest dimensional representation we possibly can that can still carry enough information to determine what it is. By that logic, I'm going to leave the residual stream small and see what we can do with that. 
+
+> Nope.  Shrinking the residual stream to the size of the input or below destroys performance. That makes sense. The images are complex enough that REDUCING the amount of information we let through sounds like a recipe for disaster.
+
+> Could be that we're over-regularizing. I'll try turning down regularization and increase weight decay. I'm also switching back to AdamW because I understand it better.
+
 
 # Planning
 
