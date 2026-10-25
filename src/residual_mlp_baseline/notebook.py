@@ -57,7 +57,7 @@ with app.setup:
     LEARNING_RATE = 0.05
     BATCH_SIZE = 256
     EPOCHS = {'mnist': 500, 'cifar10': 30, 'imagenet32': 10}
-    WEIGHT_DECAY = 0.00001
+    WEIGHT_DECAY = 0.0001
     MOMENTUM = 0.0
     DAMPENING = 0.0
     VALIDATION_FRACTION = 0.1
@@ -287,7 +287,7 @@ def _(
     _indices = np.flatnonzero(_labels == int(_selected["class_id"]))[:6]
     mo.stop(len(_indices) == 0, mo.md("No cached examples for this class."))
     _original = prepare(_images[_indices])
-    _augmenter = ImageAugmenter(task.value, selected_augmentation(task.value, augmentation_controls.value),
+    _augmenter = ImageAugmenter(task.value, effective_augmentation(task.value, augmentation_controls),
                                seed=int(preview_seed.value))
     _augmented = _augmenter(_original, torch.as_tensor(_labels[_indices]).long())
     import matplotlib.pyplot as _plt
@@ -420,6 +420,15 @@ def _(
 
 
 @app.cell(hide_code=True)
+def _(augmentation_controls, optimizer_choice, task):
+    _augmentation = effective_augmentation(task.value, augmentation_controls)
+    mo.md(f"**Next run:** {task.value} · {optimizer_choice.value} · "
+          f"augmentation **{'ON' if _augmentation['enabled'] else 'OFF'}**. "
+          "Loading a saved run replaces settings; check this status before pressing **Run**.")
+    return
+
+
+@app.cell(hide_code=True)
 def _(
     NUM_CLASSES,
     RESULTS_FILE,
@@ -440,7 +449,7 @@ def _(
         _run_dir = RESULTS_FILE.parent / "runs" / f"{task.value}-{time.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:8]}"
         _model = train_with_metrics(task.value, _X_train, _y_train, seed=int(seed.value),
                                     device=device.value, run_dir=_run_dir,
-                                    augmentation=selected_augmentation(task.value, augmentation_controls.value),
+                                    augmentation=effective_augmentation(task.value, augmentation_controls),
                                     optimizer_settings=selected_optimizer(optimizer_choice.value, optimizer_controls.value))
         _minutes = (time.perf_counter() - _start) / 60
         _probs = torch.as_tensor(predict(_model, _X_test)).float().cpu()
@@ -1298,6 +1307,15 @@ def selected_augmentation(task, configurations):
     if config.get("task", task) != task:
         raise ValueError("Augmentation configuration does not match the selected dataset")
     config["task"] = task
+    return config
+
+
+@app.function
+def effective_augmentation(task, controls):
+    """Use the same controls for display, preview, and training; reject stale UI state."""
+    config = selected_augmentation(task, controls.value)
+    if config["enabled"] != controls[task]["enabled"].value:
+        raise ValueError("Augmentation controls disagree. Reload the notebook before training.")
     return config
 
 

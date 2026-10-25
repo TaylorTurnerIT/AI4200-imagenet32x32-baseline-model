@@ -160,6 +160,15 @@ class LeaderboardTests(unittest.TestCase):
             self.assertTrue((run_dir / 'curves.png').exists())
             return 'Leaderboard submission confirmed as TaylorT, section 5000.'
 
+        controls_cell = next(node for node in ast.parse(Path(notebook.__file__).read_text()).body
+                             if isinstance(node, ast.FunctionDef) and node.name == '_' and any(
+                                 isinstance(child, ast.Assign) and any(
+                                     isinstance(output, ast.Name) and output.id == 'augmentation_controls'
+                                     for output in child.targets) for child in node.body))
+        controls_cell.decorator_list = []
+        controls_namespace = dict(vars(notebook))
+        exec(compile(ast.Module(body=[controls_cell], type_ignores=[]), notebook.__file__, 'exec'), controls_namespace)
+        (controls,) = controls_namespace['_']()
         displayed = []
         namespace = dict(vars(notebook))
         namespace.update(
@@ -175,9 +184,7 @@ class LeaderboardTests(unittest.TestCase):
                     patch.object(notebook, 'predict', namespace['predict']):
                 namespace['_'](
                     NUM_CLASSES={'mnist': 2}, RESULTS_FILE=results,
-                    augmentation_controls=SimpleNamespace(value={
-                        'mnist': notebook.augmentation_config('mnist'),
-                    }),
+                    augmentation_controls=controls,
                     optimizer_choice=SimpleNamespace(value='SGD'),
                     optimizer_controls=SimpleNamespace(value={'SGD': notebook.OPTIMIZER_DEFAULTS['SGD']}),
                     device=SimpleNamespace(value='cpu'), run_training=SimpleNamespace(value=True),

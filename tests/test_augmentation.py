@@ -244,6 +244,7 @@ class DigitAugmentationTests(unittest.TestCase):
         for task in notebook.TASKS:
             self.assertEqual(notebook.selected_augmentation(task, configurations), notebook.augmentation_config(task))
             configurations[task]['enabled'] = True
+        controls._update(configurations)
         namespace['mo'] = SimpleNamespace(stop=lambda *args: None, md=lambda value: value,
                                          vstack=lambda value: None,
                                          status=SimpleNamespace(spinner=lambda **kwargs: nullcontext()))
@@ -264,7 +265,7 @@ class DigitAugmentationTests(unittest.TestCase):
                     namespace['_'](
                         NUM_CLASSES={name: spec['num_classes'] for name, spec in notebook.TASKS.items()},
                         RESULTS_FILE=root / 'results.csv',
-                        augmentation_controls=SimpleNamespace(value=configurations),
+                        augmentation_controls=controls,
                         optimizer_choice=SimpleNamespace(value=optimizer_name),
                         optimizer_controls=SimpleNamespace(value=notebook.OPTIMIZER_DEFAULTS),
                         device=SimpleNamespace(value='cpu'), load_task=lambda name: (images, labels, images[:4], labels[:4]),

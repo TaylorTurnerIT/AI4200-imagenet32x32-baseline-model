@@ -119,6 +119,49 @@ class SavedRunTests(unittest.TestCase):
         self.assertEqual(len(trained.training_history), 2)
         self.assertEqual(trained.run_config['architecture']['functional_operations'], ['silu'])
 
+    def test_loaded_augmentation_matches_visible_switch_and_training_for_on_and_off(self):
+        for enabled in (True, False):
+            with self.subTest(enabled=enabled):
+                config = {**self.config, 'augmentation': {**self.config['augmentation'], 'enabled': enabled}}
+                entry = {'id': f'augmentation-{enabled}', 'config': config}
+                target = self.root / f'notebook_{enabled}.py'
+                target.write_text(self.source)
+                notebook.apply_saved_run(target, entry)
+                module_name = f'loaded_augmentation_{enabled}_{id(self)}'
+                spec = importlib.util.spec_from_file_location(module_name, target)
+                module = importlib.util.module_from_spec(spec)
+                sys.modules[module_name] = module
+                self.addCleanup(sys.modules.pop, module_name, None)
+                spec.loader.exec_module(module)
+                cells = [node for node in ast.parse(target.read_text()).body
+                         if isinstance(node, ast.FunctionDef) and node.name == '_']
+                controls_cell = next(node for node in cells if any(
+                    isinstance(child, ast.Assign) and any(
+                        isinstance(output, ast.Name) and output.id == 'augmentation_controls'
+                        for output in child.targets) for child in node.body))
+                controls_cell.decorator_list = []
+                (widgets,) = create_function(controls_cell, module)()
+                visible = widgets['cifar10']['enabled'].value
+                self.assertEqual(visible, enabled)
+                effective = module.effective_augmentation('cifar10', widgets)
+                self.assertEqual(effective, config['augmentation'])
+                images = np.zeros((12, 3, 32, 32), dtype=np.uint8)
+                for switch_value in (enabled, not enabled):
+                    update = json.loads(json.dumps(widgets._value_frontend))
+                    update['cifar10']['enabled'] = switch_value
+                    widgets._update(update)
+                    self.assertEqual(widgets['cifar10']['enabled'].value, switch_value)
+                    effective = module.effective_augmentation('cifar10', widgets)
+                    run_dir = self.root / f'run-{enabled}-{switch_value}'
+                    model = module.train_with_metrics('cifar10', images, np.arange(12) % 3,
+                                                      device='cpu', run_dir=run_dir, augmentation=effective)
+                    saved = json.loads((run_dir / 'config.json').read_text())
+                    self.assertEqual(saved['augmentation']['enabled'], switch_value)
+                    self.assertEqual(model.run_config['augmentation'], effective)
+                widgets.value['cifar10']['enabled'] = not widgets['cifar10']['enabled'].value
+                with self.assertRaisesRegex(ValueError, 'controls disagree'):
+                    module.effective_augmentation('cifar10', widgets)
+
     def test_legacy_dimensions_and_unrecorded_fields_require_explicit_choices(self):
         config = dict(self.config)
         for key in ('architecture', 'model_source', 'block_source', 'optimizer', 'optimizer_settings', 'augmentation'):

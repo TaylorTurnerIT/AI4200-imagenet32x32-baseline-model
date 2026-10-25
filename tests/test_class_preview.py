@@ -62,7 +62,15 @@ class ClassPreviewTests(unittest.TestCase):
                 return images
 
         render_namespace['ImageAugmenter'] = RecordInputs
-        configs = {task: notebook.augmentation_config(task) for task in notebook.TASKS}
+        controls_cell = next(node for node in ast.parse(Path(notebook.__file__).read_text()).body
+                             if isinstance(node, ast.FunctionDef) and node.name == '_' and any(
+                                 isinstance(child, ast.Assign) and any(
+                                     isinstance(output, ast.Name) and output.id == 'augmentation_controls'
+                                     for output in child.targets) for child in node.body))
+        controls_cell.decorator_list = []
+        controls_namespace = dict(vars(notebook))
+        exec(compile(ast.Module(body=[controls_cell], type_ignores=[]), notebook.__file__, 'exec'), controls_namespace)
+        (controls,) = controls_namespace['_']()
         with tempfile.TemporaryDirectory() as folder:
             for task, spec in notebook.TASKS.items():
                 with self.subTest(task=task):
@@ -78,7 +86,7 @@ class ClassPreviewTests(unittest.TestCase):
                     for class_id in (last, 0):
                         table._update([str(class_id)])
                         self.assertEqual(table.value[0]['class_id'], class_id)
-                        render(SimpleNamespace(value=configs), table, cached_images, cached_labels,
+                        render(controls, table, cached_images, cached_labels,
                                SimpleNamespace(value=42), selected_task)
                         self.assertEqual(seen[-1], [class_id, class_id])
 

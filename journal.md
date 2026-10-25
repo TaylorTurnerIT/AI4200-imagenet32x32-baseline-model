@@ -939,6 +939,45 @@ All final scores use the best validation checkpoint. Train excludes the holdout.
 
 > 4. This is what I had expected to make the biggest difference. Weight decay is a big deal, I've seen it absolutely tank performance in other trials. I've also seen it save performance during MNIST where we were a hundred percent accuracy. 
 
+Run: runs/cifar10-20261024-215848-059027aa
+Time: 2026-10-24 22:00:16
+Task: cifar10
+Train accuracy:      74.90% (45000 clean examples)
+Validation accuracy: 60.38% (5000 examples)
+Test accuracy:       59.07% (10000 examples)
+Best epoch: 29 / 30 completed (30 configured)
+Training time: 1.46 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+> Incredible. We've been over regularizing. Why not? Even smaller. 
+
+Run: runs/cifar10-20261024-220725-3ec48d0c
+Time: 2026-10-24 22:08:50
+Task: cifar10
+Train accuracy:      74.93% (45000 clean examples)
+Validation accuracy: 60.36% (5000 examples)
+Test accuracy:       59.11% (10000 examples)
+Best epoch: 29 / 30 completed (30 configured)
+Training time: 1.41 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+> It rounded to zero after I added one more. Going to leave regularization on. 
+
+> 5. Augmentation
+
+> Forgot to turn augmentation off, had to rerun all those experiments
+
+### Audited reruns with augmentation off
+
+| Configuration | Train | Validation | Test | Test difference from baseline | Saved run |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Baseline: width 256 / hidden 512, GELU, batch 256, decay 0.0001 | 99.99% | 56.40% | 54.59% | +0.00 pp | [baseline](runs/cifar10-20261024-222752-audit-baseline/summary.txt) |
+| Width / hidden: 128 / 128 | 72.83% | 51.74% | 50.29% | -4.30 pp | [width-hidden](runs/cifar10-20261024-222752-audit-width-hidden/summary.txt) |
+| Activation: ReLU in blocks and head | 99.98% | 55.52% | 54.81% | +0.22 pp | [relu](runs/cifar10-20261024-222752-audit-relu/summary.txt) |
+| Batch size: 128 | 100.00% | 57.38% | 55.77% | +1.18 pp | [batch-128](runs/cifar10-20261024-222752-audit-batch-128/summary.txt) |
+| Weight decay: 0.00001 | 100.00% | 55.30% | 54.75% | +0.16 pp | [weight-decay-1e-5](runs/cifar10-20261024-222752-audit-weight-decay-1e-5/summary.txt) |
+| Weight decay: 0 | 100.00% | 55.72% | 54.67% | +0.08 pp | [weight-decay-zero](runs/cifar10-20261024-222752-audit-weight-decay-zero/summary.txt) |
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.

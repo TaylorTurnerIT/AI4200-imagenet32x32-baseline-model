@@ -134,6 +134,17 @@ follows the `depth` constructor argument.
 
 ### Reloading previous experiments
 
+Loading restores the saved augmentation settings, including whether augmentation
+is enabled. The visible switch, **Next run** status, preview, and training all
+read the same controls. Training stops if the visible switch and control state
+disagree. Changing the switch after loading changes the next run.
+
+`./run` enables file watching, and the project sets
+`runtime.watcher_on_save = "autorun"` so loading settings updates live cells.
+`runtime.auto_reload` controls imported modules and does not enable this behavior.
+After changing the project configuration, restart an already-running Marimo
+server once with `./run`; Marimo caches project configuration at startup.
+
 The **Saved runs** panel lists saved configurations for the selected dataset,
 with validation and test scores. Pick a run and click **Load selected settings**,
 or click **Load best settings**. **Best by** defaults to validation accuracy;
