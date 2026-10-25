@@ -880,7 +880,23 @@ Hyperparameters and architecture:
 
 > Nope.  Shrinking the residual stream to the size of the input or below destroys performance. That makes sense. The images are complex enough that REDUCING the amount of information we let through sounds like a recipe for disaster.
 
-> Could be that we're over-regularizing. I'll try turning down regularization and increase weight decay. I'm also switching back to AdamW because I understand it better.
+## Happy Accident
+
+> So I wasn't liking the results I was getting so I added a feature to roll back to previous configurations. But, apparently it was bugged. Somehow I ended up with a similar shape, but a **58%** test accuracy! That's up from 52%! Per codex:
+
+Compared with recorded 52.09% runs:
+
+| Setting        | 52.09%    | 58.88% |
+|---|---:|---:|
+| Width / hidden | 128 / 128 | 256 / 512 |
+| Activation     | ReLU      | GELU |
+| Batch size     | 128       | 256 |
+| Weight decay   | 0.00001   | 0.0001 |
+| Augmentation   | Off       | On  |
+
+> So... I need to understand what happened here. I am going to look through each change one by one and theorize then test.
+
+> 1. Width / hidden. I imagine that a residual stream of 128 with a hidden width of 128 was bottlenecking the model. We were seeing solid performance that could scale, I just hadn't noticed it. Let's test that theory by shrinking back down, keeping all else constant.
 
 
 # Planning
