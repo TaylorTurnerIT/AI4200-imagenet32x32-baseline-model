@@ -898,6 +898,16 @@ Compared with recorded 52.09% runs:
 
 > 1. Width / hidden. I imagine that a residual stream of 128 with a hidden width of 128 was bottlenecking the model. We were seeing solid performance that could scale, I just hadn't noticed it. Let's test that theory by shrinking back down, keeping all else constant.
 
+Run: runs/cifar10-20261024-212021-44f3ab35
+Time: 2026-10-24 21:21:42
+Task: cifar10
+Train accuracy:      63.99% (45000 clean examples)
+Validation accuracy: 57.56% (5000 examples)
+Test accuracy:       56.68% (10000 examples)
+Best epoch: 29 / 30 completed (30 configured)
+Training time: 1.35 minutes
+
+> Looks like we were a little bit right, but it only made a small difference. Reverting and moving to the next. 
 
 # Planning
 

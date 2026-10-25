@@ -562,7 +562,7 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
-    def __init__(self, in_features, num_classes, width=256, hidden=512, depth=7):
+    def __init__(self, in_features, num_classes, width=128, hidden=128, depth=7):
         super().__init__()
 
         # Project the flattened image down to the backbone width.
