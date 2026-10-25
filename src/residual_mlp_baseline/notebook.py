@@ -34,37 +34,71 @@ with app.setup:
         "imagenet32": {"in_features": 3 * 32 * 32, "num_classes": 1000},  # 32x32 color
     }
 
-    DEFAULT_TASK = "cifar10"
+    DEFAULT_TASK = 'cifar10'
     DEFAULT_SEED = 42
-    DEFAULT_DEVICE = None
-    RESTORED_FROM = None
-    AUGMENTATION_CONFIG_OVERRIDES = {}
+    DEFAULT_DEVICE = 'mps'
+    RESTORED_FROM = {'run_id': 'cifar10-20261024-210758-6cf0d0b4',
+     'task': 'cifar10',
+     'legacy_activation': None,
+     'legacy_optimizer': None,
+     'legacy_augmentation': None}
+    AUGMENTATION_CONFIG_OVERRIDES = {'cifar10': {'enabled': True,
+                 'default': {'rotation': {'probability': 0.0, 'amount': 10.0},
+                             'translation': {'probability': 0.5, 'amount': 4.0},
+                             'scale': {'probability': 0.0, 'amount': 0.1},
+                             'shear': {'probability': 0.0, 'amount': 5.0},
+                             'brightness': {'probability': 0.25, 'amount': 0.1},
+                             'noise': {'probability': 0.0, 'amount': 0.05},
+                             'erasing': {'probability': 0.0, 'amount': 0.05},
+                             'horizontal_flip': {'probability': 0.5, 'amount': 1.0}},
+                 'classes': {},
+                 'task': 'cifar10'}}
 
     LEARNING_RATE = 0.05
     BATCH_SIZE = 256
-    EPOCHS = {"mnist": 500, "cifar10": 30, "imagenet32": 10}
-    WEIGHT_DECAY = 1e-4
+    EPOCHS = {'mnist': 500, 'cifar10': 30, 'imagenet32': 10}
+    WEIGHT_DECAY = 0.00001
     MOMENTUM = 0.0
     DAMPENING = 0.0
     VALIDATION_FRACTION = 0.1
 
-    OPTIMIZER_NAME = "SGD"
-    OPTIMIZER_DEFAULTS = {
-        "SGD": {"lr": LEARNING_RATE, "weight_decay": WEIGHT_DECAY, "momentum": MOMENTUM,
-                "dampening": DAMPENING, "nesterov": False},
-        "Adam": {"lr": 1e-3, "weight_decay": 1e-5,
-                 "beta1": 0.9, "beta2": 0.999, "eps": 1e-8, "amsgrad": False},
-        "AdamW": {"lr": 1e-3, "weight_decay": 1e-5,
-                  "beta1": 0.9, "beta2": 0.999, "eps": 1e-8, "amsgrad": False},
-        "Muon": {"lr": 0.02, "weight_decay": 1e-5, "momentum": 0.95,
-                 "nesterov": True, "ns_steps": 5, "eps": 1e-7, "adjust_lr_fn": "original",
-                 "auxiliary_lr": 1e-3, "auxiliary_weight_decay": 1e-5,
-                 "auxiliary_beta1": 0.9, "auxiliary_beta2": 0.999, "auxiliary_eps": 1e-8},
-        "RMSprop": {"lr": 1e-3, "weight_decay": 1e-5,
-                    "momentum": 0.0, "alpha": 0.99, "eps": 1e-8, "centered": False},
-        "Adagrad": {"lr": 0.01, "weight_decay": 1e-5, "lr_decay": 0.0,
-                    "initial_accumulator_value": 0.0, "eps": 1e-10},
-    }
+    OPTIMIZER_NAME = 'SGD'
+    OPTIMIZER_DEFAULTS = {'SGD': {'lr': 0.05, 'weight_decay': 0.0001, 'momentum': 0.0, 'dampening': 0.0, 'nesterov': False},
+     'Adam': {'lr': 0.001,
+              'weight_decay': 1e-05,
+              'beta1': 0.9,
+              'beta2': 0.999,
+              'eps': 1e-08,
+              'amsgrad': False},
+     'AdamW': {'lr': 0.001,
+               'weight_decay': 1e-05,
+               'beta1': 0.9,
+               'beta2': 0.999,
+               'eps': 1e-08,
+               'amsgrad': False},
+     'Muon': {'lr': 0.02,
+              'weight_decay': 1e-05,
+              'momentum': 0.95,
+              'nesterov': True,
+              'ns_steps': 5,
+              'eps': 1e-07,
+              'adjust_lr_fn': 'original',
+              'auxiliary_lr': 0.001,
+              'auxiliary_weight_decay': 1e-05,
+              'auxiliary_beta1': 0.9,
+              'auxiliary_beta2': 0.999,
+              'auxiliary_eps': 1e-08},
+     'RMSprop': {'lr': 0.001,
+                 'weight_decay': 1e-05,
+                 'momentum': 0.0,
+                 'alpha': 0.99,
+                 'eps': 1e-08,
+                 'centered': False},
+     'Adagrad': {'lr': 0.01,
+                 'weight_decay': 1e-05,
+                 'lr_decay': 0.0,
+                 'initial_accumulator_value': 0.0,
+                 'eps': 1e-10}}
 
     # Post each completed app run's test result to the unofficial class leaderboard.
     LEADERBOARD_ENABLED = True
@@ -278,22 +312,6 @@ def _(
 
 
 @app.cell(hide_code=True)
-def _(available_devices):
-    task = mo.ui.dropdown(["mnist", "cifar10", "imagenet32"], value=DEFAULT_TASK, label="Task")
-    _device_label = next((label for label, backend in available_devices.items() if backend == DEFAULT_DEVICE),
-                         list(available_devices)[-1])
-    device = mo.ui.dropdown(available_devices, value=_device_label, label="Device")
-    seed = mo.ui.number(start=0, stop=2**32 - 1, value=DEFAULT_SEED, label="Seed")
-    run_training = mo.ui.run_button(label="Run")
-    mo.vstack([
-        mo.hstack([task, device, seed, run_training], justify="start"),
-        mo.md(f"Completed runs post test accuracy as **{LEADERBOARD_ALIAS}**, section **{LEADERBOARD_SECTION}**."
-              if LEADERBOARD_ENABLED else "Leaderboard posting disabled."),
-    ])
-    return device, run_training, seed, task
-
-
-@app.cell(hide_code=True)
 def _():
     saved_runs_refresh = mo.ui.button(label="Refresh saved runs")
     load_saved = mo.ui.run_button(label="Load selected settings")
@@ -359,6 +377,22 @@ def _(
         ])}),
     ])
     return
+
+
+@app.cell(hide_code=True)
+def _(available_devices):
+    task = mo.ui.dropdown(["mnist", "cifar10", "imagenet32"], value=DEFAULT_TASK, label="Task")
+    _device_label = next((label for label, backend in available_devices.items() if backend == DEFAULT_DEVICE),
+                         list(available_devices)[-1])
+    device = mo.ui.dropdown(available_devices, value=_device_label, label="Device")
+    seed = mo.ui.number(start=0, stop=2**32 - 1, value=DEFAULT_SEED, label="Seed")
+    run_training = mo.ui.run_button(label="Run")
+    mo.vstack([
+        mo.hstack([task, device, seed, run_training], justify="start"),
+        mo.md(f"Completed runs post test accuracy as **{LEADERBOARD_ALIAS}**, section **{LEADERBOARD_SECTION}**."
+              if LEADERBOARD_ENABLED else "Leaderboard posting disabled."),
+    ])
+    return device, run_training, seed, task
 
 
 @app.cell(hide_code=True)
@@ -562,7 +596,7 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
-    def __init__(self, in_features, num_classes, width=128, hidden=128, depth=7):
+    def __init__(self, in_features, num_classes, width=256, hidden=512, depth=7):
         super().__init__()
 
         # Project the flattened image down to the backbone width.

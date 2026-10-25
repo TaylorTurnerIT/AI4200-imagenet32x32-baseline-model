@@ -909,6 +909,36 @@ Training time: 1.35 minutes
 
 > Looks like we were a little bit right, but it only made a small difference. Reverting and moving to the next. 
 
+> 2. ReLU -> GELU. I expect GELU is better because by definition it was an iteration upon ReLU. 
+
+Run: runs/cifar10-20261024-212806-223e71d6
+Time: 2026-10-24 21:29:32
+Task: cifar10
+Train accuracy:      71.77% (45000 clean examples)
+Validation accuracy: 60.04% (5000 examples)
+Test accuracy:       58.51% (10000 examples)
+Best epoch: 29 / 30 completed (30 configured)
+Training time: 1.43 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+> And so it was. 
+
+> 3. Batch size being smaller in theory should help with generalization. We are making more erratic jumps that speed up gradient descent. And in the process we expect to not necessarily fall into local minima as easily. Smaller batch should realistically yield a better result. But evidence has shown that to be inconsistent. 
+
+Run: runs/cifar10-20261024-213729-7b6a5d2b
+Time: 2026-10-24 21:38:20
+Task: cifar10
+Train accuracy:      100.00% (45000 clean examples)
+Validation accuracy: 57.38% (5000 examples)
+Test accuracy:       55.77% (10000 examples)
+Best epoch: 27 / 30 completed (30 configured)
+Training time: 0.85 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+> Worse, not entirely unexpected. I think it's really interesting that this past run was able to achieve a hundred percent just because it had a smaller batch size. Clearly we found a better minima, just not a generalized one. 
+
+> 4. This is what I had expected to make the biggest difference. Weight decay is a big deal, I've seen it absolutely tank performance in other trials. I've also seen it save performance during MNIST where we were a hundred percent accuracy. 
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.
