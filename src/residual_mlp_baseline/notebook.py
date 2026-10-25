@@ -37,32 +37,32 @@ with app.setup:
     DEFAULT_TASK = 'cifar10'
     DEFAULT_SEED = 42
     DEFAULT_DEVICE = 'mps'
-    RESTORED_FROM = {'run_id': 'cifar10-20261024-210758-6cf0d0b4',
+    RESTORED_FROM = {'run_id': 'cifar10-20261025-123955-7c8c8c1d',
      'task': 'cifar10',
      'legacy_activation': None,
      'legacy_optimizer': None,
      'legacy_augmentation': None}
     AUGMENTATION_CONFIG_OVERRIDES = {'cifar10': {'enabled': True,
-                 'default': {'rotation': {'probability': 0.0, 'amount': 10.0},
+                 'default': {'rotation': {'probability': 0.45, 'amount': 10.0},
                              'translation': {'probability': 0.5, 'amount': 4.0},
-                             'scale': {'probability': 0.0, 'amount': 0.1},
-                             'shear': {'probability': 0.0, 'amount': 5.0},
-                             'brightness': {'probability': 0.25, 'amount': 0.1},
-                             'noise': {'probability': 0.0, 'amount': 0.05},
-                             'erasing': {'probability': 0.0, 'amount': 0.05},
+                             'scale': {'probability': 0.55, 'amount': 0.1},
+                             'shear': {'probability': 0.5, 'amount': 5.0},
+                             'brightness': {'probability': 0.45, 'amount': 0.1},
+                             'noise': {'probability': 0.5, 'amount': 0.05},
+                             'erasing': {'probability': 0.5, 'amount': 0.05},
                              'horizontal_flip': {'probability': 0.5, 'amount': 1.0}},
                  'classes': {},
                  'task': 'cifar10'}}
 
-    LEARNING_RATE = 0.05
+    LEARNING_RATE = 0.03
     BATCH_SIZE = 256
-    EPOCHS = {'mnist': 500, 'cifar10': 30, 'imagenet32': 10}
-    WEIGHT_DECAY = 0.0001
+    EPOCHS = {'mnist': 500, 'cifar10': 60, 'imagenet32': 10}
+    WEIGHT_DECAY = 1e-05
     MOMENTUM = 0.0
     DAMPENING = 0.0
     VALIDATION_FRACTION = 0.1
 
-    OPTIMIZER_NAME = 'SGD'
+    OPTIMIZER_NAME = 'Muon'
     OPTIMIZER_DEFAULTS = {'SGD': {'lr': 0.05, 'weight_decay': 0.0001, 'momentum': 0.0, 'dampening': 0.0, 'nesterov': False},
      'Adam': {'lr': 0.001,
               'weight_decay': 1e-05,
@@ -75,8 +75,8 @@ with app.setup:
                'beta1': 0.9,
                'beta2': 0.999,
                'eps': 1e-08,
-               'amsgrad': False},
-     'Muon': {'lr': 0.02,
+               'amsgrad': True},
+     'Muon': {'lr': 0.03,
               'weight_decay': 1e-05,
               'momentum': 0.95,
               'nesterov': True,
@@ -578,18 +578,18 @@ def _():
 
 
 @app.class_definition
-class Block4(nn.Module):
-    def __init__(self, width=256, hidden=512):
+class Block14(nn.Module):
+    def __init__(self, width=512):
         super().__init__()
         self.norm = nn.LayerNorm(width)
-        self.fc1 = nn.Linear(width, hidden)
-        self.fc2 = nn.Linear(hidden, width)
+        self.fc1 = nn.Linear(width, width)
+        self.fc2 = nn.Linear(width, width)
 
     def forward(self, x):
         n = self.norm(x)
-        a = F.gelu(self.fc1(n))
-        h = self.fc2(a)
-        return x + h
+        h = self.fc2(n)
+        x2 = self.fc1(n) * h
+        return x + x2
 
 
 @app.class_definition
@@ -605,15 +605,15 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
-    def __init__(self, in_features, num_classes, width=256, hidden=512, depth=7):
+    def __init__(self, in_features, num_classes, width=512, hidden=512, depth=6):
         super().__init__()
 
         # Project the flattened image down to the backbone width.
         self.input_layer = nn.Linear(in_features, width)
-        self.blocks = nn.ModuleList([Block4(width, hidden) for _ in range(depth)])
+        self.blocks = nn.ModuleList([Block14(width) for _ in range(6)])
         # The head: same layers as a block, but the last layer outputs class scores.
-        self.head_norm = nn.LayerNorm(width)
-        self.head_fc1 = nn.Linear(width, hidden)
+        self.head_norm = nn.LayerNorm(hidden)
+        self.head_fc1 = nn.Linear(hidden, hidden)
         self.head_fc2 = nn.Linear(hidden, num_classes)
 
         # Xavier (Glorot) initialization for every linear layer, zero biases.
@@ -632,7 +632,7 @@ class ResidualMLP(nn.Module):
         for blk in self.blocks:
             x = blk(x)
         n = self.head_norm(x)
-        a = F.gelu(self.head_fc1(n))
+        a = F.silu(self.head_fc1(n))
         return self.head_fc2(a)
 
     def predict(self, x):

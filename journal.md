@@ -978,6 +978,14 @@ All final scores use the best validation checkpoint. Train excludes the holdout.
 | Weight decay: 0.00001 | 100.00% | 55.30% | 54.75% | +0.16 pp | [weight-decay-1e-5](runs/cifar10-20261024-222752-audit-weight-decay-1e-5/summary.txt) |
 | Weight decay: 0 | 100.00% | 55.72% | 54.67% | +0.08 pp | [weight-decay-zero](runs/cifar10-20261024-222752-audit-weight-decay-zero/summary.txt) |
 
+> Some more tinkering. Switched to AdamW with Adagrad and it seems the signal cap is 60%. Got a new record!
+
+## Gating our Linear Units
+
+> Time to experiment with some gated linear units. While it's directly supported by PyTorch, it's not supported by torch canvas. I could add the functionality, but I think it's a more interesting exploration if I just build it out of its puzzle pieces. Found this interesting paper when trying to find visuals for it before I remembered it was in the slides. https://arxiv.org/pdf/2405.15953
+
+> The most interesting part of this paper is the scores. The vision transformer they benchmarked only got65 %. I might be approaching the boundary of what's possible without attention or convolution. That is not going to stop me. 
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.
