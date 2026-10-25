@@ -589,14 +589,15 @@ class Block14(nn.Module):
         n = self.norm(x)
         h = self.fc2(n)
         x2 = self.fc1(n) * h
-        return x + x2
+        return x2 + x
 
 
-@app.class_definition
+@app.class_definition(hide_code=True)
 class ResidualMLP(nn.Module):
     """Baseline residual MLP.
 
-    input -> Linear(in_features -> width)            project into the backbone
+    input -> MaxPool2d(4) -> Flatten               pool each image channel spatially
+          -> Linear(in_features // 16 -> width)    project into the backbone
           -> depth x Block                           residual backbone, stays `width` wide
           -> LayerNorm -> Linear -> GELU -> Linear   head: a block without the skip
           -> logits (num_classes)
@@ -605,15 +606,16 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
+    # torch-canvas input x: e, 3, 32, 32
     def __init__(self, in_features, num_classes, width=512, hidden=512, depth=6):
         super().__init__()
-
+        self.pool = nn.MaxPool2d(kernel_size=4)
         # Project the flattened image down to the backbone width.
-        self.input_layer = nn.Linear(in_features, width)
-        self.blocks = nn.ModuleList([Block14(width) for _ in range(6)])
+        self.input_layer = nn.Linear(in_features // 16, width)
+        self.blocks = nn.ModuleList([Block14(width) for _ in range(depth)])
         # The head: same layers as a block, but the last layer outputs class scores.
-        self.head_norm = nn.LayerNorm(hidden)
-        self.head_fc1 = nn.Linear(hidden, hidden)
+        self.head_norm = nn.LayerNorm(width)
+        self.head_fc1 = nn.Linear(width, hidden)
         self.head_fc2 = nn.Linear(hidden, num_classes)
 
         # Xavier (Glorot) initialization for every linear layer, zero biases.
@@ -627,12 +629,12 @@ class ResidualMLP(nn.Module):
 
         nn.CrossEntropyLoss applies the softmax itself, so training uses logits.
         """
-        x = x.flatten(start_dim=1)
+        x = self.pool(x).flatten(1)
         x = self.input_layer(x)
         for blk in self.blocks:
             x = blk(x)
         n = self.head_norm(x)
-        a = F.silu(self.head_fc1(n))
+        a = F.gelu(self.head_fc1(n))
         return self.head_fc2(a)
 
     def predict(self, x):

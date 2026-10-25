@@ -992,6 +992,12 @@ All final scores use the best validation checkpoint. Train excludes the holdout.
 
 > I'm wondering if I can create many feed forward networks. The idea being I take the32 by32 input image. Then subdivide it twice. That would then create many four by four sub images. Then run a multi-layer perceptron to create some new representation. We then apply all of those and flatten it. that becomes the new residual stream. Let's try it out. 
 
+> Note: While attempting to figure out how to do this in PyTorch, I discovered that this is one of the fundamental pieces that go into a vision transformer, that being patch embeddings. There's apparently a model called MLP mixer that takes these patch embeddings and then disperses their information. I think that's a little odd personally, but I understand what they're going for. 
+
+> Note2: Given that I just discovered it was Google that came up with the idea of the MLP mixer. I'm gonna take their word for it. https://arxiv.org/html/2105.01601v4
+
+> At this stage I became uncertain whether this was allowed, but according to the instructions "creative ways of feeding images into an MLP, such as splitting an image into patches or mixing information across positions." Which to me sounds like exactly what I'm doing. I guess the hint was there the whole time. But I don't see how this differs from convolution. From what I can tell, a convolutional layer applies the same filter over everything, while this doesn't. 
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.
