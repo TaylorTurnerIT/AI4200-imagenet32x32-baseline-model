@@ -36,7 +36,7 @@ with app.setup:
 
     LEARNING_RATE = 1e-3
     BATCH_SIZE = 256
-    EPOCHS = {"mnist": 500, "cifar10": 10, "imagenet32": 10}
+    EPOCHS = {"mnist": 500, "cifar10": 15, "imagenet32": 10}
     WEIGHT_DECAY = 1e-5
     MOMENTUM = 0.0
     DAMPENING = 0.0
@@ -80,20 +80,6 @@ with app.setup:
         "noise": ("Gaussian noise", "std on 0–1 intensity", 0.3, 0.01, 0.25, 0.05),
         "erasing": ("Random square erasing", "fraction of image area", 0.25, 0.01, 0.1, 0.05),
     }
-
-
-@app.cell(hide_code=True)
-def _(available_devices):
-    task = mo.ui.dropdown(["mnist", "cifar10", "imagenet32"], value="mnist", label="Task")
-    device = mo.ui.dropdown(available_devices, value=list(available_devices)[-1], label="Device")
-    seed = mo.ui.number(start=0, stop=2**32 - 1, value=42, label="Seed")
-    run_training = mo.ui.run_button(label="Run")
-    mo.vstack([
-        mo.hstack([task, device, seed, run_training], justify="start"),
-        mo.md(f"Completed runs post test accuracy as **{LEADERBOARD_ALIAS}**, section **{LEADERBOARD_SECTION}**."
-              if LEADERBOARD_ENABLED else "Leaderboard posting disabled."),
-    ])
-    return device, run_training, seed, task
 
 
 @app.cell(hide_code=True)
@@ -286,6 +272,20 @@ def _(
 
 
 @app.cell(hide_code=True)
+def _(available_devices):
+    task = mo.ui.dropdown(["mnist", "cifar10", "imagenet32"], value="mnist", label="Task")
+    device = mo.ui.dropdown(available_devices, value=list(available_devices)[-1], label="Device")
+    seed = mo.ui.number(start=0, stop=2**32 - 1, value=42, label="Seed")
+    run_training = mo.ui.run_button(label="Run")
+    mo.vstack([
+        mo.hstack([task, device, seed, run_training], justify="start"),
+        mo.md(f"Completed runs post test accuracy as **{LEADERBOARD_ALIAS}**, section **{LEADERBOARD_SECTION}**."
+              if LEADERBOARD_ENABLED else "Leaderboard posting disabled."),
+    ])
+    return device, run_training, seed, task
+
+
+@app.cell(hide_code=True)
 def _(
     NUM_CLASSES,
     RESULTS_FILE,
@@ -444,7 +444,7 @@ class Block(nn.Module):
 
     def forward(self, x):
         n = self.norm(x)
-        a = F.relu(self.fc1(n))
+        a = F.silu(self.fc1(n))
         h = self.fc2(a)
         return x + h
 
@@ -462,12 +462,12 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
-    def __init__(self, in_features, num_classes, width=128, hidden=128, depth=7):
+    def __init__(self, in_features, num_classes, width=256, hidden=512, depth=7):
         super().__init__()
 
         # Project the flattened image down to the backbone width.
         self.input_layer = nn.Linear(in_features, width)
-        self.blocks = nn.ModuleList([Block(width, hidden) for _ in range(7)])
+        self.blocks = nn.ModuleList([Block(width, hidden) for _ in range(50)])
         # The head: same layers as a block, but the last layer outputs class scores.
         self.head_norm = nn.LayerNorm(width)
         self.head_fc1 = nn.Linear(width, hidden)
@@ -489,7 +489,7 @@ class ResidualMLP(nn.Module):
         for blk in self.blocks:
             x = blk(x)
         n = self.head_norm(x)
-        a = F.relu(self.head_fc1(n))
+        a = F.silu(self.head_fc1(n))
         return self.head_fc2(a)
 
     def predict(self, x):

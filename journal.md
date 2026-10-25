@@ -872,7 +872,7 @@ Hyperparameters and architecture:
   }
 }
 
-> Well, Overfitting decreased.  
+> Well, Overfitting decreased. Performance is bad. I'm now going to do the opposite. I'm gonna scale up the model. Let's turn up batching a little bit. Let's increase the size of the residual stream, more layers, the whole shebang until we start overfitting again. Then we'll increase the chance of augmenting the data. Hopefully if we do that in a loop enough times, we will extract all we can out of a resnet.
 
 
 # Planning
