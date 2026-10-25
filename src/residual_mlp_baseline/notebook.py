@@ -304,9 +304,13 @@ def _():
                                        value=None, allow_select_none=True, label="Legacy activation (if missing)")
     legacy_optimizer = mo.ui.dropdown(available_optimizer_names(), value=None, allow_select_none=True,
                                       label="Legacy optimizer (if missing)")
+    legacy_augmentation = mo.ui.dropdown({"Off": "off", "Current defaults": "current"},
+                                         value=None, allow_select_none=True,
+                                         label="Legacy augmentation (if missing)")
     return (
         best_metric,
         legacy_activation,
+        legacy_augmentation,
         legacy_optimizer,
         load_best,
         load_saved,

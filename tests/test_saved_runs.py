@@ -182,6 +182,21 @@ class SavedRunTests(unittest.TestCase):
         self.assertTrue(target.read_text().startswith('# concurrent user edit\n'))
         self.assertFalse(list(self.root.glob('.notebook-restore-*')))
 
+    def test_dashboard_defines_legacy_augmentation_control(self):
+        cells = [node for node in ast.parse(self.source).body
+                 if isinstance(node, ast.FunctionDef) and node.name == '_']
+        controls = next(node for node in cells if any(
+            isinstance(child, ast.Assign) and any(
+                isinstance(target, ast.Name) and target.id == 'legacy_activation'
+                for target in child.targets)
+            for child in node.body))
+        controls.decorator_list = []
+        values = create_function(controls, notebook)()
+        outputs = dict(zip((item.id for item in controls.body[-1].value.elts), values))
+        augmentation = outputs['legacy_augmentation']
+        self.assertIsNone(augmentation.value)
+        self.assertEqual(set(augmentation.options.values()), {'off', 'current'})
+
     def test_dashboard_selected_and_best_buttons_route_to_the_correct_run(self):
         first = self.save('cifar10-001', .8, .7)
         second = self.save('cifar10-002', .7, .9)
