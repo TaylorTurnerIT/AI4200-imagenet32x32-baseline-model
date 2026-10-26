@@ -37,7 +37,7 @@ with app.setup:
     DEFAULT_TASK = 'cifar10'
     DEFAULT_SEED = 42
     DEFAULT_DEVICE = 'mps'
-    RESTORED_FROM = {'run_id': 'cifar10-20261025-123955-7c8c8c1d',
+    RESTORED_FROM = {'run_id': 'cifar10-20261026-131127-ba8e8b68',
      'task': 'cifar10',
      'legacy_activation': None,
      'legacy_optimizer': None,
@@ -578,8 +578,8 @@ def _():
 
 
 @app.class_definition
-class Block19(nn.Module):
-    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):
+class Block25(nn.Module):
+    def __init__(self, width=512, hidden=1024):
         super().__init__()
         self.input_norm = nn.LayerNorm(width)
         self.value_up = nn.Linear(width, hidden)
@@ -587,7 +587,7 @@ class Block19(nn.Module):
         self.gate_up = nn.Linear(width, hidden)
         self.gate_norm = nn.LayerNorm(hidden)
         self.down = nn.Linear(hidden, width)
-        self.dropout = nn.Dropout(p=dropout)
+        self.dropout = nn.Dropout(0.15)
 
     def forward(self, x):
         normalized = self.input_norm(x)
@@ -596,7 +596,8 @@ class Block19(nn.Module):
         a = F.gelu(self.gate_up(normalized))
         gate = self.gate_norm(a)
         gated = value * gate
-        return self.dropout(self.down(gated))
+        h = self.down(gated)
+        return self.dropout(h)
 
 
 @app.class_definition
@@ -614,12 +615,12 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
-    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1):
+    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1, hidden=1024):
         super().__init__()
 
         # Project the flattened image down to the backbone width.
         self.input_layer = nn.Linear(in_features, width)
-        self.blocks = nn.ModuleList([Block19(width, hidden1, dropout=dropout) for _ in range(6)])
+        self.blocks = nn.ModuleList([Block25(width, hidden) for _ in range(depth)])
         self.head_fc2 = nn.Linear(width, num_classes)
 
         # Xavier (Glorot) initialization for every linear layer, zero biases.

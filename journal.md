@@ -1015,7 +1015,7 @@ All final scores use the best validation checkpoint. Train excludes the holdout.
 - Dropped at all seven layers: 0.1^7 = 0.0000001.
 - Survives all seven masks: 0.9^7 ≈ 47.8%.
 
-> These indicate the model is seeing a lot of information most of the time, so it shouldn't overregularize. Worth tinkering with the amount of dropout. 
+> These indicate the model is seeing a lot of information most of the time, so it shouldn't overregularize. Worth tinkering with the amount of dropout. If we used 0.15 instead of 0.15, we would see only 32% probability of making it through ever layer unchanged.
 
 # Planning
 
