@@ -77,6 +77,36 @@ class SavedRunTests(unittest.TestCase):
         entries = notebook.list_saved_runs(self.root / 'results.csv', 'cifar10')
         self.assertEqual(next(row for row in entries if row['id'] == zero['id'])['test_accuracy'], 0.)
 
+    def test_display_metadata_preserves_executable_model_and_required_signature(self):
+        source = notebook.class_snapshot(self.config['model_source'])[1]
+        for task, shape, features, classes in (
+            ('mnist', 'e, 1, 28, 28', 784, 10),
+            ('cifar10', 'e, 3, 32, 32', 3072, 10),
+            ('imagenet32', 'e, 3, 32, 32', 3072, 1000),
+        ):
+            with self.subTest(task=task):
+                annotated = notebook.torch_canvas_model_metadata(source, task)
+                self.assertEqual(ast.dump(ast.parse(source)), ast.dump(ast.parse(annotated)))
+                self.assertIn(f'# torch-canvas input x: {shape}', annotated)
+                self.assertIn(f'# torch-canvas sizes: in_features={features}, num_classes={classes}', annotated)
+                self.assertEqual(notebook.torch_canvas_model_metadata(annotated, task), annotated)
+        pooled = source.replace('self.input_layer = nn.Linear(in_features, width)',
+                                'self.pool = nn.MaxPool2d(4)\n        self.input_layer = nn.Linear(in_features // 16, width)')
+        pooled = pooled.replace('x = x.flatten(start_dim=1)', 'x = self.pool(x).flatten(start_dim=1)')
+        annotated = notebook.torch_canvas_model_metadata(pooled, 'cifar10')
+        self.assertEqual(ast.dump(ast.parse(pooled)), ast.dump(ast.parse(annotated)))
+        self.assertIn('self.pool', annotated)
+
+    def test_loading_display_metadata_does_not_mutate_archived_configuration(self):
+        entry = self.save('display-only', .8, .7)
+        config_path = self.root / 'runs' / entry['id'] / 'config.json'
+        before = config_path.read_bytes()
+        entry_before = json.dumps(entry, sort_keys=True)
+        restored = notebook.restore_run_source(self.source, entry)
+        self.assertEqual(config_path.read_bytes(), before)
+        self.assertEqual(json.dumps(entry, sort_keys=True), entry_before)
+        self.assertIn('# torch-canvas sizes: in_features=3072, num_classes=10', restored)
+
     def test_loading_restores_model_and_settings_and_fresh_training_records_parent(self):
         entry = self.save('cifar10-parent', .8, .7)
         target = self.root / 'notebook.py'

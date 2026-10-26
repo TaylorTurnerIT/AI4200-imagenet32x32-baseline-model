@@ -998,6 +998,25 @@ All final scores use the best validation checkpoint. Train excludes the holdout.
 
 > At this stage I became uncertain whether this was allowed, but according to the instructions "creative ways of feeding images into an MLP, such as splitting an image into patches or mixing information across positions." Which to me sounds like exactly what I'm doing. I guess the hint was there the whole time. But I don't see how this differs from convolution. From what I can tell, a convolutional layer applies the same filter over everything, while this doesn't. 
 
+> https://medium.com/@benjybo7/7-pytorch-pool-methods-you-should-be-using-495eb00325d6
+> Another interesting page. Specifically number three with average global pooling. Avoiding overfitting sounds great. And I saw that method come up during the Google paper as well. 
+
+![](image.png)
+![](image_1.png)
+
+> This just seems so pleasant. 
+
+> Jumping ahead in time a bit here. I tinkered with designs from a few papers, not quite fully implementing them but testing fragments instead. Especially the activator design above. I learned that the definition of a transformer is rather loose and doesn't actually require the model to have attention! In fact, mixing pools is considered similar. Conceptually it makes sense, in fact I bet a similar attention is learned in a more opaque way.
+
+> In my experiments, I never saw an improvement and I started looking into pooling. This was the point my mind was blown as I now have a deep understanding of how convolutional neural networks work. And further, I independently thought my way through various pooling methods. I mentioned one before but even brand new architectures from Google are exploring using new and exciting pooling techniques even within the layers. 
+
+> At this point I added dropout to the output of the layer so it would have a 10% chance of setting a value of the input to zero. Intuitively this makes sense. We randomly are tossing out information and asking the model to still answer the question. There's some interesting probabilities here:
+
+- Dropped at all seven layers: 0.1^7 = 0.0000001.
+- Survives all seven masks: 0.9^7 ≈ 47.8%.
+
+> These indicate the model is seeing a lot of information most of the time, so it shouldn't overregularize. Worth tinkering with the amount of dropout. 
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.

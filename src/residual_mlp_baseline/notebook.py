@@ -578,26 +578,34 @@ def _():
 
 
 @app.class_definition
-class Block14(nn.Module):
-    def __init__(self, width=512):
+class Block19(nn.Module):
+    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):
         super().__init__()
-        self.norm = nn.LayerNorm(width)
-        self.fc1 = nn.Linear(width, width)
-        self.fc2 = nn.Linear(width, width)
+        self.input_norm = nn.LayerNorm(width)
+        self.value_up = nn.Linear(width, hidden)
+        self.value_norm = nn.LayerNorm(hidden)
+        self.gate_up = nn.Linear(width, hidden)
+        self.gate_norm = nn.LayerNorm(hidden)
+        self.down = nn.Linear(hidden, width)
+        self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, x):
-        n = self.norm(x)
-        h = self.fc2(n)
-        x2 = self.fc1(n) * h
-        return x2 + x
+        normalized = self.input_norm(x)
+        h = self.value_up(normalized)
+        value = self.value_norm(h)
+        a = F.gelu(self.gate_up(normalized))
+        gate = self.gate_norm(a)
+        gated = value * gate
+        return self.dropout(self.down(gated))
 
 
-@app.class_definition(hide_code=True)
+@app.class_definition
 class ResidualMLP(nn.Module):
+    # torch-canvas input x: e, 3, 32, 32
+    # torch-canvas sizes: in_features=3072, num_classes=10
     """Baseline residual MLP.
 
-    input -> MaxPool2d(4) -> Flatten               pool each image channel spatially
-          -> Linear(in_features // 16 -> width)    project into the backbone
+    input -> Linear(in_features -> width)            project into the backbone
           -> depth x Block                           residual backbone, stays `width` wide
           -> LayerNorm -> Linear -> GELU -> Linear   head: a block without the skip
           -> logits (num_classes)
@@ -606,17 +614,13 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
-    # torch-canvas input x: e, 3, 32, 32
-    def __init__(self, in_features, num_classes, width=512, hidden=512, depth=6):
+    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1):
         super().__init__()
-        self.pool = nn.MaxPool2d(kernel_size=4)
+
         # Project the flattened image down to the backbone width.
-        self.input_layer = nn.Linear(in_features // 16, width)
-        self.blocks = nn.ModuleList([Block14(width) for _ in range(depth)])
-        # The head: same layers as a block, but the last layer outputs class scores.
-        self.head_norm = nn.LayerNorm(width)
-        self.head_fc1 = nn.Linear(width, hidden)
-        self.head_fc2 = nn.Linear(hidden, num_classes)
+        self.input_layer = nn.Linear(in_features, width)
+        self.blocks = nn.ModuleList([Block19(width, hidden1, dropout=dropout) for _ in range(6)])
+        self.head_fc2 = nn.Linear(width, num_classes)
 
         # Xavier (Glorot) initialization for every linear layer, zero biases.
         for layer in self.modules():
@@ -629,13 +633,11 @@ class ResidualMLP(nn.Module):
 
         nn.CrossEntropyLoss applies the softmax itself, so training uses logits.
         """
-        x = self.pool(x).flatten(1)
+        x = x.flatten(1)
         x = self.input_layer(x)
         for blk in self.blocks:
             x = blk(x)
-        n = self.head_norm(x)
-        a = F.gelu(self.head_fc1(n))
-        return self.head_fc2(a)
+        return self.head_fc2(x)
 
     def predict(self, x):
         """Inference pass, never used during training. Returns class probabilities."""
@@ -1117,6 +1119,37 @@ def restored_augmentation(config, legacy_augmentation=None):
 
 
 @app.function
+def torch_canvas_model_metadata(source, task):
+    """Add display-only dataset dimensions without changing executable model code."""
+    import io
+    import re
+    import tokenize
+
+    shapes = {"mnist": "e, 1, 28, 28", "cifar10": "e, 3, 32, 32", "imagenet32": "e, 3, 32, 32"}
+    if task not in shapes or task not in TASKS:
+        raise ValueError("Unknown dataset for model display metadata")
+    original = ast.parse(source)
+    model = original.body[0]
+    forward = next(node for node in model.body if isinstance(node, ast.FunctionDef) and node.name == "forward")
+    input_name = forward.args.args[1].arg
+    lines = source.splitlines()
+    metadata = re.compile(r"^#\s*torch-canvas (?:input\s+\w+|sizes)\s*:")
+    remove = {token.start[0] - 1 for token in tokenize.generate_tokens(io.StringIO(source).readline)
+              if token.type == tokenize.COMMENT and token.start[1] == 4 and metadata.match(token.string)}
+    lines = [line for index, line in enumerate(lines) if index not in remove]
+    model = ast.parse("\n".join(lines)).body[0]
+    sizes = TASKS[task]
+    lines[model.body[0].lineno - 1:model.body[0].lineno - 1] = [
+        f"    # torch-canvas input {input_name}: {shapes[task]}",
+        f"    # torch-canvas sizes: in_features={sizes['in_features']}, num_classes={sizes['num_classes']}",
+    ]
+    result = "\n".join(lines)
+    if ast.dump(ast.parse(result)) != ast.dump(original):
+        raise ValueError("Display metadata must not change executable model code")
+    return result
+
+
+@app.function
 def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=None, legacy_augmentation=None):
     """Restore architecture and experiment defaults, preserving the rest of the notebook."""
     config = entry["config"]
@@ -1144,6 +1177,7 @@ def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=N
         block_source = ast.get_source_segment(source, block)
         model_source = configure_class_snapshot(model_source, architecture, legacy_activation)
         block_source = configure_class_snapshot(block_source, architecture, legacy_activation)
+    model_source = torch_canvas_model_metadata(model_source, task)
     replacements = [(model, model_source), (block, block_source)]
     replacements.sort(key=lambda edit: edit[0].lineno, reverse=True)
     for node, replacement in replacements:
@@ -1418,6 +1452,30 @@ class ImageAugmenter:
 
 
 @app.function
+def model_architecture(model):
+    """Describe actual layers, including Canvas models with a single-layer head.
+
+    Preserve the historical meaning of hidden (head expansion) when present.
+    Otherwise record the first block's expansion, or backbone width when the
+    model has no expanded linear layer.
+    """
+    head = getattr(model, "head_fc1", None)
+    block_linears = [layer for layer in model.blocks[0].modules() if isinstance(layer, nn.Linear)] if len(model.blocks) else []
+    hidden = head.out_features if isinstance(head, nn.Linear) else (
+        block_linears[0].out_features if block_linears else model.input_layer.out_features)
+    return {
+        "width": model.input_layer.out_features,
+        "hidden": hidden,
+        "depth": len(model.blocks),
+        "in_features": model.input_layer.in_features,
+        "num_classes": model.head_fc2.out_features,
+        "normalization": sorted({type(layer).__name__ for layer in model.modules()
+                                 if "Norm" in type(layer).__name__}),
+        "parameters": sum(parameter.numel() for parameter in model.parameters()),
+    }
+
+
+@app.function
 def train(task, X_train, y_train, seed=0, device="cuda"):
     """Train from scratch and return the best validation checkpoint's model."""
     return train_with_metrics(task, X_train, y_train, seed=seed, device=device)
@@ -1477,15 +1535,8 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
         "optimizer_settings": optimizer_settings, "optimizer_groups": optimizer_groups,
         "learning_rate_schedule": "constant", "shuffle": True,
         "architecture": {
-            "width": model.input_layer.out_features,
-            "hidden": model.head_fc1.out_features,
-            "depth": len(model.blocks),
+            **model_architecture(model),
             "functional_operations": sorted(functional_operations),
-            "in_features": model.input_layer.in_features,
-            "num_classes": model.head_fc2.out_features,
-            "normalization": sorted({type(layer).__name__ for layer in model.modules()
-                                     if "Norm" in type(layer).__name__}),
-            "parameters": sum(parameter.numel() for parameter in model.parameters()),
         },
         "model_source": inspect.getsource(type(model)),
         "block_source": inspect.getsource(block_cls) if block_cls else None,
