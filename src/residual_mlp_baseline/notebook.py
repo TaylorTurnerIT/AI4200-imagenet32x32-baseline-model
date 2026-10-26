@@ -1157,8 +1157,13 @@ def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=N
     if task not in TASKS:
         raise ValueError("Unknown saved dataset")
     architecture = restored_architecture(config)
-    classes = [node for node in ast.parse(source).body if isinstance(node, ast.ClassDef)]
+    tree = ast.parse(source)
+    classes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
     model = next(node for node in classes if node.name == "ResidualMLP")
+    # Marimo may wrap a class in a cell when an edit introduces a dependency.
+    # Replace the entire wrapper so stale cell arguments cannot survive loading.
+    model_span = next((node for node in tree.body if isinstance(node, ast.FunctionDef)
+                       and model in node.body), model)
     blocks = [node for node in classes if node.name not in ("ResidualMLP", "ImageAugmenter")]
     if len(blocks) != 1:
         raise ValueError("The current notebook must have one residual block class")
@@ -1173,12 +1178,12 @@ def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=N
     else:
         if legacy_activation not in ("gelu", "relu", "silu", "tanh", "sigmoid"):
             raise ValueError("This older run did not record activation code. Choose a legacy activation below.")
-        model_source = ast.get_source_segment(source, model)
+        model_source = textwrap.dedent("\n".join(source.splitlines()[model.lineno - 1:model.end_lineno]))
         block_source = ast.get_source_segment(source, block)
         model_source = configure_class_snapshot(model_source, architecture, legacy_activation)
         block_source = configure_class_snapshot(block_source, architecture, legacy_activation)
     model_source = torch_canvas_model_metadata(model_source, task)
-    replacements = [(model, model_source), (block, block_source)]
+    replacements = [(model_span, model_source), (block, block_source)]
     replacements.sort(key=lambda edit: edit[0].lineno, reverse=True)
     for node, replacement in replacements:
         source = replace_source_span(source, node, "@app.class_definition\n" + replacement, include_decorators=True)
