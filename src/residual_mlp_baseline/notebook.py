@@ -380,19 +380,29 @@ def _(
 
 
 @app.cell(hide_code=True)
-def _(available_devices):
+def _():
     task = mo.ui.dropdown(["mnist", "cifar10", "imagenet32"], value=DEFAULT_TASK, label="Task")
-    _device_label = next((label for label, backend in available_devices.items() if backend == DEFAULT_DEVICE),
-                         list(available_devices)[-1])
-    device = mo.ui.dropdown(available_devices, value=_device_label, label="Device")
+    device = "mps"
     seed = mo.ui.number(start=0, stop=2**32 - 1, value=DEFAULT_SEED, label="Seed")
     run_training = mo.ui.run_button(label="Run")
+    return device, run_training, seed, task
+
+
+@app.cell(hide_code=True)
+def _(task):
+    epoch_count = mo.ui.number(start=1, step=1, value=EPOCHS[task.value], label="Epochs")
+    return (epoch_count,)
+
+
+@app.cell(hide_code=True)
+def _(epoch_count, run_training, seed, task):
     mo.vstack([
-        mo.hstack([task, device, seed, run_training], justify="start"),
+        mo.hstack([task, run_training], justify="start", wrap=True),
+        mo.hstack([seed, epoch_count], justify="start", wrap=True),
         mo.md(f"Completed runs post test accuracy as **{LEADERBOARD_ALIAS}**, section **{LEADERBOARD_SECTION}**."
               if LEADERBOARD_ENABLED else "Leaderboard posting disabled."),
     ])
-    return device, run_training, seed, task
+    return
 
 
 @app.cell(hide_code=True)
@@ -420,9 +430,9 @@ def _(
 
 
 @app.cell(hide_code=True)
-def _(augmentation_controls, optimizer_choice, task):
+def _(augmentation_controls, epoch_count, optimizer_choice, task):
     _augmentation = effective_augmentation(task.value, augmentation_controls)
-    mo.md(f"**Next run:** {task.value} · {optimizer_choice.value} · "
+    mo.md(f"**Next run:** {task.value} · {optimizer_choice.value} · {int(epoch_count.value)} epochs · "
           f"augmentation **{'ON' if _augmentation['enabled'] else 'OFF'}**. "
           "Loading a saved run replaces settings; check this status before pressing **Run**.")
     return
@@ -434,6 +444,7 @@ def _(
     RESULTS_FILE,
     augmentation_controls,
     device,
+    epoch_count,
     load_task,
     optimizer_choice,
     optimizer_controls,
@@ -443,12 +454,12 @@ def _(
 ):
     mo.stop(not run_training.value, mo.md("Ready. Select a task and start training."))
 
-    with mo.status.spinner(title=f"Loading {task.value} and training on {device.value}..."):
+    with mo.status.spinner(title=f"Loading {task.value} and training on Apple Metal (MPS)..."):
         _X_train, _y_train, _X_test, _y_test = load_task(task.value)
         _start = time.perf_counter()
         _run_dir = RESULTS_FILE.parent / "runs" / f"{task.value}-{time.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:8]}"
         _model = train_with_metrics(task.value, _X_train, _y_train, seed=int(seed.value),
-                                    device=device.value, run_dir=_run_dir,
+                                    device=device, run_dir=_run_dir, epochs=int(epoch_count.value),
                                     augmentation=effective_augmentation(task.value, augmentation_controls),
                                     optimizer_settings=selected_optimizer(optimizer_choice.value, optimizer_controls.value))
         _minutes = (time.perf_counter() - _start) / 60
@@ -497,10 +508,7 @@ def _(
     plt.close(_figure)
 
     del _model, _X_train, _y_train, _X_test, _y_test, _probs
-    if device.value == "cuda":
-        torch.cuda.empty_cache()
-    elif device.value == "mps":
-        torch.mps.empty_cache()
+    torch.mps.empty_cache()
 
     with mo.status.spinner(title="Submitting test accuracy to the leaderboard..."):
         _leaderboard_status = submit_run_to_leaderboard(task.value, _accuracy, _minutes, _run_dir)
@@ -561,7 +569,7 @@ def _():
     PyTorch calls Apple's Metal backend **MPS**. CUDA is NVIDIA-specific;
     an unavailable CUDA backend does not mean Metal is unavailable.
     """)
-    return (available_devices,)
+    return
 
 
 @app.cell(hide_code=True)
@@ -1489,7 +1497,7 @@ def train(task, X_train, y_train, seed=0, device="cuda"):
 
 @app.function
 def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=None, augmentation=None,
-                       optimizer_settings=None):
+                       optimizer_settings=None, epochs=None):
     """Train with a seeded holdout; optionally persist each epoch and best weights.
 
     No test data enters training or checkpoint selection. Tied validation
@@ -1498,7 +1506,9 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     torch.manual_seed(seed)                   # makes the run reproducible
     if len(X_train) != len(y_train) or len(X_train) < 2:
         raise ValueError("Training needs at least two examples and matching labels")
-    if not 0 < VALIDATION_FRACTION < 1 or EPOCHS[task] < 1:
+    epochs = EPOCHS[task] if epochs is None else epochs
+    if (not 0 < VALIDATION_FRACTION < 1 or not isinstance(epochs, int)
+            or isinstance(epochs, bool) or epochs < 1):
         raise ValueError("Use a validation fraction between 0 and 1 and at least one epoch")
 
     augmentation = augmentation_config(task) if augmentation is None else augmentation
@@ -1529,7 +1539,7 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
                     and isinstance(node.func.value, ast.Name) and node.func.value.id == "F"):
                 functional_operations.add(node.func.attr)
     metadata = {
-        "task": task, "seed": seed, "device": str(device), "epochs": EPOCHS[task],
+        "task": task, "seed": seed, "device": str(device), "epochs": epochs,
         "restored_from": RESTORED_FROM if RESTORED_FROM and RESTORED_FROM["task"] == task else None,
         "batch_size": BATCH_SIZE, "learning_rate": optimizer_groups[0]["lr"],
         "weight_decay": optimizer_groups[0]["weight_decay"],
@@ -1565,7 +1575,7 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     history = []
     best_accuracy, best_epoch, best_state = -1.0, 0, None
     started = time.perf_counter()
-    for epoch in range(EPOCHS[task]):
+    for epoch in range(epochs):
         model.train()
         total_loss = torch.zeros((), device=device)
         correct = torch.zeros((), dtype=torch.long, device=device)
