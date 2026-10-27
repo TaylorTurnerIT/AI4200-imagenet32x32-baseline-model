@@ -37,11 +37,7 @@ with app.setup:
     DEFAULT_TASK = 'cifar10'
     DEFAULT_SEED = 42
     DEFAULT_DEVICE = 'mps'
-    RESTORED_FROM = {'run_id': 'cifar10-20261026-131127-ba8e8b68',
-     'task': 'cifar10',
-     'legacy_activation': None,
-     'legacy_optimizer': None,
-     'legacy_augmentation': None}
+    RESTORED_FROM = None
     AUGMENTATION_CONFIG_OVERRIDES = {'cifar10': {'enabled': True,
                  'default': {'rotation': {'probability': 0.45, 'amount': 10.0},
                              'translation': {'probability': 0.5, 'amount': 4.0},
@@ -62,7 +58,7 @@ with app.setup:
     DAMPENING = 0.0
     VALIDATION_FRACTION = 0.1
 
-    OPTIMIZER_NAME = 'Muon'
+    OPTIMIZER_NAME = 'AdamW'
     OPTIMIZER_DEFAULTS = {'SGD': {'lr': 0.05, 'weight_decay': 0.0001, 'momentum': 0.0, 'dampening': 0.0, 'nesterov': False},
      'Adam': {'lr': 0.001,
               'weight_decay': 1e-05,
@@ -101,7 +97,7 @@ with app.setup:
                  'eps': 1e-10}}
 
     # Post each completed app run's test result to the unofficial class leaderboard.
-    LEADERBOARD_ENABLED = True
+    LEADERBOARD_ENABLED = False
     LEADERBOARD_ALIAS = "TaylorT"
     LEADERBOARD_SECTION = "5000"
     LEADERBOARD_REPOSITORY = "git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git"
@@ -616,30 +612,94 @@ class Block19(nn.Module):
         a = F.gelu(self.gate_up(normalized))
         gate = self.gate_norm(a)
         gated = value * gate
-        return self.dropout(self.down(gated))
+        return x + self.dropout(self.down(gated))
+
+
+@app.class_definition
+class RollingWindowBlock(nn.Sequential):
+    """Gather padded 2x2 windows, apply a shared MLP, and return an NCHW map.
+
+    Numeric module names preserve existing window_mlps checkpoint keys.
+    """
+
+    def __init__(self, channels=3, window_hidden=128, window_features=64, stride=1, padding=0):
+        super().__init__()
+        self.stride = stride
+        self.padding = padding
+        self.add_module("0", nn.Linear(channels * 4, window_hidden))
+        self.add_module("1", nn.GELU())
+        self.add_module("2", nn.Linear(window_hidden, window_features))
+        self.add_module("3", nn.GELU())
+
+    def extract_windows(self, x):
+        """Return (batch, output rows, output columns, C*2*2)."""
+        x = F.pad(x, (0, self.padding, 0, self.padding))
+        x = x.unfold(2, 2, self.stride).unfold(3, 2, self.stride)
+        return x.permute(0, 2, 3, 1, 4, 5).flatten(3)
+
+    def forward(self, x):
+        x = self.extract_windows(x)
+        x = self[0](x)
+        x = self[1](x)
+        x = self[2](x)
+        x = self[3](x)
+        return x.permute(0, 3, 1, 2)
 
 
 @app.class_definition
 class ResidualMLP(nn.Module):
-    # torch-canvas input x: e, 3, 32, 32
+    # torch-canvas input x: e, channels, 32, 32
     # torch-canvas sizes: in_features=3072, num_classes=10
-    """Baseline residual MLP.
+    """Hierarchical shared window MLPs, followed by a residual classifier.
 
-    input -> Linear(in_features -> width)            project into the backbone
+    input -> sliding 2x2 windows, first stride 1, later shrinking_stride
+          -> shared Linear -> GELU -> Linear -> GELU per window
+          -> restore feature map and repeat until the spatial size is 1x1
+          -> flatten final features -> Linear into the backbone
           -> depth x Block                           residual backbone, stays `width` wide
-          -> LayerNorm -> Linear -> GELU -> Linear   head: a block without the skip
+          -> Linear(width -> num_classes)            classification head
           -> logits (num_classes)
 
     The head has no skip connection because its output size (num_classes)
     differs from its input size (width), so the two cannot be added.
     """
 
-    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1):
+    def __init__(self, in_features, num_classes, width=512, depth=2, hidden=1024,
+                 dropout=0.1, window_hidden=128, window_features=64, shrinking_stride=2):
         super().__init__()
 
-        # Project the flattened image down to the backbone width.
-        self.input_layer = nn.Linear(in_features, width)
-        self.blocks = nn.ModuleList([Block19(width, hidden1, dropout=dropout) for _ in range(depth)])
+        if in_features != 784 and in_features != 3072:
+            raise ValueError("Expected MNIST (784) or RGB 32x32 (3072) input features")
+        if shrinking_stride != 1 and shrinking_stride != 2:
+            raise ValueError("shrinking_stride must be 1 or 2")
+        self.in_features = in_features
+        channels = 1 if in_features == 784 else 3
+        height = 28 if in_features == 784 else 32
+        image_width = height
+        self.image_shape = (channels, height, image_width)
+        self.window_size = 2
+        self.shrinking_stride = shrinking_stride
+        self.window_shapes = [self.image_shape]
+        self.window_strides = []
+        self.window_padding = []
+        self.window_mlps = nn.ModuleList()
+        stages = height - 1 if shrinking_stride == 1 else 6
+        for stage in range(stages):
+            stride = 1 if stage == 0 else shrinking_stride
+            self.window_strides.append(stride)
+            # Keep the final row/column when a stride-2 stage has odd size.
+            pad_height, pad_width = height % stride, image_width % stride
+            self.window_padding.append((pad_height, pad_width))
+            self.window_mlps.append(RollingWindowBlock(
+                channels, window_hidden, window_features, stride, pad_height))
+            height = (height + pad_height - self.window_size) // stride + 1
+            image_width = (image_width + pad_width - self.window_size) // stride + 1
+            channels = window_features
+            self.window_shapes.append((channels, height, image_width))
+
+        # Project the flattened window features down to the backbone width.
+        self.input_layer = nn.Linear(channels * height * image_width, width)
+        self.blocks = nn.ModuleList([Block19(width, hidden=hidden, dropout=dropout) for _ in range(depth)])
         self.head_fc2 = nn.Linear(width, num_classes)
 
         # Xavier (Glorot) initialization for every linear layer, zero biases.
@@ -648,13 +708,23 @@ class ResidualMLP(nn.Module):
                 nn.init.xavier_normal_(layer.weight)
                 nn.init.zeros_(layer.bias)
 
+    def extract_windows(self, x, stage=0):
+        """Return (batch, positions, C*2*2), ordered by row, column, channel, dy, dx."""
+        if x.ndim != 4 or tuple(x.shape[1:]) != self.window_shapes[stage]:
+            raise ValueError(f"Expected NCHW feature map (N, C, H, W) with C,H,W={self.window_shapes[stage]}")
+        # Tensor.unfold only creates sliding views; it performs no learned operation.
+        return self.window_mlps[stage].extract_windows(x).flatten(1, 2)
+
     def forward(self, x):
         """Training forward pass. Returns raw logits (no softmax).
 
         nn.CrossEntropyLoss applies the softmax itself, so training uses logits.
         """
-        x = x.flatten(1)
-        x = self.input_layer(x)
+        if x.ndim != 4 or tuple(x.shape[1:]) != self.image_shape:
+            raise ValueError(f"Expected NCHW images with C,H,W={self.image_shape}")
+        for window_mlp in self.window_mlps:
+            x = window_mlp(x)
+        x = self.input_layer(x.flatten(1))
         for blk in self.blocks:
             x = blk(x)
         return self.head_fc2(x)
@@ -808,7 +878,7 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
 
     # Source captures include functional activations omitted by PyTorch's repr.
     settings = {key: value for key, value in config.items()
-                if key not in ("model", "model_source", "block_source", "train_accuracy_kind")}
+                if key not in ("model", "model_source", "block_source", "support_sources", "train_accuracy_kind")}
     if "optimizer_groups" in settings:
         settings["optimizer_groups"] = [{key: value for key, value in group.items() if key != "parameter_names"}
                                          for group in settings["optimizer_groups"]]
@@ -1146,6 +1216,9 @@ def torch_canvas_model_metadata(source, task):
     import tokenize
 
     shapes = {"mnist": "e, 1, 28, 28", "cifar10": "e, 3, 32, 32", "imagenet32": "e, 3, 32, 32"}
+    if "RollingWindowBlock(" in source:
+        shapes = {task: shape.replace(", 1,", ", channels,").replace(", 3,", ", channels,")
+                  for task, shape in shapes.items()}
     if task not in shapes or task not in TASKS:
         raise ValueError("Unknown dataset for model display metadata")
     original = ast.parse(source)
@@ -1184,7 +1257,9 @@ def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=N
     # Replace the entire wrapper so stale cell arguments cannot survive loading.
     model_span = next((node for node in tree.body if isinstance(node, ast.FunctionDef)
                        and model in node.body), model)
-    blocks = [node for node in classes if node.name not in ("ResidualMLP", "ImageAugmenter")]
+    support_names = set(config.get("support_sources", {})) | {"RollingWindowBlock"}
+    support_nodes = [node for node in classes if node.name in support_names]
+    blocks = [node for node in classes if node.name not in ("ResidualMLP", "ImageAugmenter") and node not in support_nodes]
     if len(blocks) != 1:
         raise ValueError("The current notebook must have one residual block class")
     block = blocks[0]
@@ -1203,10 +1278,27 @@ def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=N
         model_source = configure_class_snapshot(model_source, architecture, legacy_activation)
         block_source = configure_class_snapshot(block_source, architecture, legacy_activation)
     model_source = torch_canvas_model_metadata(model_source, task)
-    replacements = [(model_span, model_source), (block, block_source)]
+    support_sources = dict(config.get("support_sources", {}))
+    # Older snapshots predate support_sources; retain a current helper only when
+    # the restored model actually references it (including legacy dimension-only runs).
+    references = {node.id for node in ast.walk(ast.parse(model_source)) if isinstance(node, ast.Name)}
+    for node in support_nodes:
+        if node.name in references and node.name not in support_sources:
+            support_sources[node.name] = ast.get_source_segment(source, node)
+    helpers = {}
+    for name, snapshot in support_sources.items():
+        actual_name, helper_source = class_snapshot(snapshot)
+        if actual_name != name or name in ("ResidualMLP", block_name if config.get("block_source") else block.name):
+            raise ValueError("Invalid saved support class")
+        helpers[name] = "@app.class_definition\n" + helper_source
+    current_helpers = {node.name: node for node in support_nodes}
+    missing_helpers = [text for name, text in helpers.items() if name not in current_helpers]
+    decorated_model = "\n\n\n".join(missing_helpers + ["@app.class_definition\n" + model_source])
+    replacements = [(model_span, decorated_model), (block, "@app.class_definition\n" + block_source)]
+    replacements.extend((node, helpers.get(node.name, "")) for node in support_nodes)
     replacements.sort(key=lambda edit: edit[0].lineno, reverse=True)
     for node, replacement in replacements:
-        source = replace_source_span(source, node, "@app.class_definition\n" + replacement, include_decorators=True)
+        source = replace_source_span(source, node, replacement, include_decorators=True)
     settings = restored_optimizer(config, legacy_optimizer)
     augmentation = restored_augmentation(config, legacy_augmentation)
     for key in ("batch_size", "epochs", "seed"):
@@ -1488,16 +1580,26 @@ def model_architecture(model):
     block_linears = [layer for layer in model.blocks[0].modules() if isinstance(layer, nn.Linear)] if len(model.blocks) else []
     hidden = head.out_features if isinstance(head, nn.Linear) else (
         block_linears[0].out_features if block_linears else model.input_layer.out_features)
-    return {
+    architecture = {
         "width": model.input_layer.out_features,
         "hidden": hidden,
         "depth": len(model.blocks),
-        "in_features": model.input_layer.in_features,
+        "in_features": getattr(model, "in_features", model.input_layer.in_features),
         "num_classes": model.head_fc2.out_features,
         "normalization": sorted({type(layer).__name__ for layer in model.modules()
                                  if "Norm" in type(layer).__name__}),
         "parameters": sum(parameter.numel() for parameter in model.parameters()),
     }
+    if hasattr(model, "window_mlps"):
+        architecture.update(
+            window_size=model.window_size, shrinking_stride=model.shrinking_stride,
+            window_strides=model.window_strides, window_shapes=model.window_shapes,
+            window_hidden=model.window_mlps[0][0].out_features,
+            window_features=model.window_mlps[0][2].out_features,
+            window_order="row, column, channel, dy, dx", window_padding=getattr(model, "window_padding", 0),
+            window_weight_sharing="within each stage", window_aggregation="hierarchical",
+        )
+    return architecture
 
 
 @app.function
@@ -1544,6 +1646,10 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     model_types = [type(model)]
     if block_cls is not None:
         model_types.append(block_cls)
+    support_types = list(dict.fromkeys(type(layer) for layer in model.modules()
+                                     if type(layer).__module__ == type(model).__module__
+                                     and type(layer) not in model_types))
+    model_types.extend(support_types)
     for cls in model_types:
         for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(cls)))):
             if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
@@ -1567,6 +1673,7 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
         },
         "model_source": inspect.getsource(type(model)),
         "block_source": inspect.getsource(block_cls) if block_cls else None,
+        "support_sources": {cls.__name__: inspect.getsource(cls) for cls in support_types},
         "validation_fraction": VALIDATION_FRACTION,
         "training_examples": len(training_indices), "validation_examples": validation_size,
         "selection_metric": "validation_accuracy", "tie_break": "earliest_epoch",

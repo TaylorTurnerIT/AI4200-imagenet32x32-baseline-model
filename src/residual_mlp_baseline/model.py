@@ -11,7 +11,10 @@ ResidualMLP = notebook.ResidualMLP
 
 # Torch Canvas can rename a block class. Keep this compatibility alias tied to
 # the class the current model actually constructs.
-for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(ResidualMLP)))):
+constructors = [node.value for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(ResidualMLP))))
+                if isinstance(node, ast.Assign) and any(isinstance(target, ast.Attribute) and target.attr == "blocks"
+                                                       for target in node.targets)]
+for node in (child for constructor in constructors for child in ast.walk(constructor)):
     if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
         candidate = vars(notebook).get(node.func.id)
         if isinstance(candidate, type) and issubclass(candidate, notebook.nn.Module):

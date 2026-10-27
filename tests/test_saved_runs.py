@@ -80,9 +80,9 @@ class SavedRunTests(unittest.TestCase):
     def test_display_metadata_preserves_executable_model_and_required_signature(self):
         source = notebook.class_snapshot(self.config['model_source'])[1]
         for task, shape, features, classes in (
-            ('mnist', 'e, 1, 28, 28', 784, 10),
-            ('cifar10', 'e, 3, 32, 32', 3072, 10),
-            ('imagenet32', 'e, 3, 32, 32', 3072, 1000),
+            ('mnist', 'e, channels, 28, 28', 784, 10),
+            ('cifar10', 'e, channels, 32, 32', 3072, 10),
+            ('imagenet32', 'e, channels, 32, 32', 3072, 1000),
         ):
             with self.subTest(task=task):
                 annotated = notebook.torch_canvas_model_metadata(source, task)
@@ -90,9 +90,7 @@ class SavedRunTests(unittest.TestCase):
                 self.assertIn(f'# torch-canvas input x: {shape}', annotated)
                 self.assertIn(f'# torch-canvas sizes: in_features={features}, num_classes={classes}', annotated)
                 self.assertEqual(notebook.torch_canvas_model_metadata(annotated, task), annotated)
-        pooled = source.replace('self.input_layer = nn.Linear(in_features, width)',
-                                'self.pool = nn.MaxPool2d(4)\n        self.input_layer = nn.Linear(in_features // 16, width)')
-        pooled = pooled.replace('x = x.flatten(start_dim=1)', 'x = self.pool(x).flatten(start_dim=1)')
+        pooled = source.replace('self.input_layer = ', 'self.pool = nn.MaxPool2d(4)\n        self.input_layer = ', 1)
         annotated = notebook.torch_canvas_model_metadata(pooled, 'cifar10')
         self.assertEqual(ast.dump(ast.parse(pooled)), ast.dump(ast.parse(annotated)))
         self.assertIn('self.pool', annotated)
@@ -147,7 +145,7 @@ class SavedRunTests(unittest.TestCase):
         self.assertEqual(trained.run_config['restored_from']['run_id'], entry['id'])
         self.assertEqual(trained.run_config['optimizer_settings'], self.config['optimizer_settings'])
         self.assertEqual(len(trained.training_history), 2)
-        self.assertEqual(trained.run_config['architecture']['functional_operations'], ['silu'])
+        self.assertEqual(trained.run_config['architecture']['functional_operations'], ['pad', 'silu'])
 
     def test_loaded_augmentation_matches_visible_switch_and_training_for_on_and_off(self):
         for enabled in (True, False):

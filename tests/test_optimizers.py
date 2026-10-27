@@ -64,7 +64,10 @@ class OptimizerTests(unittest.TestCase):
         block_matrices = {f'blocks.{index}.{name}.weight'
                           for index, block in enumerate(model.blocks)
                           for name, layer in block.named_modules() if isinstance(layer, torch.nn.Linear)}
-        self.assertEqual(primary, block_matrices)
+        window_matrices = {f'window_mlps.{index}.{name}.weight'
+                           for index, mlp in enumerate(model.window_mlps)
+                           for name, layer in mlp.named_modules() if isinstance(layer, torch.nn.Linear)}
+        self.assertEqual(primary, block_matrices | window_matrices)
         self.assertEqual(primary | auxiliary, set(dict(model.named_parameters())))
         self.assertTrue(all(dict(model.named_parameters())[key].ndim == 2 for key in primary))
         self.assertEqual(groups[1]['lr'], config['auxiliary_lr'])
