@@ -23,7 +23,7 @@ class SavedRunTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.source = Path(notebook.__file__).read_text()
-        model = notebook.ResidualMLP(**notebook.TASKS['cifar10'], width=8, hidden=16, depth=3)
+        model = notebook.ResidualMLP(**notebook.TASKS['cifar10'], width=8, depth=3)
         self.config = {
             'task': 'cifar10', 'seed': 7, 'device': 'cpu', 'epochs': 2, 'batch_size': 4,
             'learning_rate': .002, 'weight_decay': .0002, 'validation_fraction': .2,
@@ -140,7 +140,7 @@ class SavedRunTests(unittest.TestCase):
         self.assertEqual(len(model.blocks), 3)
         self.assertEqual(len(namespace['ResidualMLP'](**notebook.TASKS['cifar10'], depth=2).blocks), 2)
         self.assertEqual(model.input_layer.out_features, 8)
-        self.assertEqual(model.head_fc1.out_features, 16)
+        self.assertEqual(namespace['model_architecture'](model)['hidden'], 16)
         self.assertIn('F.silu', inspect.getsource(type(model.blocks[0]).forward))
         images = np.zeros((12, 3, 32, 32), dtype=np.uint8)
         trained = namespace['train_with_metrics']('cifar10', images, np.arange(12) % 3, device='cpu')
@@ -194,6 +194,11 @@ class SavedRunTests(unittest.TestCase):
 
     def test_legacy_dimensions_and_unrecorded_fields_require_explicit_choices(self):
         config = dict(self.config)
+        config['model'] = """ResidualMLP(
+          (input_layer): Linear(in_features=3072, out_features=8, bias=True)
+          (blocks): ModuleList(3 x Block())
+          (head_fc1): Linear(in_features=8, out_features=16, bias=True)
+        )"""
         for key in ('architecture', 'model_source', 'block_source', 'optimizer', 'optimizer_settings', 'augmentation'):
             config.pop(key)
         entry = {'id': 'legacy', 'config': config}
@@ -215,7 +220,8 @@ class SavedRunTests(unittest.TestCase):
         spec.loader.exec_module(module)
         namespace = vars(module)
         model = namespace['ResidualMLP'](**notebook.TASKS['cifar10'])
-        self.assertEqual((model.input_layer.out_features, model.head_fc1.out_features, len(model.blocks)), (8, 16, 3))
+        self.assertEqual((model.input_layer.out_features, namespace['model_architecture'](model)['hidden'],
+                          len(model.blocks)), (8, 16, 3))
         self.assertEqual(namespace['optimizer_config']()['lr'], .002)
         self.assertFalse(namespace['augmentation_config']('cifar10')['enabled'])
         self.assertIn('F.gelu', inspect.getsource(type(model.blocks[0]).forward))
@@ -290,7 +296,8 @@ class SavedRunTests(unittest.TestCase):
         action.decorator_list = []
         exec(compile(ast.Module(body=[action], type_ignores=[]), notebook.__file__, 'exec'), namespace)
         values = dict(legacy_activation=SimpleNamespace(value=None), legacy_optimizer=SimpleNamespace(value=None),
-                      legacy_augmentation=SimpleNamespace(value=None), saved_run_catalog=catalog, saved_run_choice=choice)
+                      legacy_augmentation=SimpleNamespace(value=None), saved_run_catalog=catalog, saved_run_choice=choice,
+                      set_loaded_epochs=lambda value: None)
         for metric, expected in [('validation_accuracy', first['id']), ('test_accuracy', second['id'])]:
             namespace['_'](best_metric=SimpleNamespace(value=metric), load_best=SimpleNamespace(value=True),
                            load_saved=SimpleNamespace(value=False), **values)

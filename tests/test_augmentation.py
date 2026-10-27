@@ -131,7 +131,7 @@ class DigitAugmentationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder, \
                 patch.dict(notebook.EPOCHS, mnist=2), \
                 patch.object(notebook, 'BATCH_SIZE', 7), \
-                patch.object(notebook, 'ResidualMLP', partial(TrackedModel, width=8, hidden=16, depth=1)), \
+                patch.object(notebook, 'ResidualMLP', partial(TrackedModel, width=8, depth=1)), \
                 patch.object(notebook, 'ImageAugmenter', TrackedAugmenter):
             run = Path(folder) / 'run'
             model = notebook.train_with_metrics('mnist', images, labels, seed=42,
@@ -195,7 +195,7 @@ class DigitAugmentationTests(unittest.TestCase):
                         return super().forward(batch)
 
                 with patch.dict(notebook.EPOCHS, {task: 1}), \
-                        patch.object(notebook, 'ResidualMLP', partial(TrackedModel, width=8, hidden=16)):
+                        patch.object(notebook, 'ResidualMLP', partial(TrackedModel, width=8, depth=1)):
                     run = Path(folder) / 'run'
                     model = notebook.train_with_metrics(task, images, labels, device='cpu', run_dir=run,
                                                         augmentation=config)
@@ -253,7 +253,7 @@ class DigitAugmentationTests(unittest.TestCase):
         exec(compile(ast.Module(body=[run], type_ignores=[]), notebook.__file__, 'exec'), namespace)
         with tempfile.TemporaryDirectory() as folder, \
                 patch.dict(notebook.EPOCHS, {task: 1 for task in notebook.TASKS}), \
-                patch.object(notebook, 'ResidualMLP', partial(notebook.ResidualMLP, width=8, hidden=16)):
+                patch.object(notebook, 'ResidualMLP', partial(notebook.ResidualMLP, width=8, depth=1)):
             root = Path(folder)
             for task in notebook.TASKS:
                 with self.subTest(task=task):
@@ -268,7 +268,7 @@ class DigitAugmentationTests(unittest.TestCase):
                         augmentation_controls=controls,
                         optimizer_choice=SimpleNamespace(value=optimizer_name),
                         optimizer_controls=SimpleNamespace(value=notebook.OPTIMIZER_DEFAULTS),
-                        device=SimpleNamespace(value='cpu'), load_task=lambda name: (images, labels, images[:4], labels[:4]),
+                        device='cpu', epoch_count=SimpleNamespace(value=1), load_task=lambda name: (images, labels, images[:4], labels[:4]),
                         run_training=SimpleNamespace(value=True), seed=SimpleNamespace(value=42),
                         task=SimpleNamespace(value=task),
                     )

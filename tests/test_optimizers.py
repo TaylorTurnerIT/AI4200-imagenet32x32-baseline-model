@@ -28,7 +28,7 @@ class OptimizerTests(unittest.TestCase):
                     config = notebook.optimizer_config(name)
                     config['lr'] *= .5
                     with patch.dict(notebook.EPOCHS, {task: 1}), \
-                            patch.object(notebook, 'ResidualMLP', partial(notebook.ResidualMLP, width=8, hidden=16)):
+                            patch.object(notebook, 'ResidualMLP', partial(notebook.ResidualMLP, width=8, depth=1)):
                         model = notebook.train_with_metrics(task, images, labels, device='cpu', run_dir=root/'run',
                                                             optimizer_settings=config)
                     saved = json.loads((root/'run'/'config.json').read_text())
@@ -53,7 +53,7 @@ class OptimizerTests(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(torch.optim, 'Muon'), 'Native Muon unavailable')
     def test_muon_splits_matrices_and_other_parameters_without_overlap(self):
-        model = notebook.ResidualMLP(in_features=784, num_classes=10, width=8, hidden=16)
+        model = notebook.ResidualMLP(in_features=784, num_classes=10, width=8, depth=1)
         optimizers, config, groups = notebook.build_optimizers(model, {'name': 'Muon'})
         self.assertEqual([type(optimizer).__name__ for optimizer in optimizers], ['Muon', 'AdamW'])
         primary, auxiliary = map(lambda group: set(group['parameter_names']), groups)
@@ -61,9 +61,11 @@ class OptimizerTests(unittest.TestCase):
         self.assertTrue(primary)
         self.assertIn('input_layer.weight', auxiliary)
         self.assertIn('head_fc2.weight', auxiliary)
-        self.assertIn('head_norm.weight', auxiliary)
-        self.assertIn('blocks.0.fc1.weight', primary)
-        self.assertIn('head_fc1.weight', primary)
+        block_matrices = {f'blocks.{index}.{name}.weight'
+                          for index, block in enumerate(model.blocks)
+                          for name, layer in block.named_modules() if isinstance(layer, torch.nn.Linear)}
+        self.assertEqual(primary, block_matrices)
+        self.assertEqual(primary | auxiliary, set(dict(model.named_parameters())))
         self.assertTrue(all(dict(model.named_parameters())[key].ndim == 2 for key in primary))
         self.assertEqual(groups[1]['lr'], config['auxiliary_lr'])
         self.assertEqual(groups[1]['betas'], [config['auxiliary_beta1'], config['auxiliary_beta2']])

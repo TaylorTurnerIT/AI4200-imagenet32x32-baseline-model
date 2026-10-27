@@ -187,7 +187,7 @@ class LeaderboardTests(unittest.TestCase):
                     augmentation_controls=controls,
                     optimizer_choice=SimpleNamespace(value='SGD'),
                     optimizer_controls=SimpleNamespace(value={'SGD': notebook.OPTIMIZER_DEFAULTS['SGD']}),
-                    device=SimpleNamespace(value='cpu'), run_training=SimpleNamespace(value=True),
+                    device='cpu', epoch_count=SimpleNamespace(value=1), run_training=SimpleNamespace(value=True),
                     seed=SimpleNamespace(value=42), task=SimpleNamespace(value='mnist'),
                     load_task=lambda task: (np.zeros((6, 1, 28, 28)), np.zeros(6, dtype=int),
                                             np.zeros((4, 1, 28, 28)), np.array([0, 0, 0, 1])),

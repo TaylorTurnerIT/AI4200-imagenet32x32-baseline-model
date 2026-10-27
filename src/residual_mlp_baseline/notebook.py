@@ -389,8 +389,16 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(task):
-    epoch_count = mo.ui.number(start=1, step=1, value=EPOCHS[task.value], label="Epochs")
+def _():
+    get_loaded_epochs, set_loaded_epochs = mo.state(None)
+    return get_loaded_epochs, set_loaded_epochs
+
+
+@app.cell(hide_code=True)
+def _(get_loaded_epochs, task):
+    _loaded = get_loaded_epochs()
+    _epochs = (_loaded["epochs"] if _loaded and _loaded["task"] == task.value else EPOCHS[task.value])
+    epoch_count = mo.ui.number(start=1, step=1, value=_epochs, label="Epochs")
     return (epoch_count,)
 
 
@@ -415,6 +423,7 @@ def _(
     load_saved,
     saved_run_catalog,
     saved_run_choice,
+    set_loaded_epochs,
 ):
     mo.stop(not (load_saved.value or load_best.value))
     _entry = best_saved_run(saved_run_catalog, best_metric.value) if load_best.value else next(
@@ -425,6 +434,8 @@ def _(
                                   legacy_augmentation.value)
     except (ValueError, OSError, SyntaxError, StopIteration, KeyError, TypeError) as _error:
         mo.stop(True, mo.md(f"Could not load settings: {_error}"))
+    # A repeated load may leave the source unchanged, so explicitly reset the control.
+    set_loaded_epochs({"task": _entry["config"]["task"], "epochs": _entry["config"]["epochs"]})
     mo.md(f"Loaded **{_loaded}**. The notebook will reload with its settings. Press **Run** when ready.")
     return
 
@@ -508,7 +519,8 @@ def _(
     plt.close(_figure)
 
     del _model, _X_train, _y_train, _X_test, _y_test, _probs
-    torch.mps.empty_cache()
+    if device == "mps":
+        torch.mps.empty_cache()
 
     with mo.status.spinner(title="Submitting test accuracy to the leaderboard..."):
         _leaderboard_status = submit_run_to_leaderboard(task.value, _accuracy, _minutes, _run_dir)
@@ -586,8 +598,8 @@ def _():
 
 
 @app.class_definition
-class Block25(nn.Module):
-    def __init__(self, width=512, hidden=1024):
+class Block19(nn.Module):
+    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):
         super().__init__()
         self.input_norm = nn.LayerNorm(width)
         self.value_up = nn.Linear(width, hidden)
@@ -595,7 +607,7 @@ class Block25(nn.Module):
         self.gate_up = nn.Linear(width, hidden)
         self.gate_norm = nn.LayerNorm(hidden)
         self.down = nn.Linear(hidden, width)
-        self.dropout = nn.Dropout(0.15)
+        self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, x):
         normalized = self.input_norm(x)
@@ -604,8 +616,7 @@ class Block25(nn.Module):
         a = F.gelu(self.gate_up(normalized))
         gate = self.gate_norm(a)
         gated = value * gate
-        h = self.down(gated)
-        return self.dropout(h)
+        return self.dropout(self.down(gated))
 
 
 @app.class_definition
@@ -623,12 +634,12 @@ class ResidualMLP(nn.Module):
     differs from its input size (width), so the two cannot be added.
     """
 
-    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1, hidden=1024):
+    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1):
         super().__init__()
 
         # Project the flattened image down to the backbone width.
         self.input_layer = nn.Linear(in_features, width)
-        self.blocks = nn.ModuleList([Block25(width, hidden) for _ in range(depth)])
+        self.blocks = nn.ModuleList([Block19(width, hidden1, dropout=dropout) for _ in range(depth)])
         self.head_fc2 = nn.Linear(width, num_classes)
 
         # Xavier (Glorot) initialization for every linear layer, zero biases.
