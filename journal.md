@@ -1017,6 +1017,12 @@ All final scores use the best validation checkpoint. Train excludes the holdout.
 
 > These indicate the model is seeing a lot of information most of the time, so it shouldn't overregularize. Worth tinkering with the amount of dropout. If we used 0.15 instead of 0.15, we would see only 32% probability of making it through ever layer unchanged.
 
+### Rolling 2×2 window MLP
+
+The first [rolling-window run](runs/cifar10-20261026-215237-2ac3a7b3/summary.txt) reached 55.54% clean training, 49.98% validation, and 48.27% test accuracy. [Widening the windows and classifier](runs/cifar10-20261026-221344-5d653ac6/summary.txt) raised those scores to 71.35%, 60.80%, and 59.15%.
+
+A coverage check found that repeated edge cropping left only the top-left 17×17 pixels connected to the final prediction; stride-2 stages now pad unmatched edges to preserve full-image coverage. The [corrected run](runs/cifar10-20261026-224057-085c2c3b/summary.txt) reached 88.52% clean training, 76.10% validation, and 75.45% test accuracy at selected epoch 51 of 60, with [leaderboard submission confirmed](runs/cifar10-20261026-224057-085c2c3b/leaderboard-submission.json) as TaylorT, section 5000.
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.

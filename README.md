@@ -2,6 +2,60 @@
 
 The instructor baseline. Fork this repo as the starting point for your submission.
 
+## Rolling 2×2 window experiment
+
+The model uses six hand-built window MLP stages for 32×32 images:
+`32 → 31 → 16 → 8 → 4 → 2 → 1`. The first stage slides by one pixel; later stages
+slide by two. MNIST shrinks `28 → 27 → 14 → 7 → 4 → 2 → 1`. Stride-2 stages
+append one zero row or column at the bottom or right when needed, so unmatched
+edges remain connected to the final prediction.
+
+Each stage uses `Tensor.unfold` and reshaping to gather 2×2 windows, then applies
+one shared `Linear(4*C, 128) → GELU → Linear(128, 64) → GELU` MLP at every position.
+Different stages learn separate weights. The output becomes the next stage's
+64-channel feature map. The final 64-value vector feeds a width-512 classifier
+with two residual blocks and a linear class head. There are no convolution or
+pooling layers. Sharing a local linear map has the same mathematical structure
+as a convolution; the implementation explicitly gathers windows and uses linear
+layers, with a nonlinear MLP at each position.
+
+Edit `window_hidden`, `window_features`, and `shrinking_stride` in `ResidualMLP`
+to try variants. `shrinking_stride=1` keeps every stage overlapping and shrinks
+one pixel per stage. Saved runs record window shapes, strides, and MLP dimensions
+alongside model source. Loading an older run restores its older model source.
+
+Each stage is an explicit `RollingWindowBlock` for Torch Canvas inspection.
+The refactor preserves checkpoint keys, seeded weights, logits, and gradients;
+new runs save its source alongside the residual block and model source.
+
+Run `./run` in this worktree. AdamW is the experiment default; existing CIFAR-10
+augmentation settings remain enabled. Automatic leaderboard posting is disabled.
+Training starts only when **Train and evaluate** is pressed. Results and run
+artifacts stay in this worktree.
+
+To train ImageNet32 from the existing `data/imagenet32/` cache without opening
+the dashboard, run `uv run --locked python scripts/run_experiment.py --task imagenet32 --submit`.
+This uses the task's configured epoch count (10 by default), seed 42, and Apple
+Metal. It saves the same scores, checkpoint, class metrics, and curves under
+`runs/`, then submits the selected checkpoint's test score regardless of accuracy.
+Omit `--submit` to keep the result local; `--epochs`, `--seed`, and `--device`
+override their run settings without changing notebook defaults.
+
+The first run reached 55.54% clean training, 49.98% validation, and 48.27% test
+accuracy. The wider configuration doubles classifier width from 256 to 512 and
+block hidden width from 512 to 1024, and widens window outputs from 16 to 64
+with window hidden width 128 instead of 32. Strides and training settings stay
+fixed. It reached 71.35% clean training, 60.80% validation, and 59.15% test accuracy.
+
+Both runs used the original unpadded shrinking stages. A coverage check found
+that their final vector saw only the top-left 17×17 pixels of each 32×32 input:
+changing every pixel outside that region left saved-model logits unchanged.
+The edge-padding correction keeps the full image connected and adds one window
+stage. It reached 88.52% clean training, 76.10% validation, and 75.45% test
+accuracy, selecting epoch 51 of 60. The leaderboard confirmed the 75.45% test
+submission as TaylorT, section 5000. Archived runs retain their original source,
+weights, and metrics.
+
 ## The assignment
 
 Your job is to build, train, and analyze a residual MLP on three image classification benchmarks: **MNIST**, **CIFAR-10**, and **ImageNet 32×32**. This repo is a deliberately plain starting point. It is meant to be beaten.
@@ -70,12 +124,12 @@ top, then click **Train and evaluate**. The first run downloads the dataset; lat
 CPU manually. The status panel verifies an actual Metal forward/backward operation
 and shows the Python interpreter. Select **Apple Metal (MPS)** to train on this
 Mac's GPU. CUDA is NVIDIA-specific and is not required on macOS.
-Results append to `results.csv`. Each completed app run automatically posts its
-test accuracy, training duration, and repository URL to the unofficial class
-leaderboard as **TaylorT**, section **5000**. The result panel reports whether
+Results append to `results.csv`. With `LEADERBOARD_ENABLED = True`, each completed
+app run posts its test accuracy, training duration, and repository URL to the
+unofficial class leaderboard as **TaylorT**, section **5000**. Posting is disabled
+by default. The result panel reports whether
 the form confirmed the submission. Local results are saved before posting;
-network failures do not discard them. Set `LEADERBOARD_ENABLED = False` in the
-setup cell to disable app submissions.
+network failures do not discard them.
 
 Training holds out a seeded random 10% of the supplied training examples for
 validation. Each epoch prints training loss and accuracy plus validation loss
@@ -125,12 +179,13 @@ to the saved Markdown table; `summary.txt` includes the table for copying into
 your journal. `summary.json` records the same columns as fractions from 0 to 1.
 Test scores reuse existing predictions; no additional test evaluation is performed.
 
-The default model restores the original 54.59% CIFAR-10 configuration: seven
-residual blocks, backbone width 256, hidden width 512, LayerNorm, and GELU in
-the blocks and head. CIFAR-10 uses 30 epochs, batch size 256, SGD with learning
-rate 0.05, weight decay `1e-4`, zero momentum, and no augmentation. The dashboard
-starts with seed 42 and selects the best validation checkpoint. Model depth
-follows the `depth` constructor argument.
+The default model uses the rolling-window stages described above, backbone
+width 512, and two gated residual blocks with hidden width 1024 and dropout 0.1.
+Training uses batch size 256 and AdamW with learning rate 0.001, weight decay
+`1e-5`, and AMSGrad. CIFAR-10 uses 60 epochs with augmentation enabled; ImageNet32
+uses 10 epochs with augmentation disabled. The dashboard starts with seed 42
+and selects the best validation checkpoint. Model depth follows the `depth`
+constructor argument.
 
 ### Reloading previous experiments
 
@@ -173,7 +228,7 @@ during restoration.
 Choose **SGD**, **Adam**, **AdamW**, **Muon**, **RMSprop**, or **Adagrad** in the
 **Optimizer** panel before pressing **Run**. Each optimizer has its own controls
 and learning rate preset; edits persist when switching optimizers in the app
-session. SGD is the default for the restored CIFAR-10 experiment. The selected
+session. AdamW is the default for the rolling-window experiment. The selected
 settings apply to whichever dataset you run.
 
 | Optimizer | Initial learning rate | Additional controls |
