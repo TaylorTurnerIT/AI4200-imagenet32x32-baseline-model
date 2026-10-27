@@ -2652,6 +2652,7 @@ dependencies = [
     { name = "ipykernel" },
     { name = "jupytext" },
     { name = "marimo" },
+    { name = "numpy" },
     { name = "torch" },
 ]
 
@@ -2668,6 +2669,7 @@ requires-dist = [
     { name = "ipykernel", specifier = ">=7.4.0" },
     { name = "jupytext", specifier = ">=1.19.6" },
     { name = "marimo", specifier = ">=0.25.1,<1" },
+    { name = "numpy", specifier = ">=1.26,<3" },
     { name = "torch", specifier = ">=2.0" },
 ]
 

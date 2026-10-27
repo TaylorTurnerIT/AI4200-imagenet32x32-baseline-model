@@ -1,0 +1,828 @@
+{
+  "mnist": {
+    "source_run": "mnist-20261023-105208-872d486e",
+    "config": {
+      "task": "mnist",
+      "seed": 42,
+      "device": "mps",
+      "epochs": 500,
+      "batch_size": 256,
+      "learning_rate": 0.05,
+      "weight_decay": 0.0001,
+      "momentum": 0.0,
+      "validation_fraction": 0.1,
+      "training_examples": 54000,
+      "validation_examples": 6000,
+      "selection_metric": "validation_accuracy",
+      "tie_break": "earliest_epoch",
+      "model": "ResidualMLP(\n  (input_layer): Linear(in_features=784, out_features=256, bias=True)\n  (norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n  (fc1): Linear(in_features=256, out_features=512, bias=True)\n  (fc2): Linear(in_features=512, out_features=256, bias=True)\n  (norm_2): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n  (fc1_2): Linear(in_features=256, out_features=512, bias=True)\n  (fc2_2): Linear(in_features=512, out_features=256, bias=True)\n  (norm_3): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n  (fc1_3): Linear(in_features=256, out_features=512, bias=True)\n  (fc2_3): Linear(in_features=512, out_features=256, bias=True)\n  (norm_4): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n  (fc1_4): Linear(in_features=256, out_features=512, bias=True)\n  (fc2_4): Linear(in_features=512, out_features=256, bias=True)\n  (norm_5): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n  (fc1_5): Linear(in_features=256, out_features=512, bias=True)\n  (fc2_5): Linear(in_features=512, out_features=256, bias=True)\n  (norm_6): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n  (fc1_6): Linear(in_features=256, out_features=512, bias=True)\n  (fc2_6): Linear(in_features=512, out_features=256, bias=True)\n  (norm_7): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n  (fc1_7): Linear(in_features=256, out_features=512, bias=True)\n  (fc2_7): Linear(in_features=512, out_features=256, bias=True)\n  (head_norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n  (head_fc1): Linear(in_features=256, out_features=512, bias=True)\n  (head_fc2): Linear(in_features=512, out_features=10, bias=True)\n)",
+      "augmentation": {
+        "enabled": true,
+        "digits": {
+          "0": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          },
+          "1": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          },
+          "2": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          },
+          "3": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          },
+          "4": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          },
+          "5": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          },
+          "6": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          },
+          "7": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          },
+          "8": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          },
+          "9": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            }
+          }
+        }
+      },
+      "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update"
+    },
+    "historical_model_source": "class ResidualMLP(nn.Module):\n    \"\"\"Baseline residual MLP.\n\n    input -> Linear(in_features -> width)            project into the backbone\n          -> depth x Block                           residual backbone, stays `width` wide\n          -> LayerNorm -> Linear -> tanh -> Linear   head: a block without the skip\n          -> logits (num_classes)\n\n    The head has no skip connection because its output size (num_classes)\n    differs from its input size (width), so the two cannot be added.\n    \"\"\"\n\n    def __init__(self, in_features, num_classes, width=256, hidden=512, depth=7):\n        super().__init__()\n\n        # Project the flattened image down to the backbone width.\n        self.input_layer = nn.Linear(in_features, width)\n        self.norm = nn.LayerNorm(width)\n        self.fc1 = nn.Linear(width, hidden)\n        self.fc2 = nn.Linear(hidden, width)\n        self.norm_2 = nn.LayerNorm(width)\n        self.fc1_2 = nn.Linear(width, hidden)\n        self.fc2_2 = nn.Linear(hidden, width)\n        self.norm_3 = nn.LayerNorm(width)\n        self.fc1_3 = nn.Linear(width, hidden)\n        self.fc2_3 = nn.Linear(hidden, width)\n        self.norm_4 = nn.LayerNorm(width)\n        self.fc1_4 = nn.Linear(width, hidden)\n        self.fc2_4 = nn.Linear(hidden, width)\n        self.norm_5 = nn.LayerNorm(width)\n        self.fc1_5 = nn.Linear(width, hidden)\n        self.fc2_5 = nn.Linear(hidden, width)\n        self.norm_6 = nn.LayerNorm(width)\n        self.fc1_6 = nn.Linear(width, hidden)\n        self.fc2_6 = nn.Linear(hidden, width)\n        self.norm_7 = nn.LayerNorm(width)\n        self.fc1_7 = nn.Linear(width, hidden)\n        self.fc2_7 = nn.Linear(hidden, width)\n        # The head: same layers as a block, but the last layer outputs class scores.\n        self.head_norm = nn.LayerNorm(width)\n        self.head_fc1 = nn.Linear(width, hidden)\n        self.head_fc2 = nn.Linear(hidden, num_classes)\n\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def forward(self, x):\n        \"\"\"Training forward pass. Returns raw logits (no softmax).\n\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\n        \"\"\"\n        x = x.flatten(start_dim=1)\n        x = self.input_layer(x)\n        n = self.norm(x)\n        a = F.gelu(self.fc1(n))\n        h = self.fc2(a)\n        x = x + h\n        n = self.norm_2(x)\n        a = F.gelu(self.fc1_2(n))\n        h = self.fc2_2(a)\n        x = x + h\n        n = self.norm_3(x)\n        a = F.gelu(self.fc1_3(n))\n        h = self.fc2_3(a)\n        x = x + h\n        n = self.norm_4(x)\n        a = F.gelu(self.fc1_4(n))\n        h = self.fc2_4(a)\n        x = x + h\n        n = self.norm_5(x)\n        a = F.gelu(self.fc1_5(n))\n        h = self.fc2_5(a)\n        x = x + h\n        n = self.norm_6(x)\n        a = F.gelu(self.fc1_6(n))\n        h = self.fc2_6(a)\n        x = x + h\n        n = self.norm_7(x)\n        a = F.gelu(self.fc1_7(n))\n        h = self.fc2_7(a)\n        x = x + h\n        n = self.head_norm(x)\n        a = F.gelu(self.head_fc1(n))\n        return self.head_fc2(a)\n\n    def predict(self, x):\n        \"\"\"Inference pass, never used during training. Returns class probabilities.\"\"\"\n        self.eval()                           # switch layers to inference behavior\n        with torch.no_grad():                 # no gradients needed at inference\n            return torch.softmax(self.forward(x), dim=1)",
+    "historical_source_commit": "6c19012"
+  },
+  "cifar10": {
+    "source_run": "cifar10-20261026-224057-085c2c3b",
+    "config": {
+      "task": "cifar10",
+      "seed": 42,
+      "device": "mps",
+      "epochs": 60,
+      "restored_from": null,
+      "batch_size": 256,
+      "learning_rate": 0.001,
+      "weight_decay": 1e-05,
+      "momentum": null,
+      "dampening": null,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "optimizer": "AdamW",
+      "loss": "CrossEntropyLoss()",
+      "optimizer_settings": {
+        "name": "AdamW",
+        "lr": 0.001,
+        "weight_decay": 1e-05,
+        "beta1": 0.9,
+        "beta2": 0.999,
+        "eps": 1e-08,
+        "amsgrad": true
+      },
+      "optimizer_groups": [
+        {
+          "optimizer": "AdamW",
+          "lr": 0.001,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-08,
+          "weight_decay": 1e-05,
+          "amsgrad": true,
+          "maximize": false,
+          "foreach": null,
+          "capturable": false,
+          "differentiable": false,
+          "fused": null,
+          "decoupled_weight_decay": true,
+          "parameter_names": [
+            "window_mlps.0.0.weight",
+            "window_mlps.0.0.bias",
+            "window_mlps.0.2.weight",
+            "window_mlps.0.2.bias",
+            "window_mlps.1.0.weight",
+            "window_mlps.1.0.bias",
+            "window_mlps.1.2.weight",
+            "window_mlps.1.2.bias",
+            "window_mlps.2.0.weight",
+            "window_mlps.2.0.bias",
+            "window_mlps.2.2.weight",
+            "window_mlps.2.2.bias",
+            "window_mlps.3.0.weight",
+            "window_mlps.3.0.bias",
+            "window_mlps.3.2.weight",
+            "window_mlps.3.2.bias",
+            "window_mlps.4.0.weight",
+            "window_mlps.4.0.bias",
+            "window_mlps.4.2.weight",
+            "window_mlps.4.2.bias",
+            "window_mlps.5.0.weight",
+            "window_mlps.5.0.bias",
+            "window_mlps.5.2.weight",
+            "window_mlps.5.2.bias",
+            "input_layer.weight",
+            "input_layer.bias",
+            "blocks.0.input_norm.weight",
+            "blocks.0.input_norm.bias",
+            "blocks.0.value_up.weight",
+            "blocks.0.value_up.bias",
+            "blocks.0.value_norm.weight",
+            "blocks.0.value_norm.bias",
+            "blocks.0.gate_up.weight",
+            "blocks.0.gate_up.bias",
+            "blocks.0.gate_norm.weight",
+            "blocks.0.gate_norm.bias",
+            "blocks.0.down.weight",
+            "blocks.0.down.bias",
+            "blocks.1.input_norm.weight",
+            "blocks.1.input_norm.bias",
+            "blocks.1.value_up.weight",
+            "blocks.1.value_up.bias",
+            "blocks.1.value_norm.weight",
+            "blocks.1.value_norm.bias",
+            "blocks.1.gate_up.weight",
+            "blocks.1.gate_up.bias",
+            "blocks.1.gate_norm.weight",
+            "blocks.1.gate_norm.bias",
+            "blocks.1.down.weight",
+            "blocks.1.down.bias",
+            "head_fc2.weight",
+            "head_fc2.bias"
+          ],
+          "parameter_count": 3415178
+        }
+      ],
+      "learning_rate_schedule": "constant",
+      "shuffle": true,
+      "architecture": {
+        "width": 512,
+        "hidden": 1024,
+        "depth": 2,
+        "in_features": 3072,
+        "num_classes": 10,
+        "normalization": [
+          "LayerNorm"
+        ],
+        "parameters": 3415178,
+        "window_size": 2,
+        "shrinking_stride": 2,
+        "window_strides": [
+          1,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "window_shapes": [
+          [
+            3,
+            32,
+            32
+          ],
+          [
+            64,
+            31,
+            31
+          ],
+          [
+            64,
+            16,
+            16
+          ],
+          [
+            64,
+            8,
+            8
+          ],
+          [
+            64,
+            4,
+            4
+          ],
+          [
+            64,
+            2,
+            2
+          ],
+          [
+            64,
+            1,
+            1
+          ]
+        ],
+        "window_hidden": 128,
+        "window_features": 64,
+        "window_order": "row, column, channel, dy, dx",
+        "window_padding": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "window_weight_sharing": "within each stage",
+        "window_aggregation": "hierarchical",
+        "functional_operations": [
+          "gelu",
+          "pad"
+        ]
+      },
+      "model_source": "@app.class_definition\nclass ResidualMLP(nn.Module):\n    # torch-canvas input x: e, 3, 32, 32\n    # torch-canvas sizes: in_features=3072, num_classes=10\n    \"\"\"Hierarchical shared window MLPs, followed by a residual classifier.\n\n    input -> sliding 2x2 windows, first stride 1, later shrinking_stride\n          -> shared Linear -> GELU -> Linear -> GELU per window\n          -> restore feature map and repeat until the spatial size is 1x1\n          -> flatten final features -> Linear into the backbone\n          -> depth x Block                           residual backbone, stays `width` wide\n          -> Linear(width -> num_classes)            classification head\n          -> logits (num_classes)\n\n    The head has no skip connection because its output size (num_classes)\n    differs from its input size (width), so the two cannot be added.\n    \"\"\"\n\n    def __init__(self, in_features, num_classes, width=512, depth=2, hidden=1024,\n                 dropout=0.1, window_hidden=128, window_features=64, shrinking_stride=2):\n        super().__init__()\n\n        shapes = {784: (1, 28, 28), 3072: (3, 32, 32)}\n        if in_features not in shapes:\n            raise ValueError(\"Expected MNIST (784) or RGB 32x32 (3072) input features\")\n        if shrinking_stride not in (1, 2):\n            raise ValueError(\"shrinking_stride must be 1 or 2\")\n        self.in_features = in_features\n        self.image_shape = shapes[in_features]\n        channels, height, image_width = self.image_shape\n        self.window_size = 2\n        self.shrinking_stride = shrinking_stride\n        self.window_shapes = [self.image_shape]\n        self.window_strides = []\n        self.window_padding = []\n        self.window_mlps = nn.ModuleList()\n        while height > 1 and image_width > 1:\n            stride = 1 if not self.window_mlps else shrinking_stride\n            self.window_strides.append(stride)\n            # Keep the final row/column when a stride-2 stage has odd size.\n            pad_height, pad_width = height % stride, image_width % stride\n            self.window_padding.append((pad_height, pad_width))\n            self.window_mlps.append(nn.Sequential(\n                nn.Linear(channels * 4, window_hidden), nn.GELU(),\n                nn.Linear(window_hidden, window_features), nn.GELU(),\n            ))\n            height = (height + pad_height - self.window_size) // stride + 1\n            image_width = (image_width + pad_width - self.window_size) // stride + 1\n            channels = window_features\n            self.window_shapes.append((channels, height, image_width))\n\n        # Project the flattened window features down to the backbone width.\n        self.input_layer = nn.Linear(channels * height * image_width, width)\n        self.blocks = nn.ModuleList([Block19(width, hidden=hidden, dropout=dropout) for _ in range(depth)])\n        self.head_fc2 = nn.Linear(width, num_classes)\n\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def extract_windows(self, x, stage=0):\n        \"\"\"Return (batch, positions, C*2*2), ordered by row, column, channel, dy, dx.\"\"\"\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.window_shapes[stage]:\n            raise ValueError(f\"Expected NCHW feature map (N, C, H, W) with C,H,W={self.window_shapes[stage]}\")\n        pad_height, pad_width = self.window_padding[stage]\n        if pad_height or pad_width:\n            x = F.pad(x, (0, pad_width, 0, pad_height))\n        # Tensor.unfold only creates sliding views; it performs no learned operation.\n        windows = x.unfold(2, self.window_size, self.window_strides[stage])\n        windows = windows.unfold(3, self.window_size, self.window_strides[stage])\n        _, height, image_width = self.window_shapes[stage + 1]\n        return windows.permute(0, 2, 3, 1, 4, 5).reshape(x.shape[0], height * image_width, -1)\n\n    def forward(self, x):\n        \"\"\"Training forward pass. Returns raw logits (no softmax).\n\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\n        \"\"\"\n        for stage, window_mlp in enumerate(self.window_mlps):\n            x = window_mlp(self.extract_windows(x, stage))\n            x = x.transpose(1, 2).reshape(x.shape[0], *self.window_shapes[stage + 1])\n        x = self.input_layer(x.flatten(1))\n        for blk in self.blocks:\n            x = x + blk(x)\n        return self.head_fc2(x)\n\n    def predict(self, x):\n        \"\"\"Inference pass, never used during training. Returns class probabilities.\"\"\"\n        self.eval()                           # switch layers to inference behavior\n        with torch.no_grad():                 # no gradients needed at inference\n            return torch.softmax(self.forward(x), dim=1)\n",
+      "block_source": "@app.class_definition\nclass Block19(nn.Module):\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\n        super().__init__()\n        self.input_norm = nn.LayerNorm(width)\n        self.value_up = nn.Linear(width, hidden)\n        self.value_norm = nn.LayerNorm(hidden)\n        self.gate_up = nn.Linear(width, hidden)\n        self.gate_norm = nn.LayerNorm(hidden)\n        self.down = nn.Linear(hidden, width)\n        self.dropout = nn.Dropout(p=dropout)\n\n    def forward(self, x):\n        normalized = self.input_norm(x)\n        h = self.value_up(normalized)\n        value = self.value_norm(h)\n        a = F.gelu(self.gate_up(normalized))\n        gate = self.gate_norm(a)\n        gated = value * gate\n        return self.dropout(self.down(gated))\n",
+      "validation_fraction": 0.1,
+      "training_examples": 45000,
+      "validation_examples": 5000,
+      "selection_metric": "validation_accuracy",
+      "tie_break": "earliest_epoch",
+      "model": "ResidualMLP(\n  (window_mlps): ModuleList(\n    (0): Sequential(\n      (0): Linear(in_features=12, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n    (1-5): 5 x Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n  )\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-1): 2 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=10, bias=True)\n)",
+      "augmentation": {
+        "enabled": true,
+        "default": {
+          "rotation": {
+            "probability": 0.45,
+            "amount": 10.0
+          },
+          "translation": {
+            "probability": 0.5,
+            "amount": 4.0
+          },
+          "scale": {
+            "probability": 0.55,
+            "amount": 0.1
+          },
+          "shear": {
+            "probability": 0.5,
+            "amount": 5.0
+          },
+          "brightness": {
+            "probability": 0.45,
+            "amount": 0.1
+          },
+          "noise": {
+            "probability": 0.5,
+            "amount": 0.05
+          },
+          "erasing": {
+            "probability": 0.5,
+            "amount": 0.05
+          },
+          "horizontal_flip": {
+            "probability": 0.5,
+            "amount": 1.0
+          }
+        },
+        "classes": {},
+        "task": "cifar10"
+      },
+      "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update"
+    }
+  },
+  "imagenet32": {
+    "source_run": "imagenet32-20261027-000850-1c570f4f",
+    "config": {
+      "task": "imagenet32",
+      "seed": 42,
+      "device": "mps",
+      "epochs": 10,
+      "restored_from": null,
+      "batch_size": 256,
+      "learning_rate": 0.001,
+      "weight_decay": 1e-05,
+      "momentum": null,
+      "dampening": null,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "optimizer": "AdamW",
+      "loss": "CrossEntropyLoss()",
+      "optimizer_settings": {
+        "name": "AdamW",
+        "lr": 0.001,
+        "weight_decay": 1e-05,
+        "beta1": 0.9,
+        "beta2": 0.999,
+        "eps": 1e-08,
+        "amsgrad": true
+      },
+      "optimizer_groups": [
+        {
+          "optimizer": "AdamW",
+          "lr": 0.001,
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "eps": 1e-08,
+          "weight_decay": 1e-05,
+          "amsgrad": true,
+          "maximize": false,
+          "foreach": null,
+          "capturable": false,
+          "differentiable": false,
+          "fused": null,
+          "decoupled_weight_decay": true,
+          "parameter_names": [
+            "window_mlps.0.0.weight",
+            "window_mlps.0.0.bias",
+            "window_mlps.0.2.weight",
+            "window_mlps.0.2.bias",
+            "window_mlps.1.0.weight",
+            "window_mlps.1.0.bias",
+            "window_mlps.1.2.weight",
+            "window_mlps.1.2.bias",
+            "window_mlps.2.0.weight",
+            "window_mlps.2.0.bias",
+            "window_mlps.2.2.weight",
+            "window_mlps.2.2.bias",
+            "window_mlps.3.0.weight",
+            "window_mlps.3.0.bias",
+            "window_mlps.3.2.weight",
+            "window_mlps.3.2.bias",
+            "window_mlps.4.0.weight",
+            "window_mlps.4.0.bias",
+            "window_mlps.4.2.weight",
+            "window_mlps.4.2.bias",
+            "window_mlps.5.0.weight",
+            "window_mlps.5.0.bias",
+            "window_mlps.5.2.weight",
+            "window_mlps.5.2.bias",
+            "input_layer.weight",
+            "input_layer.bias",
+            "blocks.0.input_norm.weight",
+            "blocks.0.input_norm.bias",
+            "blocks.0.value_up.weight",
+            "blocks.0.value_up.bias",
+            "blocks.0.value_norm.weight",
+            "blocks.0.value_norm.bias",
+            "blocks.0.gate_up.weight",
+            "blocks.0.gate_up.bias",
+            "blocks.0.gate_norm.weight",
+            "blocks.0.gate_norm.bias",
+            "blocks.0.down.weight",
+            "blocks.0.down.bias",
+            "blocks.1.input_norm.weight",
+            "blocks.1.input_norm.bias",
+            "blocks.1.value_up.weight",
+            "blocks.1.value_up.bias",
+            "blocks.1.value_norm.weight",
+            "blocks.1.value_norm.bias",
+            "blocks.1.gate_up.weight",
+            "blocks.1.gate_up.bias",
+            "blocks.1.gate_norm.weight",
+            "blocks.1.gate_norm.bias",
+            "blocks.1.down.weight",
+            "blocks.1.down.bias",
+            "head_fc2.weight",
+            "head_fc2.bias"
+          ],
+          "parameter_count": 3923048
+        }
+      ],
+      "learning_rate_schedule": "constant",
+      "shuffle": true,
+      "architecture": {
+        "width": 512,
+        "hidden": 1024,
+        "depth": 2,
+        "in_features": 3072,
+        "num_classes": 1000,
+        "normalization": [
+          "LayerNorm"
+        ],
+        "parameters": 3923048,
+        "window_size": 2,
+        "shrinking_stride": 2,
+        "window_strides": [
+          1,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "window_shapes": [
+          [
+            3,
+            32,
+            32
+          ],
+          [
+            64,
+            31,
+            31
+          ],
+          [
+            64,
+            16,
+            16
+          ],
+          [
+            64,
+            8,
+            8
+          ],
+          [
+            64,
+            4,
+            4
+          ],
+          [
+            64,
+            2,
+            2
+          ],
+          [
+            64,
+            1,
+            1
+          ]
+        ],
+        "window_hidden": 128,
+        "window_features": 64,
+        "window_order": "row, column, channel, dy, dx",
+        "window_padding": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "window_weight_sharing": "within each stage",
+        "window_aggregation": "hierarchical",
+        "functional_operations": [
+          "gelu",
+          "pad"
+        ]
+      },
+      "model_source": "@app.class_definition\nclass ResidualMLP(nn.Module):\n    # torch-canvas input x: e, channels, 32, 32\n    # torch-canvas sizes: in_features=3072, num_classes=10\n    \"\"\"Hierarchical shared window MLPs, followed by a residual classifier.\n\n    input -> sliding 2x2 windows, first stride 1, later shrinking_stride\n          -> shared Linear -> GELU -> Linear -> GELU per window\n          -> restore feature map and repeat until the spatial size is 1x1\n          -> flatten final features -> Linear into the backbone\n          -> depth x Block                           residual backbone, stays `width` wide\n          -> Linear(width -> num_classes)            classification head\n          -> logits (num_classes)\n\n    The head has no skip connection because its output size (num_classes)\n    differs from its input size (width), so the two cannot be added.\n    \"\"\"\n\n    def __init__(self, in_features, num_classes, width=512, depth=2, hidden=1024,\n                 dropout=0.1, window_hidden=128, window_features=64, shrinking_stride=2):\n        super().__init__()\n\n        if in_features != 784 and in_features != 3072:\n            raise ValueError(\"Expected MNIST (784) or RGB 32x32 (3072) input features\")\n        if shrinking_stride != 1 and shrinking_stride != 2:\n            raise ValueError(\"shrinking_stride must be 1 or 2\")\n        self.in_features = in_features\n        channels = 1 if in_features == 784 else 3\n        height = 28 if in_features == 784 else 32\n        image_width = height\n        self.image_shape = (channels, height, image_width)\n        self.window_size = 2\n        self.shrinking_stride = shrinking_stride\n        self.window_shapes = [self.image_shape]\n        self.window_strides = []\n        self.window_padding = []\n        self.window_mlps = nn.ModuleList()\n        stages = height - 1 if shrinking_stride == 1 else 6\n        for stage in range(stages):\n            stride = 1 if stage == 0 else shrinking_stride\n            self.window_strides.append(stride)\n            # Keep the final row/column when a stride-2 stage has odd size.\n            pad_height, pad_width = height % stride, image_width % stride\n            self.window_padding.append((pad_height, pad_width))\n            self.window_mlps.append(RollingWindowBlock(\n                channels, window_hidden, window_features, stride, pad_height))\n            height = (height + pad_height - self.window_size) // stride + 1\n            image_width = (image_width + pad_width - self.window_size) // stride + 1\n            channels = window_features\n            self.window_shapes.append((channels, height, image_width))\n\n        # Project the flattened window features down to the backbone width.\n        self.input_layer = nn.Linear(channels * height * image_width, width)\n        self.blocks = nn.ModuleList([Block19(width, hidden=hidden, dropout=dropout) for _ in range(depth)])\n        self.head_fc2 = nn.Linear(width, num_classes)\n\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def extract_windows(self, x, stage=0):\n        \"\"\"Return (batch, positions, C*2*2), ordered by row, column, channel, dy, dx.\"\"\"\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.window_shapes[stage]:\n            raise ValueError(f\"Expected NCHW feature map (N, C, H, W) with C,H,W={self.window_shapes[stage]}\")\n        # Tensor.unfold only creates sliding views; it performs no learned operation.\n        return self.window_mlps[stage].extract_windows(x).flatten(1, 2)\n\n    def forward(self, x):\n        \"\"\"Training forward pass. Returns raw logits (no softmax).\n\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\n        \"\"\"\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.image_shape:\n            raise ValueError(f\"Expected NCHW images with C,H,W={self.image_shape}\")\n        for window_mlp in self.window_mlps:\n            x = window_mlp(x)\n        x = self.input_layer(x.flatten(1))\n        for blk in self.blocks:\n            x = blk(x)\n        return self.head_fc2(x)\n\n    def predict(self, x):\n        \"\"\"Inference pass, never used during training. Returns class probabilities.\"\"\"\n        self.eval()                           # switch layers to inference behavior\n        with torch.no_grad():                 # no gradients needed at inference\n            return torch.softmax(self.forward(x), dim=1)\n",
+      "block_source": "@app.class_definition\nclass Block19(nn.Module):\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\n        super().__init__()\n        self.input_norm = nn.LayerNorm(width)\n        self.value_up = nn.Linear(width, hidden)\n        self.value_norm = nn.LayerNorm(hidden)\n        self.gate_up = nn.Linear(width, hidden)\n        self.gate_norm = nn.LayerNorm(hidden)\n        self.down = nn.Linear(hidden, width)\n        self.dropout = nn.Dropout(p=dropout)\n\n    def forward(self, x):\n        normalized = self.input_norm(x)\n        h = self.value_up(normalized)\n        value = self.value_norm(h)\n        a = F.gelu(self.gate_up(normalized))\n        gate = self.gate_norm(a)\n        gated = value * gate\n        return x + self.dropout(self.down(gated))\n",
+      "support_sources": {
+        "RollingWindowBlock": "@app.class_definition\nclass RollingWindowBlock(nn.Sequential):\n    \"\"\"Gather padded 2x2 windows, apply a shared MLP, and return an NCHW map.\n\n    Numeric module names preserve existing window_mlps checkpoint keys.\n    \"\"\"\n\n    def __init__(self, channels=3, window_hidden=128, window_features=64, stride=1, padding=0):\n        super().__init__()\n        self.stride = stride\n        self.padding = padding\n        self.add_module(\"0\", nn.Linear(channels * 4, window_hidden))\n        self.add_module(\"1\", nn.GELU())\n        self.add_module(\"2\", nn.Linear(window_hidden, window_features))\n        self.add_module(\"3\", nn.GELU())\n\n    def extract_windows(self, x):\n        \"\"\"Return (batch, output rows, output columns, C*2*2).\"\"\"\n        x = F.pad(x, (0, self.padding, 0, self.padding))\n        x = x.unfold(2, 2, self.stride).unfold(3, 2, self.stride)\n        return x.permute(0, 2, 3, 1, 4, 5).flatten(3)\n\n    def forward(self, x):\n        x = self.extract_windows(x)\n        x = self[0](x)\n        x = self[1](x)\n        x = self[2](x)\n        x = self[3](x)\n        return x.permute(0, 3, 1, 2)\n"
+      },
+      "validation_fraction": 0.1,
+      "training_examples": 1153051,
+      "validation_examples": 128116,
+      "selection_metric": "validation_accuracy",
+      "tie_break": "earliest_epoch",
+      "model": "ResidualMLP(\n  (window_mlps): ModuleList(\n    (0): RollingWindowBlock(\n      (0): Linear(in_features=12, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n    (1-5): 5 x RollingWindowBlock(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n  )\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-1): 2 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+      "augmentation": {
+        "task": "imagenet32",
+        "enabled": false,
+        "default": {
+          "rotation": {
+            "probability": 0.0,
+            "amount": 10.0
+          },
+          "translation": {
+            "probability": 0.5,
+            "amount": 2.0
+          },
+          "scale": {
+            "probability": 0.0,
+            "amount": 0.1
+          },
+          "shear": {
+            "probability": 0.0,
+            "amount": 5.0
+          },
+          "brightness": {
+            "probability": 0.25,
+            "amount": 0.2
+          },
+          "noise": {
+            "probability": 0.0,
+            "amount": 0.05
+          },
+          "erasing": {
+            "probability": 0.0,
+            "amount": 0.05
+          },
+          "horizontal_flip": {
+            "probability": 0.5,
+            "amount": 1.0
+          }
+        },
+        "classes": {}
+      },
+      "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update"
+    }
+  }
+}

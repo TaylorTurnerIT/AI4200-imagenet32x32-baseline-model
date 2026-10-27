@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<style>
+#experiment-accuracy { position:relative; font-family:var(--font-sans); color:var(--foreground); --observed:var(--chart-2); --best:var(--chart-1); }
+#experiment-accuracy .controls { display:flex; flex-wrap:wrap; gap:12px 20px; align-items:end; margin-bottom:12px; }
+#experiment-accuracy label { display:flex; flex-direction:column; gap:5px; }
+#experiment-accuracy select, #experiment-accuracy input { font:inherit; color:var(--foreground); background:var(--secondary); border:1px solid var(--border); border-radius:var(--radius); padding:6px 8px; }
+#experiment-accuracy .legend { display:flex; flex-wrap:wrap; align-items:center; gap:8px 20px; margin:10px 0 14px; }
+#experiment-accuracy .legend span { display:flex; align-items:center; gap:7px; }
+#experiment-accuracy .swatch { width:23px; height:0; border-top:2px dotted var(--observed); }
+#experiment-accuracy .swatch.best { border-top:3px solid var(--best); }
+#experiment-accuracy .small { font-size:12px; color:var(--muted-foreground); }
+#experiment-accuracy section { margin:0 0 20px; }
+#experiment-accuracy h3 { font-size:16px; font-weight:500; margin:0; }
+#experiment-accuracy .chart-heading { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+#experiment-accuracy .best-value { font-size:13px; color:var(--foreground); }
+#experiment-accuracy svg { display:block; overflow:visible; }
+#experiment-accuracy svg text { fill:var(--foreground); font-size:12px; }
+#experiment-accuracy .axis .domain, #experiment-accuracy .axis line { stroke:var(--border); }
+#experiment-accuracy .era-line { stroke:var(--muted-foreground); stroke-dasharray:2 5; opacity:.55; }
+#experiment-accuracy .grid line { stroke:var(--border); opacity:.65; }
+#experiment-accuracy .grid .domain { display:none; }
+#experiment-accuracy .notes { display:flex; flex-wrap:wrap; gap:5px 18px; font-size:12px; margin:0 0 5px 64px; }
+#experiment-accuracy output { display:block; font-size:12px; color:var(--muted-foreground); overflow-wrap:anywhere; margin-left:64px; min-height:18px; }
+#experiment-accuracy .tooltip { position:absolute; z-index:2; pointer-events:none; max-width:min(390px,85%); padding:9px 12px; border-radius:var(--radius); background:var(--popover); color:var(--popover-foreground); box-shadow:0 2px 10px color-mix(in srgb,var(--foreground) 15%,transparent); font-size:12px; overflow-wrap:anywhere; }
+#experiment-accuracy details { margin-left:auto; }
+#experiment-accuracy .limits { display:flex; flex-wrap:wrap; gap:10px; padding-top:10px; }
+#experiment-accuracy input { width:90px; }
+#experiment-accuracy .scale-note { margin:0; font-size:12px; color:var(--muted-foreground); }
+@media(pointer:coarse) { #experiment-accuracy select, #experiment-accuracy input { min-height:44px; } }
+@media(max-width:450px) { #experiment-accuracy details { margin-left:0; } #experiment-accuracy .notes, #experiment-accuracy output { margin-left:64px; } }
+</style>
+</head>
+<body style="margin:0">
+<div id="experiment-accuracy">
+  <div class="controls">
+    <label>Accuracy
+      <select id="accuracy-metric" aria-label="Accuracy metric">
+        <option value="test">Historical test</option>
+        <option value="validation">Validation</option>
+      </select>
+    </label>
+    <label>Scale
+      <select id="accuracy-scale" aria-label="Accuracy scale">
+        <option value="clipped">Clipped linear</option>
+        <option value="full">Full linear</option>
+        <option value="log-error">Log error</option>
+      </select>
+    </label>
+    <details><summary class="small">Clipping limits</summary><div class="limits" id="accuracy-limits"></div></details>
+  </div>
+  <div class="legend small">
+    <span><i class="swatch"></i>Each experiment</span>
+    <span><i class="swatch best"></i>Best observed so far</span>
+    <span>▼ Below visible range</span>
+  </div>
+  <p class="scale-note" id="accuracy-scale-note"></p>
+  <div id="accuracy-charts"></div>
+  <div class="tooltip" role="tooltip" hidden></div>
+</div>
+<script>
+(() => {
+  const DATA = __ACCURACY_DATA__;
+  const root = document.getElementById("experiment-accuracy");
+  const metricControl = root.querySelector("#accuracy-metric");
+  const scaleControl = root.querySelector("#accuracy-scale");
+  const tooltip = root.querySelector(".tooltip");
+  const charts = root.querySelector("#accuracy-charts");
+  const names = {mnist:"MNIST", cifar10:"CIFAR-10", imagenet32:"ImageNet32"};
+  const previous = {};
+  let selfChecking = true;
+  const floors = Object.fromEntries(Object.entries(DATA.tasks).map(([task,value]) => [task,value.range[0]]));
+  const format = value => `${d3.format(".4~f")(value)}%`;
+  const finite = value => typeof value === "number" && Number.isFinite(value);
+  const escape = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  metricControl.value = DATA.defaults.metric;
+  scaleControl.value = DATA.defaults.scale;
+
+  for (const task of Object.keys(DATA.tasks)) {
+    const label = document.createElement("label");
+    label.className = "small";
+    label.textContent = `${names[task]} minimum (%)`;
+    const input = document.createElement("input");
+    Object.assign(input,{type:"number",min:"0",max:"99.99",step:"0.1",value:String(floors[task])});
+    input.addEventListener("change",() => {
+      floors[task] = Math.min(99.99,Math.max(0,Number(input.value)||0));
+      input.value = String(floors[task]);
+      scaleControl.value = "clipped";
+      redraw(true);
+    });
+    label.append(input);
+    root.querySelector("#accuracy-limits").append(label);
+  }
+
+  function domain(values,task,mode) {
+    const [minimum,maximum] = d3.extent(values);
+    if (mode === "clipped") return [floors[task],Math.max(DATA.tasks[task].range[1],floors[task]+0.01)];
+    if (mode === "log-error") {
+      const small = Math.max(0.0001,100-maximum), large = Math.max(0.0001,100-minimum);
+      const padding = 10**Math.max(0.03,Math.log10(large/small)*0.08);
+      return [Math.max(0,100-large*padding),100-small/padding];
+    }
+    const padding = Math.max(0.15,(maximum-minimum)*0.08);
+    return [Math.max(0,minimum-padding),Math.min(99.9999,maximum+padding)];
+  }
+
+  function path(svg,key,target,task,color,width,dash,animate) {
+    const line = svg.append("path").attr("fill","none").attr("stroke",color)
+      .attr("stroke-width",width).attr("stroke-dasharray",dash||null);
+    const old = previous[task]?.[key];
+    if (!animate || !old || matchMedia("(prefers-reduced-motion: reduce)").matches) line.attr("d",target);
+    else {
+      const before = svg.append("path").attr("d",old).attr("visibility","hidden");
+      const after = svg.append("path").attr("d",target).attr("visibility","hidden");
+      const a = before.node(), b = after.node(), al = a.getTotalLength(), bl = b.getTotalLength();
+      const samples = d3.range(181).map(i => {
+        const from = a.getPointAtLength(al*i/180), to = b.getPointAtLength(bl*i/180);
+        return d3.interpolateArray([from.x,from.y],[to.x,to.y]);
+      });
+      before.remove(); after.remove();
+      line.attr("d",old).transition().duration(250).attrTween("d",() => t => d3.line()(samples.map(sample=>sample(t))))
+        .on("end",() => line.attr("d",target));
+    }
+    previous[task] ||= {};
+    previous[task][key] = target;
+  }
+
+  function draw(task,data,animate) {
+    const metric = metricControl.value, mode = scaleControl.value;
+    const points = data.points.filter(p=>finite(p[metric]));
+    const bounds = domain(points.map(p=>100*p[metric]),task,mode);
+    const low = bounds[0], high = bounds[1];
+    const section = document.createElement("section");
+    const best = d3.max(points,p=>100*p[metric]);
+    section.innerHTML = `<div class="chart-heading"><h3>${names[task]}</h3><span class="best-value">Best ${format(best)}</span></div><div class="chart"></div><div class="notes"></div><output aria-live="polite"></output>`;
+    charts.append(section);
+    const width = Math.floor(root.getBoundingClientRect().width), height = 278;
+    const margin = {left:64,right:16,top:35,bottom:43};
+    const left = margin.left, right = width-margin.right, top = margin.top, bottom = height-margin.bottom;
+    const svg = d3.select(section.querySelector(".chart")).append("svg")
+      .attr("width",width).attr("height",height).attr("viewBox",`0 0 ${width} ${height}`)
+      .attr("role","img").attr("aria-label",`${names[task]}: accuracy of each experiment and best observed so far.`);
+    svg.append("title").text(`${names[task]} experiment accuracy`);
+    const x = d3.scaleLinear().domain([0.5,data.points.length+0.5]).range([left+4,right-4]);
+    const linear = d3.scaleLinear().domain(bounds).range([bottom-3,top+3]);
+    const log = d3.scaleLog().domain([100-low,100-high]).range([bottom-3,top+3]);
+    const y = value => mode === "log-error" ? log(Math.max(0.0001,100-value)) : linear(value);
+    const clamp = value => Math.max(low,Math.min(high,value));
+    const candidates = best<90 ? d3.ticks(low,high,6) : [0,10,25,50,75,90,95,97,98,99,99.5,99.9];
+    let ticks = mode === "log-error" ? candidates.filter(t=>low<=t && t<=high) : linear.ticks(5);
+    if (mode === "log-error") {
+      ticks = ticks.filter((tick,i,array)=>i===array.length-1 || Math.abs(y(tick)-y(array[i+1]))>=22);
+    }
+    svg.append("rect").attr("data-chart-frame",true).attr("x",left).attr("y",top)
+      .attr("width",right-left).attr("height",bottom-top).attr("fill","none").attr("stroke","var(--border)");
+    const grid = svg.append("g").attr("class","grid");
+    grid.selectAll("line").data(ticks).join("line").attr("x1",left).attr("x2",right).attr("y1",y).attr("y2",y);
+    grid.selectAll("text").data(ticks).join("text").attr("x",left-9).attr("y",v=>y(v)+4)
+      .attr("text-anchor","end").text(v=>d3.format(".4~f")(v));
+    const tickCount = width<450 ? 4 : 7;
+    const tickValues = data.points.length<=5 ? data.points.map(p=>p.x) : x.ticks(tickCount).filter(Number.isInteger);
+    svg.append("g").attr("class","axis").attr("transform",`translate(0,${bottom})`)
+      .call(d3.axisBottom(x).tickValues(tickValues).tickFormat(d3.format("d")).tickSizeOuter(0));
+    svg.append("text").attr("class","axis-title").attr("data-axis","x").attr("x",(left+right)/2)
+      .attr("y",height-7).attr("text-anchor","middle").text("Experiment attempt");
+    svg.append("text").attr("class","axis-title").attr("data-axis","y").attr("transform",`translate(16,${(top+bottom)/2}) rotate(-90)`)
+      .attr("text-anchor","middle").text(mode==="log-error" ? "Accuracy (%) · log error" : "Accuracy (%)");
+
+    const eras = Object.fromEntries(data.eras.map(e=>[e.id,e]));
+    const spans = [];
+    for (const p of data.points) {
+      if (!spans.length || spans.at(-1).id!==p.era) spans.push({id:p.era,first:p.x-0.5,last:p.x+0.5});
+      else spans.at(-1).last=p.x+0.5;
+    }
+    for (const span of spans) {
+      const a=x(span.first), b=x(span.last), available=b-a-6;
+      if (span.first>0.5) svg.append("line").attr("class","era-line").attr("x1",a).attr("x2",a).attr("y1",top).attr("y2",bottom);
+      const label=svg.append("text").attr("x",(a+b)/2).attr("y",19).attr("text-anchor","middle").text(eras[span.id].short);
+      if (label.node().getBBox().width>available) label.text(span.id.split(" ")[0]);
+      if (label.node().getBBox().width>available) label.remove();
+    }
+
+    const plot = svg.append("g");
+    const line = d3.line().x(p=>x(p.x)).y(p=>y(clamp(100*p[metric])));
+    path(plot,"observed",line(points),task,"var(--observed)",1.2,"2 4",animate);
+    const bestPoints=data.points.filter(p=>finite(p[`best_${metric}`]));
+    const bestLine=d3.line().curve(d3.curveStepAfter).x(p=>x(p.x)).y(p=>y(clamp(100*p[`best_${metric}`])));
+    path(plot,"best",bestLine(bestPoints),task,"var(--best)",3,null,animate);
+    const clipped=points.filter(p=>100*p[metric]<low);
+    plot.selectAll("circle.score").data(points.filter(p=>100*p[metric]>=low)).join("circle")
+      .attr("class","score").attr("cx",p=>x(p.x)).attr("cy",p=>y(clamp(100*p[metric])))
+      .attr("r",3.5).attr("fill","var(--observed)");
+    const records=points.filter((p,i)=>i===0 || p[metric]>d3.max(points.slice(0,i),q=>q[metric]));
+    plot.selectAll("circle.record").data(records).join("circle").attr("class","record")
+      .attr("cx",p=>x(p.x)).attr("cy",p=>y(clamp(100*p[metric]))).attr("r",4.5).attr("fill","var(--best)");
+    plot.selectAll("path.clipped").data(clipped).join("path").attr("class","clipped")
+      .attr("d",d3.symbol().type(d3.symbolTriangle).size(55)).attr("transform",p=>`translate(${x(p.x)},${bottom-2}) rotate(180)`)
+      .attr("fill","var(--observed)");
+    const milestonePoints=data.milestones.map(m=>({...m,point:points.find(p=>p.id===m.id)})).filter(m=>m.point);
+    milestonePoints.forEach((milestone,i)=>{
+      const p=milestone.point, px=x(p.x), py=y(clamp(100*p[metric]));
+      const badgeX=Math.max(left+10,Math.min(right-10,px+9));
+      const badgeY=Math.max(top+12,Math.min(bottom-12,py-17));
+      plot.append("circle").attr("cx",badgeX).attr("cy",badgeY).attr("r",9)
+        .attr("fill","var(--background)").attr("stroke","var(--border)");
+      plot.append("text").attr("x",badgeX).attr("y",badgeY+4).attr("text-anchor","middle").text(i+1);
+      const note=document.createElement("span");note.textContent=`${i+1} ${milestone.label} · ${format(100*p[metric])}`;
+      section.querySelector(".notes").append(note);
+    });
+    const output=section.querySelector("output");
+    const caption=`${points.length} recorded results${clipped.length?` · ${clipped.length} below ${low}% clipped`:""}${task==="imagenet32"?" · final point continues saved weights":""}`;
+    output.textContent=caption;
+
+    const hover=svg.append("g").attr("visibility","hidden");
+    const guide=hover.append("line").attr("data-chart-hover-guide",true).attr("y1",top).attr("y2",bottom).attr("stroke","var(--muted-foreground)").attr("stroke-dasharray","2 4");
+    const dot=hover.append("circle").attr("data-chart-hover-marker",true).attr("r",5).attr("fill","var(--observed)");
+    const bestDot=hover.append("circle").attr("data-chart-hover-marker",true).attr("r",5).attr("fill","var(--best)");
+    let pinned=false;
+    function inspect(event,pin=false) {
+      const [px]=d3.pointer(event,svg.node()), position=Math.max(left,Math.min(right,px));
+      const at=x.invert(position), nearest=points[d3.bisector(p=>p.x).center(points,at)];
+      const preceding=bestPoints[d3.bisector(p=>p.x).right(bestPoints,at)-1];
+      hover.attr("visibility","visible");guide.attr("x1",position).attr("x2",position);
+      dot.attr("cx",x(nearest.x)).attr("cy",y(clamp(100*nearest[metric])));
+      bestDot.attr("visibility",preceding?"visible":"hidden").attr("cx",position)
+        .attr("cy",preceding?y(clamp(100*preceding[`best_${metric}`])):top);
+      tooltip.hidden=false;
+      tooltip.innerHTML=`<b>${names[task]} · experiment ${nearest.x}</b><br>${metric==="test"?"Historical test":"Validation"}: ${format(100*nearest[metric])}${100*nearest[metric]<low?" (clipped)":""}<br>Best observed: ${format(100*nearest[`best_${metric}`])}<br><code>${escape(nearest.id)}</code>`;
+      const box=root.getBoundingClientRect(), mouseX=event.clientX-box.left, mouseY=event.clientY-box.top;
+      tooltip.style.left=`${Math.max(0,Math.min(width-tooltip.offsetWidth,mouseX+12))}px`;
+      tooltip.style.top=`${Math.max(0,mouseY-tooltip.offsetHeight-12)}px`;
+      if(pin) output.textContent=`Experiment ${nearest.x} · ${format(100*nearest[metric])} · ${nearest.id}`;
+    }
+    svg.append("rect").attr("data-chart-hit",true).attr("data-chart-hover-overlay","cross-series")
+      .attr("x",left).attr("y",top).attr("width",right-left).attr("height",bottom-top).attr("fill","transparent")
+      .on("pointermove",event=>{if(!pinned) inspect(event);})
+      .on("pointerleave",()=>{if(!pinned){hover.attr("visibility","hidden");tooltip.hidden=true;}})
+      .on("click",event=>{pinned=!pinned;if(pinned)inspect(event,true);else{tooltip.hidden=true;hover.attr("visibility","hidden");output.textContent=caption;}});
+    return {task,metric,mode,scores:points.length,clipped:clipped.length,best};
+  }
+
+  function redraw(animate=false) {
+    charts.replaceChildren();tooltip.hidden=true;
+    root.querySelector("#accuracy-scale-note").textContent=scaleControl.value==="log-error"?"Log error expands the spacing near 100% accuracy.":"";
+    const diagnostics=Object.entries(DATA.tasks).map(([task,data])=>draw(task,data,animate));
+    root.dataset.diagnostics=JSON.stringify(diagnostics);
+    return diagnostics;
+  }
+  metricControl.addEventListener("change",()=>redraw(!selfChecking));
+  scaleControl.addEventListener("change",()=>redraw(!selfChecking));
+  let lastWidth=root.getBoundingClientRect().width;
+  new ResizeObserver(()=>{
+    const width=root.getBoundingClientRect().width;
+    if(Math.abs(width-lastWidth)>0.5){lastWidth=width;redraw(false);}
+  }).observe(root);
+  redraw(false);
+  // Exercise the actual control handlers, then restore the requested initial view.
+  const initialMetric=metricControl.value, initialScale=scaleControl.value;
+  for(const metric of ["test","validation"]){
+    for(const scale of ["clipped","full","log-error"]){
+      metricControl.value=metric;scaleControl.value=scale;
+      metricControl.dispatchEvent(new Event("change"));
+      scaleControl.dispatchEvent(new Event("change"));
+      const checks=JSON.parse(root.dataset.diagnostics);
+      console.assert(checks.length===3 && checks.every(c=>Number.isFinite(c.best)),"Invalid chart data",checks);
+      console.assert(!Array.from(root.querySelectorAll("path[d]")).some(p=>/NaN|Infinity/.test(p.getAttribute("d"))),"Invalid path");
+    }
+  }
+  metricControl.value=initialMetric;scaleControl.value=initialScale;
+  console.log("Accuracy controls verified:",JSON.stringify(redraw(false)));
+  selfChecking=false;
+})();
+</script>
+</body>
+</html>
