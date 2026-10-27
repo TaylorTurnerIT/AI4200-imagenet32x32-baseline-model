@@ -1,0 +1,13 @@
+full validation: 22.022230%; 128116 examples
+stage 1, single_pixel: 0.591651%; drop 21.4306 points
+stage 1, mean_only: 0.582285%; drop 21.4399 points
+stage 2, single_pixel: 2.284648%; drop 19.7376 points
+stage 2, mean_only: 2.946548%; drop 19.0757 points
+stage 3, single_pixel: 6.244341%; drop 15.7779 points
+stage 3, mean_only: 13.791408%; drop 8.2308 points
+stage 4, single_pixel: 8.068469%; drop 13.9538 points
+stage 4, mean_only: 16.451497%; drop 5.5707 points
+stage 5, single_pixel: 5.816604%; drop 16.2056 points
+stage 5, mean_only: 12.857098%; drop 9.1651 points
+stage 6, single_pixel: 3.240032%; drop 18.7822 points
+stage 6, mean_only: 6.936682%; drop 15.0855 points

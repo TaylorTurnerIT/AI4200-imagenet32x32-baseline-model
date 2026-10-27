@@ -2421,6 +2421,19 @@ The ImageNet fixed-batch diagnostics contain eight snapshots, including initiali
 
 **Runs:** [Fresh harness evidence and run records](outputs/final-evaluation/README.md). [Report images](outputs/report-figures/README.md). The historical 20.004% continuation remains separate from this fresh 19.960% result.
 
+## Follow-up analysis — window-stage spatial ablations — 2026-10-27
+
+The saved epoch-23 ImageNet model was evaluated without retraining on the same
+validation split. At each of its six window stages, replacing each neighborhood
+with repeated copies of its top-left pixel or its mean preserved channel
+mapping and shape while removing spatial information. Mean-only validation
+accuracy ranged from 0.5823% at stage 1 to 16.4515% at stage 4, versus 22.0222%
+for the full model. Weights and restored accuracy were unchanged. [All twelve
+results and methods](outputs/window-stage-ablation/README.md).
+
+TODO — add your own interpretation. These controls retain the learned MLP and
+should not be described as deleting the whole stage.
+
 ## Next entry
 
 ### Change 146 — TODO task — TODO date

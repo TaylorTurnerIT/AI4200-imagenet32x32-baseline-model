@@ -10,6 +10,7 @@ curve comparison.
 - [CIFAR-10 training curves](cifar10-training-comparison.png) · [SVG](cifar10-training-comparison.svg)
 - [ImageNet32 training dynamics](training-dynamics.png)
 - [ImageNet32 residual branch ablation](ablation-depth.png)
+- [ImageNet32 window-stage spatial ablation](window-stage-ablation.png) · [SVG](window-stage-ablation.svg) · [Method and results](../window-stage-ablation/README.md)
 
 The timelines retain the clipped lower ranges from the design draft. Downward
 triangles preserve failed results outside the visible range. A dark diamond
