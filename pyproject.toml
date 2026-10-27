@@ -10,6 +10,7 @@ dependencies = [
     "ipykernel>=7.4.0",
     "jupytext>=1.19.6",
     "marimo>=0.25.1,<1",
+    "numpy>=1.26,<3",
     "torch>=2.0",
 ]   # lower bound only, so pip keeps your existing CUDA build
 

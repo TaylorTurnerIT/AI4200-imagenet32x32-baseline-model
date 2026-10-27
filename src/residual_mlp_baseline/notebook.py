@@ -1610,12 +1610,23 @@ def train(task, X_train, y_train, seed=0, device="cuda"):
 
 @app.function
 def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=None, augmentation=None,
-                       optimizer_settings=None, epochs=None):
+                       optimizer_settings=None, epochs=None, model_factory=None, batch_size=None,
+                       max_seconds=None):
     """Train with a seeded holdout; optionally persist each epoch and best weights.
 
     No test data enters training or checkpoint selection. Tied validation
     accuracies keep the earlier epoch. The grading entry point remains train().
     """
+    call_started = time.perf_counter()
+    if max_seconds is not None and (not isinstance(max_seconds, (int, float))
+                                    or isinstance(max_seconds, bool) or not np.isfinite(max_seconds)
+                                    or max_seconds <= 0):
+        raise ValueError("max_seconds must be finite and positive")
+    deadline = (call_started + max_seconds - min(30.0, max_seconds * 0.02)
+                if max_seconds is not None else None)
+    batch_size = BATCH_SIZE if batch_size is None else batch_size
+    if not isinstance(batch_size, int) or isinstance(batch_size, bool) or batch_size < 1:
+        raise ValueError("batch_size must be a positive integer")
     torch.manual_seed(seed)                   # makes the run reproducible
     if len(X_train) != len(y_train) or len(X_train) < 2:
         raise ValueError("Training needs at least two examples and matching labels")
@@ -1628,15 +1639,19 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     augmenter = ImageAugmenter(task, augmentation, seed=seed + 1)
 
     # 1. Build the model for this task. Only input size and class count differ.
-    model = ResidualMLP(**TASKS[task]).to(device)
+    factory = ResidualMLP if model_factory is None else model_factory
+    model = factory(**TASKS[task]).to(device)
 
     # 2. Wrap the data so we can loop over shuffled mini-batches.
-    dataset = TensorDataset(prepare(X_train), torch.as_tensor(y_train).long())
+    # Keep ImageNet's memory-mapped uint8 storage; normalize one batch at a time.
+    streaming_normalization = task == "imagenet32"
+    dataset = TensorDataset(torch.as_tensor(X_train) if streaming_normalization else prepare(X_train),
+                            torch.as_tensor(y_train).long())
     split = torch.randperm(len(dataset), generator=torch.Generator().manual_seed(seed))
     validation_size = min(len(dataset) - 1, max(1, int(len(dataset) * VALIDATION_FRACTION)))
     validation_indices, training_indices = split[:validation_size], split[validation_size:]
-    loader = DataLoader(Subset(dataset, training_indices.tolist()), batch_size=BATCH_SIZE, shuffle=True)
-    validation_loader = DataLoader(Subset(dataset, validation_indices.tolist()), batch_size=BATCH_SIZE)
+    loader = DataLoader(Subset(dataset, training_indices.tolist()), batch_size=batch_size, shuffle=True)
+    validation_loader = DataLoader(Subset(dataset, validation_indices.tolist()), batch_size=batch_size)
 
     # 3. Choose the loss and the optimizer.
     loss_fn = nn.CrossEntropyLoss()           # expects raw logits
@@ -1658,7 +1673,9 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     metadata = {
         "task": task, "seed": seed, "device": str(device), "epochs": epochs,
         "restored_from": RESTORED_FROM if RESTORED_FROM and RESTORED_FROM["task"] == task else None,
-        "batch_size": BATCH_SIZE, "learning_rate": optimizer_groups[0]["lr"],
+        "batch_size": batch_size, "learning_rate": optimizer_groups[0]["lr"],
+        "max_seconds": max_seconds,
+        "streaming_normalization": streaming_normalization,
         "weight_decay": optimizer_groups[0]["weight_decay"],
         "momentum": optimizer_groups[0].get("momentum"),
         "dampening": optimizer_groups[0].get("dampening"),
@@ -1693,11 +1710,20 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     history = []
     best_accuracy, best_epoch, best_state = -1.0, 0, None
     started = time.perf_counter()
+    stop_reason = "epochs"
     for epoch in range(epochs):
+        if deadline is not None and time.perf_counter() >= deadline:
+            stop_reason = "time_budget"
+            break
         model.train()
         total_loss = torch.zeros((), device=device)
         correct = torch.zeros((), dtype=torch.long, device=device)
         for X_batch, y_batch in loader:
+            if deadline is not None and time.perf_counter() >= deadline:
+                stop_reason = "time_budget"
+                break
+            if streaming_normalization:
+                X_batch = prepare(X_batch)
             X_batch = augmenter(X_batch, y_batch)
             X_batch, y_batch = X_batch.to(device), y_batch.to(device)
 
@@ -1713,15 +1739,25 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
             total_loss += loss.detach() * len(X_batch)
             correct += (logits.detach().argmax(1) == y_batch).sum()
 
+        if stop_reason == "time_budget":
+            break
+
         model.eval()
         validation_loss = torch.zeros((), device=device)
         validation_correct = torch.zeros((), dtype=torch.long, device=device)
         with torch.inference_mode():
             for X_batch, y_batch in validation_loader:
+                if deadline is not None and time.perf_counter() >= deadline:
+                    stop_reason = "time_budget"
+                    break
+                if streaming_normalization:
+                    X_batch = prepare(X_batch)
                 X_batch, y_batch = X_batch.to(device), y_batch.to(device)
                 logits = model(X_batch)
                 validation_loss += loss_fn(logits, y_batch) * len(X_batch)
                 validation_correct += (logits.argmax(1) == y_batch).sum()
+        if stop_reason == "time_budget":
+            break
         row = {
             "epoch": epoch + 1,
             "train_loss": total_loss.item() / len(training_indices),
@@ -1750,6 +1786,8 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
               flush=True)
 
     # Restore weights from this run's memory, never from a previous run's saved file.
+    if best_state is None:
+        raise RuntimeError("Training time budget ended before one complete training/validation epoch")
     model.load_state_dict(best_state)
     model.eval()
     model.run_config = metadata
@@ -1758,6 +1796,15 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
     model.best_validation_accuracy = best_accuracy
     model.training_indices = training_indices
     model.validation_indices = validation_indices
+    model.stop_reason = stop_reason
+    model.training_seconds = time.perf_counter() - call_started
+    if run_dir is not None:
+        (run_dir / "training-receipt.json").write_text(json.dumps({
+            "task": task, "seed": seed, "stop_reason": stop_reason,
+            "epochs_completed": len(history), "best_epoch": best_epoch,
+            "best_validation_accuracy": best_accuracy,
+            "training_seconds": model.training_seconds, "max_seconds": max_seconds,
+        }, indent=2) + "\n")
     return model
 
 

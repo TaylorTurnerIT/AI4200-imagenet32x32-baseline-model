@@ -1,0 +1,308 @@
+{
+  "description": "Provisional era labels and hand-selected representatives. These choices organize evidence; they are not claims that comparisons isolate one variable.",
+  "run_overrides": {},
+  "tasks": {
+    "mnist": {
+      "title": "MNIST \u2014 capacity, regularization and transfer",
+      "subtitle": "Small gains near 98\u201399% coexist with large failed experiments; the inset preserves both views.",
+      "eras": [
+        {
+          "id": "M1 \u2014 Baseline, capacity and regularization",
+          "start": "2026-10-01",
+          "short": "M1 \u00b7 Capacity / decay"
+        },
+        {
+          "id": "M2 \u2014 Momentum and depth corrections",
+          "start": "2026-10-20",
+          "short": "M2 \u00b7 Momentum"
+        },
+        {
+          "id": "M3 \u2014 Longer training, validation and augmentation",
+          "start": "2026-10-22",
+          "short": "M3 \u00b7 Validation / augmentation"
+        },
+        {
+          "id": "M4 \u2014 Rolling-window transfer",
+          "start": "2026-10-27",
+          "short": "M4 \u00b7 Transfer"
+        }
+      ],
+      "representatives": [
+        {
+          "id": "mnist-20261022-220617-e4881f95",
+          "label": "Flat MLP \u00b7 no augmentation \u00b7 500 epochs"
+        },
+        {
+          "id": "mnist-20261023-001324-8a4087e7",
+          "label": "Flat MLP \u00b7 augmentation \u00b7 400 epochs"
+        },
+        {
+          "id": "mnist-20261027-111917-d3e67d1d",
+          "label": "Rolling windows \u00b7 Muon \u00b7 20 epochs"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "legacy-csv-line-29",
+          "label": "Decay 0.99: 11.35%",
+          "offset": [
+            -10,
+            18
+          ],
+          "align": "right"
+        },
+        {
+          "id": "mnist-20261023-105208-872d486e",
+          "label": "99.23% test",
+          "offset": [
+            -25,
+            -25
+          ],
+          "align": "right"
+        },
+        {
+          "id": "mnist-20261027-111917-d3e67d1d",
+          "label": "Transfer: 95.73%",
+          "offset": [
+            -8,
+            -28
+          ],
+          "align": "right"
+        }
+      ],
+      "footnote": "Early accuracy points come from CSV-only records. No original-baseline epoch loss trace was found. The transfer run later collapsed."
+    },
+    "cifar10": {
+      "title": "CIFAR-10 \u2014 from flat pixels to local structure",
+      "subtitle": "The rolling-window era starts with a regression, then improves after widening and restoring full-image coverage.",
+      "eras": [
+        {
+          "id": "C0 \u2014 Original baseline",
+          "start": "2026-10-01",
+          "short": "C0"
+        },
+        {
+          "id": "C1 \u2014 Flat MLP exploration",
+          "start": "2026-10-23",
+          "short": "C1 \u00b7 Flat MLP"
+        },
+        {
+          "id": "C2 \u2014 Happy Accident and controlled reruns",
+          "start": "2026-10-24 21",
+          "short": "C2 \u00b7 Audit"
+        },
+        {
+          "id": "C3 \u2014 Optimizers, width and depth",
+          "start": "2026-10-24 23",
+          "short": "C3 \u00b7 Optimizers"
+        },
+        {
+          "id": "C4 \u2014 Bilinear gates, pooling and dropout",
+          "start": "2026-10-25 12:50",
+          "short": "C4 \u00b7 Gates / dropout"
+        },
+        {
+          "id": "C5 \u2014 Hierarchical rolling windows",
+          "start": "2026-10-26 21:50",
+          "short": "C5 \u00b7 Windows"
+        }
+      ],
+      "representatives": [
+        {
+          "id": "cifar10-20261024-222752-audit-baseline",
+          "label": "Flat MLP \u00b7 augmentation off \u00b7 30 epochs"
+        },
+        {
+          "id": "cifar10-20261026-131127-ba8e8b68",
+          "label": "Normalized gates \u00b7 dropout 0.1 \u00b7 60 epochs"
+        },
+        {
+          "id": "cifar10-20261026-215237-2ac3a7b3",
+          "label": "Small rolling windows \u00b7 60 epochs"
+        },
+        {
+          "id": "cifar10-20261026-224057-085c2c3b",
+          "label": "Wide windows + full coverage \u00b7 60 epochs"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "cifar10-20261024-210758-6cf0d0b4",
+          "label": "Happy Accident: 58.88%",
+          "offset": [
+            -48,
+            18
+          ],
+          "align": "right"
+        },
+        {
+          "id": "cifar10-20261026-131127-ba8e8b68",
+          "label": "Gated / dropout: 60.87%",
+          "offset": [
+            -14,
+            30
+          ],
+          "align": "right"
+        },
+        {
+          "id": "cifar10-20261026-215237-2ac3a7b3",
+          "label": "Small windows: 48.27%",
+          "offset": [
+            -115,
+            -7
+          ],
+          "align": "right"
+        },
+        {
+          "id": "cifar10-20261026-224057-085c2c3b",
+          "label": "Full coverage: 75.45%",
+          "offset": [
+            -10,
+            -12
+          ],
+          "align": "right"
+        }
+      ],
+      "footnote": "Historical non-residual and MaxPool2d variants remain visible. The coverage correction also adds a stage; optimizer recipes differ."
+    },
+    "imagenet32": {
+      "title": "ImageNet32 \u2014 local structure and continued training",
+      "subtitle": "Five saved attempts; the final point continues saved weights and is not a fresh-from-scratch evaluation.",
+      "eras": [
+        {
+          "id": "I1 \u2014 Flat gated MLP",
+          "start": "2026-10-01",
+          "short": "I1 \u00b7 Flat gated MLP"
+        },
+        {
+          "id": "I2 \u2014 Rolling-window MLP",
+          "start": "2026-10-26 23",
+          "short": "I2 \u00b7 Windows"
+        },
+        {
+          "id": "I3 \u2014 Continued training (analysis only)",
+          "start": "2026-10-27 01:30",
+          "short": "I3 \u00b7 Continuation"
+        }
+      ],
+      "representatives": [
+        {
+          "id": "imagenet32-20261026-195826-4b2dc142",
+          "label": "Flat gated MLP \u00b7 10 epochs"
+        },
+        {
+          "id": "imagenet32-20261026-210325-b9c04e03",
+          "label": "Flat gated MLP \u00b7 20 epochs"
+        },
+        {
+          "id": "imagenet32-20261027-000850-1c570f4f",
+          "label": "Rolling windows \u00b7 10 epochs"
+        },
+        {
+          "id": "imagenet32-continuation-20261027-013419-8e7bc688",
+          "label": "Continuation \u00b7 only new epochs 11\u201325"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "imagenet32-20261026-195826-4b2dc142",
+          "label": "11.106% test",
+          "offset": [
+            12,
+            13
+          ],
+          "align": "left"
+        },
+        {
+          "id": "imagenet32-20261027-000850-1c570f4f",
+          "label": "18.496% test",
+          "offset": [
+            -22,
+            -25
+          ],
+          "align": "right"
+        },
+        {
+          "id": "imagenet32-continuation-20261027-013419-8e7bc688",
+          "label": "20.004% test",
+          "offset": [
+            -8,
+            -28
+          ],
+          "align": "right"
+        }
+      ],
+      "footnote": "No original-baseline ImageNet score was found. Continuation curves exclude the copied parent prefix; AdamW state restarted at epoch 10."
+    }
+  },
+  "accuracy_view": {
+    "metric": "test",
+    "scale": "clipped",
+    "ranges": {
+      "mnist": [
+        95,
+        99.5
+      ],
+      "cifar10": [
+        48,
+        77
+      ],
+      "imagenet32": [
+        10,
+        23
+      ]
+    },
+    "milestones": {
+      "mnist": [
+        {
+          "id": "legacy-csv-line-4",
+          "label": "Baseline"
+        },
+        {
+          "id": "legacy-csv-line-32",
+          "label": "Regularization"
+        },
+        {
+          "id": "mnist-20261023-105208-872d486e",
+          "label": "Augmented MLP"
+        },
+        {
+          "id": "mnist-20261027-111917-d3e67d1d",
+          "label": "Rolling windows"
+        }
+      ],
+      "cifar10": [
+        {
+          "id": "legacy-csv-line-3",
+          "label": "Baseline"
+        },
+        {
+          "id": "cifar10-20261024-210758-6cf0d0b4",
+          "label": "Happy Accident"
+        },
+        {
+          "id": "cifar10-20261026-131127-ba8e8b68",
+          "label": "Gates + dropout"
+        },
+        {
+          "id": "cifar10-20261026-224057-085c2c3b",
+          "label": "Full-image windows"
+        }
+      ],
+      "imagenet32": [
+        {
+          "id": "imagenet32-20261026-210325-b9c04e03",
+          "label": "Flat gated MLP"
+        },
+        {
+          "id": "imagenet32-20261027-000850-1c570f4f",
+          "label": "Rolling windows"
+        },
+        {
+          "id": "imagenet32-continuation-20261027-013419-8e7bc688",
+          "label": "Continued training"
+        }
+      ]
+    }
+  }
+}
