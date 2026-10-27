@@ -1,0 +1,455 @@
+{
+  "task": "mnist",
+  "seed": 0,
+  "device": "cuda",
+  "epochs": 500,
+  "restored_from": null,
+  "batch_size": 256,
+  "learning_rate": 0.05,
+  "max_seconds": 900,
+  "streaming_normalization": false,
+  "weight_decay": 0.0001,
+  "momentum": 0.0,
+  "dampening": 0.0,
+  "betas": null,
+  "eps": null,
+  "optimizer": "SGD",
+  "loss": "CrossEntropyLoss()",
+  "optimizer_settings": {
+    "name": "SGD",
+    "lr": 0.05,
+    "weight_decay": 0.0001,
+    "momentum": 0.0,
+    "dampening": 0.0,
+    "nesterov": false
+  },
+  "optimizer_groups": [
+    {
+      "optimizer": "SGD",
+      "lr": 0.05,
+      "momentum": 0.0,
+      "dampening": 0.0,
+      "weight_decay": 0.0001,
+      "nesterov": false,
+      "maximize": false,
+      "foreach": null,
+      "differentiable": false,
+      "fused": null,
+      "parameter_names": [
+        "input_layer.weight",
+        "input_layer.bias",
+        "blocks.0.norm.weight",
+        "blocks.0.norm.bias",
+        "blocks.0.fc1.weight",
+        "blocks.0.fc1.bias",
+        "blocks.0.fc2.weight",
+        "blocks.0.fc2.bias",
+        "blocks.1.norm.weight",
+        "blocks.1.norm.bias",
+        "blocks.1.fc1.weight",
+        "blocks.1.fc1.bias",
+        "blocks.1.fc2.weight",
+        "blocks.1.fc2.bias",
+        "blocks.2.norm.weight",
+        "blocks.2.norm.bias",
+        "blocks.2.fc1.weight",
+        "blocks.2.fc1.bias",
+        "blocks.2.fc2.weight",
+        "blocks.2.fc2.bias",
+        "blocks.3.norm.weight",
+        "blocks.3.norm.bias",
+        "blocks.3.fc1.weight",
+        "blocks.3.fc1.bias",
+        "blocks.3.fc2.weight",
+        "blocks.3.fc2.bias",
+        "blocks.4.norm.weight",
+        "blocks.4.norm.bias",
+        "blocks.4.fc1.weight",
+        "blocks.4.fc1.bias",
+        "blocks.4.fc2.weight",
+        "blocks.4.fc2.bias",
+        "blocks.5.norm.weight",
+        "blocks.5.norm.bias",
+        "blocks.5.fc1.weight",
+        "blocks.5.fc1.bias",
+        "blocks.5.fc2.weight",
+        "blocks.5.fc2.bias",
+        "blocks.6.norm.weight",
+        "blocks.6.norm.bias",
+        "blocks.6.fc1.weight",
+        "blocks.6.fc1.bias",
+        "blocks.6.fc2.weight",
+        "blocks.6.fc2.bias",
+        "head_norm.weight",
+        "head_norm.bias",
+        "head_fc1.weight",
+        "head_fc1.bias",
+        "head_fc2.weight",
+        "head_fc2.bias"
+      ],
+      "parameter_count": 2182154
+    }
+  ],
+  "learning_rate_schedule": "constant",
+  "shuffle": true,
+  "architecture": {
+    "width": 256,
+    "hidden": 512,
+    "depth": 7,
+    "in_features": 784,
+    "num_classes": 10,
+    "normalization": [
+      "LayerNorm"
+    ],
+    "parameters": 2182154,
+    "functional_operations": [
+      "gelu"
+    ]
+  },
+  "model_source": "class MnistResidualMLP(nn.Module):\n    \"\"\"Seven-block GELU model recovered from commit 6c19012 and its run metadata.\n\n    Module construction and Xavier traversal preserve the historical seeded\n    parameter order even though the seven repeated blocks now share a class.\n    \"\"\"\n\n    def __init__(self, in_features=784, num_classes=10, width=256, hidden=512, depth=7):\n        super().__init__()\n        self.input_layer = nn.Linear(in_features, width)\n        self.blocks = nn.ModuleList([MnistBlock(width, hidden) for _ in range(depth)])\n        self.head_norm = nn.LayerNorm(width)\n        self.head_fc1 = nn.Linear(width, hidden)\n        self.head_fc2 = nn.Linear(hidden, num_classes)\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def forward(self, x):\n        x = self.input_layer(x.flatten(1))\n        for block in self.blocks:\n            x = block(x)\n        return self.head_fc2(F.gelu(self.head_fc1(self.head_norm(x))))\n\n    @torch.no_grad()\n    def predict(self, x):\n        self.eval()\n        return self(x).softmax(1)\n",
+  "block_source": "class MnistBlock(nn.Module):\n    def __init__(self, width=256, hidden=512):\n        super().__init__()\n        self.norm = nn.LayerNorm(width)\n        self.fc1 = nn.Linear(width, hidden)\n        self.fc2 = nn.Linear(hidden, width)\n\n    def forward(self, x):\n        return x + self.fc2(F.gelu(self.fc1(self.norm(x))))\n",
+  "support_sources": {},
+  "validation_fraction": 0.1,
+  "training_examples": 54000,
+  "validation_examples": 6000,
+  "selection_metric": "validation_accuracy",
+  "tie_break": "earliest_epoch",
+  "model": "MnistResidualMLP(\n  (input_layer): Linear(in_features=784, out_features=256, bias=True)\n  (blocks): ModuleList(\n    (0-6): 7 x MnistBlock(\n      (norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)\n      (fc1): Linear(in_features=256, out_features=512, bias=True)\n      (fc2): Linear(in_features=512, out_features=256, bias=True)\n    )\n  )\n  (head_norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)\n  (head_fc1): Linear(in_features=256, out_features=512, bias=True)\n  (head_fc2): Linear(in_features=512, out_features=10, bias=True)\n)",
+  "augmentation": {
+    "task": "mnist",
+    "enabled": true,
+    "default": {
+      "rotation": {
+        "probability": 0.5,
+        "amount": 10.0
+      },
+      "translation": {
+        "probability": 0.5,
+        "amount": 2.0
+      },
+      "scale": {
+        "probability": 0.5,
+        "amount": 0.1
+      },
+      "shear": {
+        "probability": 0.25,
+        "amount": 5.0
+      },
+      "brightness": {
+        "probability": 0.25,
+        "amount": 0.1
+      },
+      "noise": {
+        "probability": 0.25,
+        "amount": 0.05
+      },
+      "erasing": {
+        "probability": 0.1,
+        "amount": 0.05
+      }
+    },
+    "classes": {
+      "0": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      },
+      "1": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      },
+      "2": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      },
+      "3": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      },
+      "4": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      },
+      "5": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      },
+      "6": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      },
+      "7": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      },
+      "8": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      },
+      "9": {
+        "rotation": {
+          "probability": 0.5,
+          "amount": 10.0
+        },
+        "translation": {
+          "probability": 0.5,
+          "amount": 2.0
+        },
+        "scale": {
+          "probability": 0.5,
+          "amount": 0.1
+        },
+        "shear": {
+          "probability": 0.25,
+          "amount": 5.0
+        },
+        "brightness": {
+          "probability": 0.25,
+          "amount": 0.1
+        },
+        "noise": {
+          "probability": 0.25,
+          "amount": 0.05
+        },
+        "erasing": {
+          "probability": 0.1,
+          "amount": 0.05
+        }
+      }
+    }
+  },
+  "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update"
+}

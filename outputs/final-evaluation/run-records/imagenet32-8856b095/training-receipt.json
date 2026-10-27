@@ -1,0 +1,10 @@
+{
+  "task": "imagenet32",
+  "seed": 0,
+  "stop_reason": "epochs",
+  "epochs_completed": 25,
+  "best_epoch": 23,
+  "best_validation_accuracy": 0.22022229854194636,
+  "training_seconds": 1308.76347636,
+  "max_seconds": 3600
+}

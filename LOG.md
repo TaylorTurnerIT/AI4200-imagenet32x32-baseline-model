@@ -2409,11 +2409,17 @@ _Separate MLP-Mixer implementation_
 
 **Why:** User instruction: “Use the strongest documented validation recipes per task, within the time limit.” The ImageNet continuation used saved weights, so its 20.004% test accuracy does not demonstrate a valid fresh grading run. TODO — add your own explanation of why these earlier results support the final choices.
 
-**Expected:** TODO — add your own prediction before the CUDA experiment. The implementation goal is a clean install and fresh training through the unchanged instructor evaluation cells; this is not a recovered personal prediction.
+**Expected:** No personal prediction was recorded before this CUDA run. TODO — add your own reading, labeled retrospective. The implementation goal was a clean install and fresh training through the unchanged instructor evaluation cells; this is not a recovered personal prediction.
 
-**Result:** Pending full-dataset CUDA harness evaluation. Local checks cover historical MNIST weight/logit equivalence, fresh training on synthetic data, probability outputs, budget restoration, headless imports, bounded ImageNet normalization, and diagnostics that leave training weights unchanged. These checks do not establish final accuracy.
+**Result:** The exact instructor harness passed on a high-RAM A100, seed 0, installed from commit `b5ab6e1f75de4cfc257cf85b7e2535cfa217934c`. All models trained from scratch. Total training: 40.33 minutes.
 
-**Runs:** Pending. Recipe sources and reproduction procedure: [SUBMISSION.md](SUBMISSION.md).
+- `mnist-c628ed51`: test 99.150%, validation 99.3667%, 14.70 minutes; selected epoch 270 of 382 complete epochs (time_budget). Train loss 0.742 to 0.012; validation loss 0.218 to 0.027, minimum 0.024 at epoch 361.
+- `cifar10-32ae8cde`: test 74.760%, validation 76.6400%, 3.82 minutes; selected epoch 56 of 60 complete epochs (epochs). Train loss 3.574 to 0.457; validation loss 1.909 to 0.796, minimum 0.736 at epoch 56.
+- `imagenet32-8856b095`: test 19.960%, validation 22.0222%, 21.81 minutes; selected epoch 23 of 25 complete epochs (epochs). Train loss 5.651 to 3.252; validation loss 5.013 to 4.111, minimum 4.070 at epoch 15.
+
+The ImageNet fixed-batch diagnostics contain eight snapshots, including initialization and selected epoch 23. Removing its first and second residual classifier branches reduced validation accuracy by 10.1634 and 3.6131 percentage points, respectively. Full validation accuracy after restoring the saved selected model exactly matched training's selected checkpoint. TODO — add your own interpretation and whether the result matched your expectation.
+
+**Runs:** [Fresh harness evidence and run records](outputs/final-evaluation/README.md). [Report images](outputs/report-figures/README.md). The historical 20.004% continuation remains separate from this fresh 19.960% result.
 
 ## Next entry
 

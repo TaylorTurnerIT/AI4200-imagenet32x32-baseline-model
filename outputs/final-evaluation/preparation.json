@@ -1,0 +1,39 @@
+{
+  "submission_commit": "b5ab6e1f75de4cfc257cf85b7e2535cfa217934c",
+  "instructor_harness_sha256": "78d1bbaf16db8e70a5f971434e3ddb392e092517eef948a6a302353d8706d99e",
+  "submission_harness_sha256": "b9ac0599fcab0e1a738a7d1b70e98271c056a14114704d0a2b07fcc4002e73ef",
+  "harness_parity": "All cell sources identical except supported submission assignments",
+  "unit_tests": {
+    "run": 73,
+    "skipped": 1,
+    "result": "pass",
+    "skip": "Torch Canvas external Node/sibling build unavailable"
+  },
+  "clean_wheel_tests": {
+    "run": 7,
+    "result": "pass",
+    "dashboard_dependency_absent": true
+  },
+  "analysis_script_smoke": "pass on synthetic data; no accuracy claim",
+  "google_exploration": "excluded; branch and worktree untouched",
+  "runtime_requested": "A100 high RAM",
+  "status": "CUDA harness and separate analysis passed; downloaded archive verified; A100 runtime terminated",
+  "rgb_historical_equivalence": {
+    "tasks": [
+      "cifar10",
+      "imagenet32"
+    ],
+    "seeds": [
+      0,
+      42
+    ],
+    "result": "Exact parameter tensors and logits match saved model source"
+  },
+  "executed_notebook_verification": {
+    "code_cells_logged": 10,
+    "error_outputs": 0,
+    "sources_unchanged": true,
+    "final_score_table_present": true,
+    "execution_count_note": "The official CLI leaves execution_count null; completion verified from CLI cell logs and saved outputs."
+  }
+}

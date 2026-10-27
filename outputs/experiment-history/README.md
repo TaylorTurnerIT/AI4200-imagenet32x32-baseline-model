@@ -1,5 +1,7 @@
 # Experiment architecture recovery
 
+Final fresh CUDA qualification is recorded separately in [final-evaluation](../final-evaluation/README.md); this reconstruction snapshot is preserved.
+
 This is a source-backed reconstruction for writing `LOG.md`, not a replacement development log. It preserves facts and identifies missing evidence. The student’s original journal supplies the reasons; no pre-run prediction has been invented.
 
 ## Scope and limits

@@ -1,0 +1,23 @@
+{
+  "task": "imagenet32",
+  "selected_epoch": 23,
+  "validation_examples": 128116,
+  "full_validation_accuracy": 0.22022229854194636,
+  "ablations": [
+    {
+      "block": 0,
+      "accuracy": 0.11858784226794468,
+      "accuracy_drop_percentage_points": 10.163445627400169
+    },
+    {
+      "block": 1,
+      "accuracy": 0.1840909800493303,
+      "accuracy_drop_percentage_points": 3.6131318492616056
+    }
+  ],
+  "selected_branch_to_stream_ratio": {
+    "blocks.0": 0.9455364942550659,
+    "blocks.1": 0.6993523240089417
+  },
+  "measurement_note": "Eval-mode fixed training batch; update ratios use copied optimizer state on a probe copy."
+}

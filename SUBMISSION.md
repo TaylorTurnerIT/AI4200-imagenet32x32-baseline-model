@@ -1,5 +1,8 @@
 # Final submission and reproduction
 
+[Fresh A100 harness results and executed notebook](outputs/final-evaluation/README.md):
+MNIST 99.15%, CIFAR-10 74.76%, ImageNet32 19.96%; total training 40.33 minutes.
+
 The package-level `train()` and `predict()` use frozen recipes in
 `src/residual_mlp_baseline/submission.py`. The marimo notebook remains an
 experimental dashboard. Every public training call creates fresh weights;

@@ -16,11 +16,23 @@ from pathlib import Path
 from plot_development_eras import finite, observations
 
 
-def chart_data(snapshot, config):
+def chart_data(snapshot, config, qualification=None):
     tasks = {}
     view = config["accuracy_view"]
     for task, settings in config["tasks"].items():
         points = observations(snapshot, task, config)
+        eras = list(settings["eras"])
+        final = next((row for row in (qualification or {}).get("results", [])
+                      if row["task"] == task), None)
+        if final is not None:
+            era = "F — Final harness"
+            eras.append({"id": era, "short": "F · Final CUDA",
+                         "start": qualification.get("completed_utc", "2026-10-27")[:10]})
+            points.append({"id": final["run_id"], "time": qualification.get("completed_utc", "Final CUDA harness"),
+                           "test": final["test_accuracy"],
+                           "validation": final["training_receipt"]["best_validation_accuracy"],
+                           "completed": True, "era": era, "x": len(points) + 1,
+                           "final_harness": True})
         for metric in ["test", "validation"]:
             best = None
             for point in points:
@@ -29,7 +41,7 @@ def chart_data(snapshot, config):
                     best = max(best, value) if best is not None else value
                 point[f"best_{metric}"] = best
         tasks[task] = {
-            "points": points, "eras": settings["eras"],
+            "points": points, "eras": eras,
             "range": view["ranges"][task],
             "milestones": view["milestones"][task],
         }
@@ -108,6 +120,9 @@ def export_figures(data, output, metric, scale, dpi=300):
                    if i == 0 or p[metric] > max(q[metric] for q in scored[:i])]
         ax.scatter([p["x"] for p in records], [draw_y(p[metric]) for p in records],
                    color=blue, s=30, zorder=5)
+        final_points = [p for p in scored if p.get("final_harness")]
+        ax.scatter([p["x"] for p in final_points], [draw_y(p[metric]) for p in final_points],
+                   marker="D", color="#263238", s=34, zorder=7)
         ax.scatter([p["x"] for p in clipped], [low] * len(clipped), marker="v",
                    color=gold, s=44, zorder=6, clip_on=False)
         eras = {era["id"]: era for era in task_data["eras"]}
@@ -141,23 +156,33 @@ def export_figures(data, output, metric, scale, dpi=300):
         title = {"mnist": "MNIST", "cifar10": "CIFAR-10", "imagenet32": "ImageNet32"}[task]
         best = max(values)
         fig.text(0.075, 0.94, title, fontsize=20)
-        label = "Historical test accuracy" if metric == "test" else "Validation accuracy"
+        label = ("Test accuracy" if final_points else "Historical test accuracy") if metric == "test" else "Validation accuracy"
         mode = {"clipped": "clipped linear", "full": "full linear", "log-error": "log error spacing"}[scale]
         fig.text(0.075, 0.885, f"{label} · {mode}", fontsize=10, color="#677180")
         fig.text(0.97, 0.94, f"Best observed {best:.3f}".rstrip("0").rstrip(".") + "%",
                  ha="right", color=blue, fontsize=12)
-        fig.legend(handles=[Line2D([0], [0], color=gold, linestyle="--", marker="o", markersize=4, label="Each experiment"),
-                            Line2D([0], [0], color=blue, linewidth=2.5, label="Best observed so far")],
-                   loc="upper left", bbox_to_anchor=(0.07, 0.17), ncol=2, frameon=False, fontsize=10)
+        handles = [Line2D([0], [0], color=gold, linestyle="--", marker="o", markersize=4, label="Each experiment"),
+                   Line2D([0], [0], color=blue, linewidth=2.5, label="Best observed so far")]
+        if final_points:
+            handles.append(Line2D([0], [0], color="#263238", linestyle="none", marker="D", markersize=5,
+                                  label="Final CUDA harness"))
+        fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.07, 0.17),
+                   ncol=len(handles), frameon=False, fontsize=10)
         fig.text(0.075, 0.065, "    ·    ".join(notes), fontsize=9, color="#505A67")
         footer = f"{len(scored)} recorded results"
         if clipped:
             footer += f" · {len(clipped)} results below {low:g}% shown as downward triangles"
-        if task == "imagenet32":
-            footer += " · last result continues saved weights"
+        continued = [str(p["x"]) for p in points if "continuation" in p["id"]]
+        if continued:
+            footer += " · saved-weight continuation: attempt " + ", ".join(continued)
+        if final_points:
+            footer += " · final point: fresh CUDA, seed 0"
         fig.text(0.075, 0.018, footer, fontsize=8.5, color="#677180")
         for suffix in ["png", "svg"]:
-            fig.savefig(output / f"{task}-accuracy.{suffix}", dpi=dpi, facecolor="white")
+            target = output / f"{task}-accuracy.{suffix}"
+            fig.savefig(target, dpi=dpi, facecolor="white")
+            if suffix == "svg":
+                target.write_text("\n".join(line.rstrip() for line in target.read_text().splitlines()) + "\n")
         plt.close(fig)
         print(f"{task}: {len(scored)} results, {len(clipped)} clipped; raw best={best:.4f}%")
 
@@ -172,13 +197,18 @@ def main():
     parser.add_argument("--scale", choices=["clipped", "full", "log-error"], default="clipped")
     parser.add_argument("--dpi", type=int, default=300,
                         help="Raster export resolution (default: 300 DPI).")
+    parser.add_argument("--qualification", type=Path,
+                        help="Append fresh harness scores without changing the historical snapshot.")
     args = parser.parse_args()
     if args.dpi <= 0:
         parser.error("--dpi must be positive")
     args.output.mkdir(parents=True, exist_ok=True)
     snapshot = json.loads(args.inventory.read_text())
     config = json.loads(args.eras.read_text())
-    data = chart_data(snapshot, config)
+    qualification = json.loads(args.qualification.read_text()) if args.qualification else None
+    data = chart_data(snapshot, config, qualification)
+    if qualification:
+        data["qualification_commit"] = qualification["submission_commit"]
     data["defaults"] = {"metric": args.metric, "scale": args.scale}
     export_figures(data, args.output, args.metric, args.scale, dpi=args.dpi)
     (args.output / "accuracy-data.json").write_text(json.dumps(data, indent=2) + "\n")

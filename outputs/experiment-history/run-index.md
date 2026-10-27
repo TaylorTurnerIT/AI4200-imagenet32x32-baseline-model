@@ -1093,3 +1093,33 @@ All configurations, sources where captured, and epoch metrics are preserved in [
 **Snapshot:** search for `mnist-20261027-111917-d3e67d1d` in [all-runs.json](all-runs.json).
 
 **Local originals:** [original config](</Users/taylor/.t3/worktrees/AI4200-imagenet32x32-baseline-model/t3-0e1f69f0/runs/mnist-20261027-111917-d3e67d1d/config.json>) · [summary](</Users/taylor/.t3/worktrees/AI4200-imagenet32x32-baseline-model/t3-0e1f69f0/runs/mnist-20261027-111917-d3e67d1d/summary.txt>) · [metrics](</Users/taylor/.t3/worktrees/AI4200-imagenet32x32-baseline-model/t3-0e1f69f0/runs/mnist-20261027-111917-d3e67d1d/metrics.csv>) · [curves](</Users/taylor/.t3/worktrees/AI4200-imagenet32x32-baseline-model/t3-0e1f69f0/runs/mnist-20261027-111917-d3e67d1d/curves.png>).
+
+
+## Final CUDA harness — separate qualification snapshot
+
+The historical `all-runs.json` above remains unchanged. These later fresh runs
+are recorded in [final evaluation evidence](../final-evaluation/README.md).
+
+### mnist-c628ed51
+
+**Task:** `mnist`. **Era:** F — Final harness. Seed 0, CUDA; fresh weights. Test 99.150%, validation 99.3667%; selected epoch 270.
+
+**Configuration SHA-256:** `4239976d91d029a574f26f92255b9e047b1e4fc830bf4ac652e1c234838fd04c`.
+
+[Configuration](../final-evaluation/run-records/mnist-c628ed51/config.json) · [Epoch metrics](../final-evaluation/run-records/mnist-c628ed51/metrics.csv) · [Training receipt](../final-evaluation/run-records/mnist-c628ed51/training-receipt.json).
+
+### cifar10-32ae8cde
+
+**Task:** `cifar10`. **Era:** F — Final harness. Seed 0, CUDA; fresh weights. Test 74.760%, validation 76.6400%; selected epoch 56.
+
+**Configuration SHA-256:** `6b1a43b03b948a285f5090a05061325ec8c2fd90a93f67c15d8836c03fb71177`.
+
+[Configuration](../final-evaluation/run-records/cifar10-32ae8cde/config.json) · [Epoch metrics](../final-evaluation/run-records/cifar10-32ae8cde/metrics.csv) · [Training receipt](../final-evaluation/run-records/cifar10-32ae8cde/training-receipt.json).
+
+### imagenet32-8856b095
+
+**Task:** `imagenet32`. **Era:** F — Final harness. Seed 0, CUDA; fresh weights. Test 19.960%, validation 22.0222%; selected epoch 23.
+
+**Configuration SHA-256:** `a4767fe94e29dba5e3b9459bc3b4a2052b3251a9a1bb4d710428d6697d4581a7`.
+
+[Configuration](../final-evaluation/run-records/imagenet32-8856b095/config.json) · [Epoch metrics](../final-evaluation/run-records/imagenet32-8856b095/metrics.csv) · [Training receipt](../final-evaluation/run-records/imagenet32-8856b095/training-receipt.json).

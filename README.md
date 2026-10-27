@@ -1,6 +1,9 @@
 # AI 4200 Project 1: Residual MLP baseline
 
-The instructor baseline. Fork this repo as the starting point for your submission.
+The project started from the instructor baseline. See [SUBMISSION.md](SUBMISSION.md)
+for the frozen task-specific grading recipes and exact-harness reproduction.
+The [development log draft](LOG.md) and [report figures](outputs/report-figures/)
+preserve the experimental history.
 
 ## Rolling 2×2 window experiment
 

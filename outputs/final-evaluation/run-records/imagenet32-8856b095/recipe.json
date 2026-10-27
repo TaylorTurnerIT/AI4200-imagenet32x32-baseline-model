@@ -1,0 +1,14 @@
+{
+  "source_run": "imagenet32-20261027-000850-1c570f4f",
+  "epochs": 25,
+  "max_seconds": 3600,
+  "optimizer": {
+    "name": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "eps": 1e-08,
+    "amsgrad": true
+  }
+}

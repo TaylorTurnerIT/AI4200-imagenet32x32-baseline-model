@@ -1,0 +1,10 @@
+{
+  "task": "mnist",
+  "seed": 0,
+  "stop_reason": "time_budget",
+  "epochs_completed": 382,
+  "best_epoch": 270,
+  "best_validation_accuracy": 0.9936666666666667,
+  "training_seconds": 882.0074010400001,
+  "max_seconds": 900
+}

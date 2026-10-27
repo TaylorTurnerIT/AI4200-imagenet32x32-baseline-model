@@ -1,0 +1,23 @@
+{
+  "mnist-c628ed51": {
+    "config.json": "4239976d91d029a574f26f92255b9e047b1e4fc830bf4ac652e1c234838fd04c",
+    "recipe.json": "bf2b7aef6ef8c26d5fd4b596f1491c7589c3033ee2644d1edf6f0f6ce82eb5bb",
+    "best.pt": "43124718c60852e97bda148b5d6b09cf95f9ddb196f47f5d5f5460b67e4f2575",
+    "metrics.csv": "62b0b2ad6a0f5e5709d18b9dcd14754e7421c6879aad4ab87b563410cd22c170",
+    "training-receipt.json": "462bf822a0548ca4aa823b40278e5cd68664fc1fc8fd82d4f6e4ddacfb61aa2a"
+  },
+  "imagenet32-8856b095": {
+    "config.json": "a4767fe94e29dba5e3b9459bc3b4a2052b3251a9a1bb4d710428d6697d4581a7",
+    "recipe.json": "1f2248195ddd8c73a5ac96f952d2ac01abbd7c4316af5cc5b1ab141660c8086d",
+    "best.pt": "ad3427791084e36a8046dc6a81cfc4adb92de04b781b9a72a9e4e1b7e905f904",
+    "metrics.csv": "7305fba011141760cb7bf505e58103dce0d9892f818a7c8ffc2c6f0ebdf31a27",
+    "training-receipt.json": "e8476af96c1138981ac62ab2949894939878b6ae050e69cc881ac9c906c486c2"
+  },
+  "cifar10-32ae8cde": {
+    "config.json": "6b1a43b03b948a285f5090a05061325ec8c2fd90a93f67c15d8836c03fb71177",
+    "recipe.json": "6596ad0c24d4f1f8f217443ec7c28cbdd43e9b6f1fe504b9916cc51ddcdb854f",
+    "best.pt": "3b1b5af23f0a9ce054380f71e2b326955f10d45b4d5cf8c29e33fecd0a877c44",
+    "metrics.csv": "472a1fe6b6889277662321cd7867bca5141acaee84600c11c1dd16bf948b7bf3",
+    "training-receipt.json": "7a59780bd2764598cca87448c1c9938d1697bb9b9c8bf1196d4dfb59f825544e"
+  }
+}

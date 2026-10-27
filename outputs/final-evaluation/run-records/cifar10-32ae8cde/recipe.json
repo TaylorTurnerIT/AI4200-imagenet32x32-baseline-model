@@ -1,0 +1,14 @@
+{
+  "source_run": "cifar10-20261026-224057-085c2c3b",
+  "epochs": 60,
+  "max_seconds": 900,
+  "optimizer": {
+    "name": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "eps": 1e-08,
+    "amsgrad": true
+  }
+}

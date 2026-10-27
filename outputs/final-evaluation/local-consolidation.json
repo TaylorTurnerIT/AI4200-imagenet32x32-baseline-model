@@ -1,0 +1,10 @@
+{
+  "consolidated_runs": [
+    "mnist-20261027-111917-d3e67d1d",
+    "mnist-20261027-111813-3f4dc443",
+    "mnist-20261027-105310-e7eed90e"
+  ],
+  "appended_result_runs": [
+    "runs/mnist-20261027-111917-d3e67d1d"
+  ]
+}

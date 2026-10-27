@@ -1,5 +1,7 @@
 # Experiment accuracy — design draft
 
+These static files preserve the historical design snapshot. [Final report exports](../../report-figures/README.md) also include fresh CUDA results.
+
 One plot per task: every recorded result, a best-observed step line, era boundaries and a few numbered milestones.
 
 - [MNIST](mnist-accuracy.png) · [SVG](mnist-accuracy.svg)

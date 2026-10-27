@@ -40,7 +40,7 @@
   <div class="controls">
     <label>Accuracy
       <select id="accuracy-metric" aria-label="Accuracy metric">
-        <option value="test">Historical test</option>
+        <option value="test">Test</option>
         <option value="validation">Validation</option>
       </select>
     </label>
@@ -212,7 +212,8 @@
       section.querySelector(".notes").append(note);
     });
     const output=section.querySelector("output");
-    const caption=`${points.length} recorded results${clipped.length?` · ${clipped.length} below ${low}% clipped`:""}${task==="imagenet32"?" · final point continues saved weights":""}`;
+    const continued=points.filter(p=>p.id.includes("continuation")).map(p=>p.x);
+    const caption=`${points.length} recorded results${clipped.length?` · ${clipped.length} below ${low}% clipped`:""}${continued.length?` · saved-weight continuation: attempt ${continued.join(", ")}`:""}${points.some(p=>p.final_harness)?" · final point: fresh CUDA, seed 0":""}`;
     output.textContent=caption;
 
     const hover=svg.append("g").attr("visibility","hidden");
