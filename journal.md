@@ -1023,6 +1023,8 @@ The first [rolling-window run](runs/cifar10-20261026-215237-2ac3a7b3/summary.txt
 
 A coverage check found that repeated edge cropping left only the top-left 17×17 pixels connected to the final prediction; stride-2 stages now pad unmatched edges to preserve full-image coverage. The [corrected run](runs/cifar10-20261026-224057-085c2c3b/summary.txt) reached 88.52% clean training, 76.10% validation, and 75.45% test accuracy at selected epoch 51 of 60, with [leaderboard submission confirmed](runs/cifar10-20261026-224057-085c2c3b/leaderboard-submission.json) as TaylorT, section 5000.
 
+The [ImageNet32 run](runs/imagenet32-20261027-000850-1c570f4f/summary.txt) with the same rolling-window model reached 26.43% clean training, 20.49% validation, and 18.496% test accuracy at selected epoch 10 of 10 after 62.0 minutes, with [leaderboard submission confirmed](runs/imagenet32-20261027-000850-1c570f4f/leaderboard-submission.json). Validation accuracy was still rising and both losses were falling at the cutoff; longer training is the next experiment.
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.
