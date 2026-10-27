@@ -26,3 +26,4 @@ where = ["src"]
 
 [tool.marimo.runtime]
 auto_reload = "autorun"
+watcher_on_save = "autorun"

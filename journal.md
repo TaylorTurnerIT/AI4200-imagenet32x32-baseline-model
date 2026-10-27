@@ -498,6 +498,525 @@ mnist: 98.32% test accuracy
 
 # CIFAR
 
+## Baseline (inherited from MNIST)
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=500 (keep best)
+weight_decay=1e-4
+activation_function (all): GELU
+
+cifar10: 54.59% test accuracy · 99.99% train accuracy · 0.5 minutes · mps
+Best epoch: 28 · validation accuracy: 56.40%
+
+> Crazy stuff. Instantly pulls out 99.99% train accuracy? 54% test? This indicates to me that it has become so difficult to learn generalizable patterns that it learned what it could then instantly memorized. Very strange this didn't happen with MNIST. Perhaps there was more generalizable ideas here. Let's try tanh, not expecting much. At this size of network it should be pretty much interchangable. But at this overfitting I feel it's a bad idea to scale up further.
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=500 (keep best)
+weight_decay=1e-4
+activation_function (all): tanh
+
+cifar10: 52.00% test accuracy · 91.51% train accuracy · 0.5 minutes · mps
+Best epoch: 25 · validation accuracy: 52.84%
+
+> Worse. Reverting. Let's try some more.
+
+layers=6
+width=256
+hidden=512
+batch=256
+a=0.05
+epochs=500 (keep best)
+weight_decay=1e-4
+activation_function (all): ReLU
+
+cifar10: 52.00% test accuracy · 91.51% train accuracy · 0.5 minutes · mps
+Best epoch: 25 · validation accuracy: 52.84%
+
+> Clearly there's more to the story of CIFAR than there was with MNIST.
+
+> I applied a shrink to the residual stream to 64. Didn't do much. Did that + shrank batch size:
+
+cifar10: 51.78% test accuracy · 83.72% train accuracy · 0.8 minutes · mps
+Best epoch: 23 · validation accuracy: 52.28%
+
+> I made a new format so I can stop losing track of details. Tried 10x the amount of weight decay. Hurt train accuracy a lot in the long run. The strange thing that I can't get over is this ~52% accuracy. Why would the model even while hurting for train accuracy so badly remain firm on this 52%? If there was only two classes, it would be obvious that it was randomly guessing. But given ten options, it gets half of them wrong. I think we need to understand which classes its getting right and wrong.
+
+```
+Run: runs/cifar10-20261023-123652-808ffc8f
+Time: 2026-10-23 12:37:37
+Task: cifar10
+Train accuracy:      68.53% (45000 clean examples)
+Validation accuracy: 52.48% (5000 examples)
+Test accuracy:       52.09% (10000 examples)
+Best epoch: 10 / 30 completed (30 configured)
+Training time: 0.74 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+Hyperparameters and architecture:
+{
+  "task": "cifar10",
+  "seed": 42,
+  "device": "mps",
+  "epochs": 30,
+  "batch_size": 128,
+  "learning_rate": 0.05,
+  "weight_decay": 1e-05,
+  "momentum": 0.0,
+  "dampening": 0,
+  "optimizer": "SGD",
+  "loss": "CrossEntropyLoss()",
+  "learning_rate_schedule": "constant",
+  "shuffle": true,
+  "architecture": {
+    "width": 128,
+    "hidden": 128,
+    "depth": 7,
+    "functional_operations": [
+      "relu"
+    ],
+    "in_features": 3072,
+    "num_classes": 10,
+    "normalization": [
+      "LayerNorm"
+    ],
+    "parameters": 644362
+  },
+  "validation_fraction": 0.1,
+  "training_examples": 45000,
+  "validation_examples": 5000,
+  "selection_metric": "validation_accuracy",
+  "tie_break": "earliest_epoch",
+  "augmentation": {
+    "enabled": false
+  }
+}
+```
+
+Per-class accuracy
+
+Class	Train	Validation	Test
+airplane	74.83%	62.11%	61.10%
+automobile	80.33%	62.38%	63.20%
+bird	49.67%	35.74%	34.50%
+cat	46.09%	32.70%	29.60%
+deer	67.24%	45.96%	47.00%
+dog	66.16%	47.93%	49.10%
+frog	74.60%	57.25%	58.30%
+horse	76.71%	61.48%	57.80%
+ship	76.26%	64.03%	65.80%
+truck	73.37%	55.34%	54.50%
+
+> Cat is incredibly far off but we haven't learned much here. It's learning something about all of these
+
+> I am changing the runs to use less epochs since performance is worsening on average after 10%. Likely the point at which it starts memorizing given thats where loss diverges.
+
+Run: runs/cifar10-20261023-134752-02729c78
+Time: 2026-10-23 13:48:09
+Task: cifar10
+Train accuracy:      68.53% (45000 clean examples)
+Validation accuracy: 52.48% (5000 examples)
+Test accuracy:       52.09% (10000 examples)
+Best epoch: 10 / 10 completed (10 configured)
+Training time: 0.29 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+Hyperparameters and architecture:
+{
+  "task": "cifar10",
+  "seed": 42,
+  "device": "mps",
+  "epochs": 10,
+  "batch_size": 128,
+  "learning_rate": 0.05,
+  "weight_decay": 1e-05,
+  "momentum": 0.0,
+  "dampening": 0,
+  "optimizer": "SGD",
+  "loss": "CrossEntropyLoss()",
+  "learning_rate_schedule": "constant",
+  "shuffle": true,
+  "architecture": {
+    "width": 128,
+    "hidden": 128,
+    "depth": 7,
+    "functional_operations": [
+      "relu"
+    ],
+    "in_features": 3072,
+    "num_classes": 10,
+    "normalization": [
+      "LayerNorm"
+    ],
+    "parameters": 644362
+  },
+  "validation_fraction": 0.1,
+  "training_examples": 45000,
+  "validation_examples": 5000,
+  "selection_metric": "validation_accuracy",
+  "tie_break": "earliest_epoch",
+  "augmentation": {
+    "enabled": false
+  }
+}
+
+| Class | Train | Validation | Test |
+| --- | ---: | ---: | ---: |
+| airplane | 74.83% | 62.11% | 61.10% |
+| automobile | 80.33% | 62.38% | 63.20% |
+| bird | 49.67% | 35.74% | 34.50% |
+| cat | 46.09% | 32.70% | 29.60% |
+| deer | 67.24% | 45.96% | 47.00% |
+| dog | 66.16% | 47.93% | 49.10% |
+| frog | 74.60% | 57.25% | 58.30% |
+| horse | 76.71% | 61.48% | 57.80% |
+| ship | 76.26% | 64.03% | 65.80% |
+| truck | 73.37% | 55.34% | 54.50% |
+
+> I decided to switch from SGD with weight decay to ADAMW. I saw no immediate ways forward from the previous and learned more about how ADAMW works. We will hopefully see some really nice improvements to accuracy and keep our weight decay to avoid overfitting. Turning down learning rate to match the lowerer needs of ADAMW as well. Let's see!
+
+Run: runs/cifar10-20261024-151753-14698b08
+Time: 2026-10-24 15:18:21
+Task: cifar10
+Train accuracy:      68.88% (45000 clean examples)
+Validation accuracy: 54.36% (5000 examples)
+Test accuracy:       53.32% (10000 examples)
+Best epoch: 8 / 10 completed (10 configured)
+Training time: 0.45 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+Hyperparameters and architecture:
+{
+  "task": "cifar10",
+  "seed": 42,
+  "device": "mps",
+  "epochs": 10,
+  "batch_size": 128,
+  "learning_rate": 0.001,
+  "weight_decay": 1e-05,
+  "momentum": null,
+  "dampening": null,
+  "betas": [
+    0.9,
+    0.999
+  ],
+  "eps": 1e-08,
+  "optimizer": "AdamW",
+  "loss": "CrossEntropyLoss()",
+  "learning_rate_schedule": "constant",
+  "shuffle": true,
+  "architecture": {
+    "width": 128,
+    "hidden": 128,
+    "depth": 7,
+    "functional_operations": [
+      "relu"
+    ],
+    "in_features": 3072,
+    "num_classes": 10,
+    "normalization": [
+      "LayerNorm"
+    ],
+    "parameters": 644362
+  },
+  "validation_fraction": 0.1,
+  "training_examples": 45000,
+  "validation_examples": 5000,
+  "selection_metric": "validation_accuracy",
+  "tie_break": "earliest_epoch",
+  "augmentation": {
+    "enabled": false
+  }
+}
+
+| Class | Train | Validation | Test |
+| --- | ---: | ---: | ---: |
+| airplane | 75.32% | 59.21% | 61.10% |
+| automobile | 75.22% | 58.02% | 58.80% |
+| bird | 58.09% | 43.37% | 42.60% |
+| cat | 57.93% | 42.97% | 38.70% |
+| deer | 51.83% | 38.09% | 36.20% |
+| dog | 55.03% | 39.46% | 41.60% |
+| frog | 76.63% | 64.58% | 64.10% |
+| horse | 79.37% | 65.07% | 62.20% |
+| ship | 81.82% | 68.58% | 67.70% |
+| truck | 77.74% | 62.61% | 60.20% |
+
+> No magic bullet of AdamW will work it seems. Let's try data augmentaton that we learned in class.
+
+> After adding the ability to use data augmentation on any data set, I also added a ability to preview the data. I'm theorizing that there is a connection between this 50 to 60% failure rate and the actual shape of the data. My thought is there is sixty percent of the data that's rather normal, obvious offerings, while there's 40% confounding data. For example, an image with the cat having its mouth wide open taking up five percent of it. 
+
+Run: runs/cifar10-20261024-180552-79892e5e
+Time: 2026-10-24 18:06:40
+Task: cifar10
+Train accuracy:      58.16% (45000 clean examples)
+Validation accuracy: 55.18% (5000 examples)
+Test accuracy:       54.14% (10000 examples)
+Best epoch: 10 / 10 completed (10 configured)
+Training time: 0.80 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+Hyperparameters and architecture:
+{
+  "task": "cifar10",
+  "seed": 42,
+  "device": "mps",
+  "epochs": 10,
+  "batch_size": 128,
+  "learning_rate": 0.001,
+  "weight_decay": 1e-05,
+  "momentum": null,
+  "dampening": null,
+  "betas": [
+    0.9,
+    0.999
+  ],
+  "eps": 1e-08,
+  "optimizer": "AdamW",
+  "loss": "CrossEntropyLoss()",
+  "optimizer_settings": {
+    "name": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "eps": 1e-08,
+    "amsgrad": false
+  },
+  "optimizer_groups": [
+    {
+      "optimizer": "AdamW",
+      "lr": 0.001,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "weight_decay": 1e-05,
+      "amsgrad": false,
+      "maximize": false,
+      "foreach": null,
+      "capturable": false,
+      "differentiable": false,
+      "fused": null,
+      "decoupled_weight_decay": true,
+      "parameter_count": 644362
+    }
+  ],
+  "learning_rate_schedule": "constant",
+  "shuffle": true,
+  "architecture": {
+    "width": 128,
+    "hidden": 128,
+    "depth": 7,
+    "functional_operations": [
+      "relu"
+    ],
+    "in_features": 3072,
+    "num_classes": 10,
+    "normalization": [
+      "LayerNorm"
+    ],
+    "parameters": 644362
+  },
+  "validation_fraction": 0.1,
+  "training_examples": 45000,
+  "validation_examples": 5000,
+  "selection_metric": "validation_accuracy",
+  "tie_break": "earliest_epoch",
+  "augmentation": {
+    "enabled": true,
+    "default": {
+      "rotation": {
+        "probability": 0.25,
+        "amount": 10.0
+      },
+      "translation": {
+        "probability": 0.5,
+        "amount": 4.0
+      },
+      "scale": {
+        "probability": 0.25,
+        "amount": 0.1
+      },
+      "shear": {
+        "probability": 0.25,
+        "amount": 5.0
+      },
+      "brightness": {
+        "probability": 0.25,
+        "amount": 0.1
+      },
+      "noise": {
+        "probability": 0.25,
+        "amount": 0.05
+      },
+      "erasing": {
+        "probability": 0.25,
+        "amount": 0.05
+      },
+      "horizontal_flip": {
+        "probability": 0.5,
+        "amount": 1.0
+      }
+    },
+    "classes": {},
+    "task": "cifar10"
+  }
+}
+
+> Well, Overfitting decreased. Performance is bad. I'm now going to do the opposite. I'm gonna scale up the model. Let's turn up batching a little bit. Let's increase the size of the residual stream, more layers, the whole shebang until we start overfitting again. Then we'll increase the chance of augmenting the data. Hopefully if we do that in a loop enough times, we will extract all we can out of a resnet.
+
+> I have increased the net size and dramatically increased the regularization and only seen minimal changes. Interestingly Muon had better results than AdamW. We are still seeing 80% accuracy on training by the end of 15 epochs which tells me we're not giving enough signal to avoid the problem of accuracy. 
+
+> Let's try shrinking the residual stream. I am wondering if we're allowing too much information through which is allowing for easy memorization. This thought is driven by the earlier memorization that we're seeing. Eh the other side of that is the layer counts too. I turned them up quite a bit earlier. I'll try tinkering with both. If I increase the size of the residual stream, but leave the number of layers the same, then we are transforming a higher dimensional representation. If I decrease the number of layers and leave the residual stream the same, then we're transforming a lower dimensional representation. Ideally, we want to find the lowest dimensional representation we possibly can that can still carry enough information to determine what it is. By that logic, I'm going to leave the residual stream small and see what we can do with that. 
+
+> Nope.  Shrinking the residual stream to the size of the input or below destroys performance. That makes sense. The images are complex enough that REDUCING the amount of information we let through sounds like a recipe for disaster.
+
+## Happy Accident
+
+> So I wasn't liking the results I was getting so I added a feature to roll back to previous configurations. But, apparently it was bugged. Somehow I ended up with a similar shape, but a **58%** test accuracy! That's up from 52%! Per codex:
+
+Compared with recorded 52.09% runs:
+
+| Setting        | 52.09%    | 58.88% |
+|---|---:|---:|
+| Width / hidden | 128 / 128 | 256 / 512 |
+| Activation     | ReLU      | GELU |
+| Batch size     | 128       | 256 |
+| Weight decay   | 0.00001   | 0.0001 |
+| Augmentation   | Off       | On  |
+
+> So... I need to understand what happened here. I am going to look through each change one by one and theorize then test.
+
+> 1. Width / hidden. I imagine that a residual stream of 128 with a hidden width of 128 was bottlenecking the model. We were seeing solid performance that could scale, I just hadn't noticed it. Let's test that theory by shrinking back down, keeping all else constant.
+
+Run: runs/cifar10-20261024-212021-44f3ab35
+Time: 2026-10-24 21:21:42
+Task: cifar10
+Train accuracy:      63.99% (45000 clean examples)
+Validation accuracy: 57.56% (5000 examples)
+Test accuracy:       56.68% (10000 examples)
+Best epoch: 29 / 30 completed (30 configured)
+Training time: 1.35 minutes
+
+> Looks like we were a little bit right, but it only made a small difference. Reverting and moving to the next. 
+
+> 2. ReLU -> GELU. I expect GELU is better because by definition it was an iteration upon ReLU. 
+
+Run: runs/cifar10-20261024-212806-223e71d6
+Time: 2026-10-24 21:29:32
+Task: cifar10
+Train accuracy:      71.77% (45000 clean examples)
+Validation accuracy: 60.04% (5000 examples)
+Test accuracy:       58.51% (10000 examples)
+Best epoch: 29 / 30 completed (30 configured)
+Training time: 1.43 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+> And so it was. 
+
+> 3. Batch size being smaller in theory should help with generalization. We are making more erratic jumps that speed up gradient descent. And in the process we expect to not necessarily fall into local minima as easily. Smaller batch should realistically yield a better result. But evidence has shown that to be inconsistent. 
+
+Run: runs/cifar10-20261024-213729-7b6a5d2b
+Time: 2026-10-24 21:38:20
+Task: cifar10
+Train accuracy:      100.00% (45000 clean examples)
+Validation accuracy: 57.38% (5000 examples)
+Test accuracy:       55.77% (10000 examples)
+Best epoch: 27 / 30 completed (30 configured)
+Training time: 0.85 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+> Worse, not entirely unexpected. I think it's really interesting that this past run was able to achieve a hundred percent just because it had a smaller batch size. Clearly we found a better minima, just not a generalized one. 
+
+> 4. This is what I had expected to make the biggest difference. Weight decay is a big deal, I've seen it absolutely tank performance in other trials. I've also seen it save performance during MNIST where we were a hundred percent accuracy. 
+
+Run: runs/cifar10-20261024-215848-059027aa
+Time: 2026-10-24 22:00:16
+Task: cifar10
+Train accuracy:      74.90% (45000 clean examples)
+Validation accuracy: 60.38% (5000 examples)
+Test accuracy:       59.07% (10000 examples)
+Best epoch: 29 / 30 completed (30 configured)
+Training time: 1.46 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+> Incredible. We've been over regularizing. Why not? Even smaller. 
+
+Run: runs/cifar10-20261024-220725-3ec48d0c
+Time: 2026-10-24 22:08:50
+Task: cifar10
+Train accuracy:      74.93% (45000 clean examples)
+Validation accuracy: 60.36% (5000 examples)
+Test accuracy:       59.11% (10000 examples)
+Best epoch: 29 / 30 completed (30 configured)
+Training time: 1.41 minutes
+All final scores use the best validation checkpoint. Train excludes the holdout.
+
+> It rounded to zero after I added one more. Going to leave regularization on. 
+
+> 5. Augmentation
+
+> Forgot to turn augmentation off, had to rerun all those experiments
+
+### Audited reruns with augmentation off
+
+| Configuration | Train | Validation | Test | Test difference from baseline | Saved run |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Baseline: width 256 / hidden 512, GELU, batch 256, decay 0.0001 | 99.99% | 56.40% | 54.59% | +0.00 pp | [baseline](runs/cifar10-20261024-222752-audit-baseline/summary.txt) |
+| Width / hidden: 128 / 128 | 72.83% | 51.74% | 50.29% | -4.30 pp | [width-hidden](runs/cifar10-20261024-222752-audit-width-hidden/summary.txt) |
+| Activation: ReLU in blocks and head | 99.98% | 55.52% | 54.81% | +0.22 pp | [relu](runs/cifar10-20261024-222752-audit-relu/summary.txt) |
+| Batch size: 128 | 100.00% | 57.38% | 55.77% | +1.18 pp | [batch-128](runs/cifar10-20261024-222752-audit-batch-128/summary.txt) |
+| Weight decay: 0.00001 | 100.00% | 55.30% | 54.75% | +0.16 pp | [weight-decay-1e-5](runs/cifar10-20261024-222752-audit-weight-decay-1e-5/summary.txt) |
+| Weight decay: 0 | 100.00% | 55.72% | 54.67% | +0.08 pp | [weight-decay-zero](runs/cifar10-20261024-222752-audit-weight-decay-zero/summary.txt) |
+
+> Some more tinkering. Switched to AdamW with Adagrad and it seems the signal cap is 60%. Got a new record!
+
+## Gating our Linear Units
+
+> Time to experiment with some gated linear units. While it's directly supported by PyTorch, it's not supported by torch canvas. I could add the functionality, but I think it's a more interesting exploration if I just build it out of its puzzle pieces. Found this interesting paper when trying to find visuals for it before I remembered it was in the slides. https://arxiv.org/pdf/2405.15953
+
+> The most interesting part of this paper is the scores. The vision transformer they benchmarked only got65 %. I might be approaching the boundary of what's possible without attention or convolution. That is not going to stop me. 
+
+> I'll get to that paper's findings in time. For now I'm trying bilinear, since I think it's the most interesting. So far it's really not producing results much different than our previous layers. I think I'm going to come back to this after I've done...
+
+## Pooling
+
+> I'm wondering if I can create many feed forward networks. The idea being I take the32 by32 input image. Then subdivide it twice. That would then create many four by four sub images. Then run a multi-layer perceptron to create some new representation. We then apply all of those and flatten it. that becomes the new residual stream. Let's try it out. 
+
+> Note: While attempting to figure out how to do this in PyTorch, I discovered that this is one of the fundamental pieces that go into a vision transformer, that being patch embeddings. There's apparently a model called MLP mixer that takes these patch embeddings and then disperses their information. I think that's a little odd personally, but I understand what they're going for. 
+
+> Note2: Given that I just discovered it was Google that came up with the idea of the MLP mixer. I'm gonna take their word for it. https://arxiv.org/html/2105.01601v4
+
+> At this stage I became uncertain whether this was allowed, but according to the instructions "creative ways of feeding images into an MLP, such as splitting an image into patches or mixing information across positions." Which to me sounds like exactly what I'm doing. I guess the hint was there the whole time. But I don't see how this differs from convolution. From what I can tell, a convolutional layer applies the same filter over everything, while this doesn't. 
+
+> https://medium.com/@benjybo7/7-pytorch-pool-methods-you-should-be-using-495eb00325d6
+> Another interesting page. Specifically number three with average global pooling. Avoiding overfitting sounds great. And I saw that method come up during the Google paper as well. 
+
+![](image.png)
+![](image_1.png)
+
+> This just seems so pleasant. 
+
+> Jumping ahead in time a bit here. I tinkered with designs from a few papers, not quite fully implementing them but testing fragments instead. Especially the activator design above. I learned that the definition of a transformer is rather loose and doesn't actually require the model to have attention! In fact, mixing pools is considered similar. Conceptually it makes sense, in fact I bet a similar attention is learned in a more opaque way.
+
+> In my experiments, I never saw an improvement and I started looking into pooling. This was the point my mind was blown as I now have a deep understanding of how convolutional neural networks work. And further, I independently thought my way through various pooling methods. I mentioned one before but even brand new architectures from Google are exploring using new and exciting pooling techniques even within the layers. 
+
+> At this point I added dropout to the output of the layer so it would have a 10% chance of setting a value of the input to zero. Intuitively this makes sense. We randomly are tossing out information and asking the model to still answer the question. There's some interesting probabilities here:
+
+- Dropped at all seven layers: 0.1^7 = 0.0000001.
+- Survives all seven masks: 0.9^7 ≈ 47.8%.
+
+> These indicate the model is seeing a lot of information most of the time, so it shouldn't overregularize. Worth tinkering with the amount of dropout. If we used 0.15 instead of 0.15, we would see only 32% probability of making it through ever layer unchanged.
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.

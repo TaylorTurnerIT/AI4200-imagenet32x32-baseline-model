@@ -92,7 +92,15 @@ Each app run creates a unique directory under `runs/` containing:
 - `best.pt`: best weights, epoch, validation accuracy, configuration, and exact
   training/validation indices. This is an analysis artifact; `train()` always
   starts from scratch and never loads weights from disk.
-- `config.json`: task, seed, model architecture, split sizes, and training settings.
+- `config.json`: task, seed, model architecture and source, split sizes, and training settings.
+- `summary.txt`: the same copyable text shown in the final output, with clean
+  train, validation, and test accuracy plus the hyperparameter breakdown.
+- `summary.json`: full-precision final scores and the configuration captured
+  before training, including model source and per-digit augmentation settings.
+  Also includes per-class accuracy for each split.
+- `per_class_accuracy.md`: a Markdown table with one row per class and train,
+  validation, and test accuracy columns. Scores are percentages from the selected
+  checkpoint on clean images. Classes absent from a split show `N/A`.
 - `curves.png`: loss and accuracy plots with the selected epoch marked, also
   shown in the app after training completes.
 - `leaderboard-submission.json`: submitted fields and confirmation/error status.
@@ -100,40 +108,154 @@ Each app run creates a unique directory under `runs/` containing:
   Existing attempts are not retried automatically, avoiding duplicate posts
   when a response is lost. Separate completed runs each receive a submission.
 
-The summary in `results.csv` includes the best epoch, validation accuracy, and
-run directory. Older summary rows remain available, with new columns blank.
+The final output includes a text block you can copy into your experiment journal.
+The summary in `results.csv` includes train, validation, and test accuracy,
+best epoch, device, seed, configured and completed epochs, optimizer settings,
+actual model dimensions and functional operations, split sizes, augmentation,
+and the full configuration as JSON. The existing `accuracy` column remains test
+accuracy. Older summary rows remain available, with new columns blank; settings
+that were not recorded are not inferred from the current model.
 Calls through the grading interface return the same selected model and expose
 metrics as `model.training_history`, but do not write run files.
 
-### Per-digit MNIST augmentation
+The **Per-class accuracy** output is a Markdown table with one row per class:
+Class, Train, Validation, and Test. The same metric handles MNIST digits,
+CIFAR-10 class names, and ImageNet32 class IDs 0–999. Each `results.csv` row links
+to the saved Markdown table; `summary.txt` includes the table for copying into
+your journal. `summary.json` records the same columns as fractions from 0 to 1.
+Test scores reuse existing predictions; no additional test evaluation is performed.
 
-The **Digit augmentation** cell has a master toggle (off by default) and one
-tab for each digit, 0–9. Each digit has independent probability and maximum
-amount controls for rotation, translation, scale, horizontal shear, brightness,
-Gaussian noise, and square erasing. Setting either control to zero disables
-that category for that digit. For example, reduce rotation for 6 and 9 while
-keeping stronger rotation for other digits. Categories can combine on an image.
+The default model restores the original 54.59% CIFAR-10 configuration: seven
+residual blocks, backbone width 256, hidden width 512, LayerNorm, and GELU in
+the blocks and head. CIFAR-10 uses 30 epochs, batch size 256, SGD with learning
+rate 0.05, weight decay `1e-4`, zero momentum, and no augmentation. The dashboard
+starts with seed 42 and selects the best validation checkpoint. Model depth
+follows the `depth` constructor argument.
 
-Rotation and shear amounts are degrees; translation is pixels per axis. Scale
-and brightness sample factors within `1 ± amount`. Noise samples a standard
-deviation from zero to the amount, measured on the 0–1 intensity scale. Erasing
-samples a square up to the chosen fraction of image area. All settings sample
-fresh values for each training image on every pass. No flips are applied.
+### Reloading previous experiments
 
-The preview shows original and augmented cached MNIST examples without training
-or downloading data. Choose a digit and change the preview seed to inspect
-different samples. Enable the master toggle to see its effects. Settings take
-effect on the next **Run** and are recorded in `config.json` and `best.pt`.
-Validation, final training-set scoring, and test prediction use clean images.
-These controls apply only to MNIST; other tasks keep their original images.
+Loading restores the saved augmentation settings, including whether augmentation
+is enabled. The visible switch, **Next run** status, preview, and training all
+read the same controls. Training stops if the visible switch and control state
+disagree. Changing the switch after loading changes the next run.
 
-Edit `DIGIT_AUGMENTATION_ENABLED` and `AUGMENTATION_CATEGORIES` in the setup cell
-to change defaults shared by the app and grading entry point. The
-`digit_augmentation_config()` cell defines per-digit defaults; edit it to give
-specific digits different starting settings. The `DigitAugmenter` cell contains
-the transform code and uses PyTorch without adding dependencies.
+`./run` enables file watching, and the project sets
+`runtime.watcher_on_save = "autorun"` so loading settings updates live cells.
+`runtime.auto_reload` controls imported modules and does not enable this behavior.
+After changing the project configuration, restart an already-running Marimo
+server once with `./run`; Marimo caches project configuration at startup.
 
-The app defaults to MNIST. CIFAR-10 and ImageNet 32×32 are available in the task
+The **Saved runs** panel lists saved configurations for the selected dataset,
+with validation and test scores. Pick a run and click **Load selected settings**,
+or click **Load best settings**. **Best by** defaults to validation accuracy;
+choose test accuracy to load the highest test-scoring run. Only completed runs
+with a recorded score qualify for the shortcut. Ties use the earliest run ID.
+Click **Refresh saved runs** after completing another experiment.
+
+Loading updates the notebook's model classes, dimensions, optimizer preset,
+augmentation settings, batch size, epochs, validation fraction, seed, and device
+preference. The notebook reloads, and Torch Canvas can follow the restored model
+code. If the original device is unavailable, the dashboard uses an available
+device. Loading does not start training or load checkpoint weights; press
+**Run** to train a new model from scratch. New runs record their parent run in
+`restored_from`.
+
+Recent runs restore their saved model source. Older runs can recover dimensions
+from the saved model representation, including unrolled residual blocks.
+Unrecorded activation, optimizer, or augmentation values require an explicit
+choice under **Older runs with missing settings**. Recorded values take
+precedence. Runs without `config.json` cannot be reconstructed from a score
+alone. Unrelated notebook text is preserved; loading stops if the file changes
+during restoration.
+
+### Optimizer selection
+
+Choose **SGD**, **Adam**, **AdamW**, **Muon**, **RMSprop**, or **Adagrad** in the
+**Optimizer** panel before pressing **Run**. Each optimizer has its own controls
+and learning rate preset; edits persist when switching optimizers in the app
+session. SGD is the default for the restored CIFAR-10 experiment. The selected
+settings apply to whichever dataset you run.
+
+| Optimizer | Initial learning rate | Additional controls |
+| --- | ---: | --- |
+| SGD | 0.05 | Momentum, dampening, Nesterov |
+| Adam / AdamW | 0.001 | Betas, epsilon, AMSGrad |
+| Muon | 0.02 | Momentum, Nesterov, Newton–Schulz steps, epsilon, learning rate scaling, auxiliary AdamW settings |
+| RMSprop | 0.001 | Alpha, momentum, epsilon, centered |
+| Adagrad | 0.01 | Learning rate decay, initial accumulator, epsilon |
+
+All presets expose weight decay. SGD starts at `1e-4`; other presets start at
+`1e-5`. These are starting points for experiments. SGD's Nesterov option requires positive momentum and zero dampening.
+
+Muon uses native `torch.optim.Muon` and is offered only when the installed
+PyTorch provides it. It updates hidden 2D weight matrices. A separate AdamW
+optimizer updates the input projection, final output layer, biases, and
+normalization parameters; its learning rate, weight decay, betas, and epsilon
+have separate controls. Both optimizers step from the same backward pass.
+Muon starts with the `original` learning rate scaling; `match_rms_adamw` is
+also selectable.
+
+Each completed run records the optimizer name, selected settings, effective
+parameter-group settings, and parameter assignments in its configuration and
+checkpoint. `results.csv` includes optimizer settings and groups as JSON;
+the copyable summary includes their settings and parameter counts.
+
+For calls outside the dashboard, set `OPTIMIZER_NAME` and `OPTIMIZER_DEFAULTS`
+in the setup cell. The grading interface `train(task, X_train, y_train, seed,
+device)` keeps its existing signature and uses that default. For an individual
+programmatic experiment:
+
+```python
+from residual_mlp_baseline.notebook import optimizer_config, train_with_metrics
+
+settings = optimizer_config("SGD")
+settings.update(lr=0.02, momentum=0.9)
+model = train_with_metrics("mnist", X_train, y_train, device="cpu",
+                           optimizer_settings=settings)
+```
+
+### Dataset-specific augmentation
+
+The augmentation panel follows the dashboard's **Task** selection. MNIST,
+CIFAR-10, and ImageNet32 each have an independent toggle (off by default) and
+settings. Switching tasks preserves edits for each dataset during the app
+session. Press **Run** to train with the selected dataset's configuration.
+
+MNIST keeps one settings tab per digit, 0–9, with rotation, translation, scale,
+horizontal shear, brightness, Gaussian noise, and square erasing. No flips are
+available for digits. CIFAR-10 and ImageNet32 each use a shared RGB preset across
+all classes, with the same transforms plus horizontal flips. Their initial
+settings differ: CIFAR-10 uses up to 4 pixels of translation and 10% brightness
+variation; ImageNet32 uses 2 pixels and 20%. Both use translation probability
+0.5, flip probability 0.5, and brightness probability 0.25. Other RGB transforms
+start with probability 0. Enable the dataset's toggle to apply its preset.
+
+Each category has probability and maximum amount controls. Either set to zero
+disables it. Rotation and shear use degrees; translation uses pixels per axis.
+Scale and brightness sample within `1 ± amount`. Noise samples a standard
+deviation up to the amount on the 0–1 intensity scale. Erasing samples a square
+up to the chosen fraction of image area. Flip amount 1 enables flipping at its
+selected probability. Transforms sample fresh values for each training image.
+
+The **Class preview** picker shows a labeled thumbnail for each class in the
+selected dataset. Select a row to compare up to six original and augmented
+examples. Search by class name or ID, and page through large datasets such as
+ImageNet32. Classes without cached examples show **Not cached**. MNIST uses digit
+labels, CIFAR-10 uses class names, and ImageNet32 uses numeric class IDs.
+
+Previews use cached training images and start no downloads. After downloading a
+dataset for the first time, click **Refresh cached previews**. Change the preview
+seed for fresh augmentation. The preview uses the same configuration as **Run**,
+including the dataset's toggle. Only training batches are augmented; validation,
+final training accuracy, and test prediction use clean images.
+
+The complete selected configuration is saved in `config.json`, `best.pt`,
+`summary.json`, and `results.csv`. Edit `AUGMENTATION_ENABLED` in the setup cell
+and `augmentation_categories(task)` to change dataset defaults shared by the app
+and grading entry point. `augmentation_config(task)` defines defaults and
+per-class overrides; `ImageAugmenter` contains the shared PyTorch transforms.
+
+The app defaults to CIFAR-10. MNIST and ImageNet 32×32 are available in the task
 selector. ImageNet requires several GB of disk space and substantially more RAM
 during training: the baseline converts the full training array to float32.
 Dataset downloads require internet access.

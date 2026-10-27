@@ -8,7 +8,7 @@ setup:
 
 # Open the consolidated notebook; watch for external edits.
 app *args:
-    ./run --watch {{args}}
+    ./run {{args}}
 
 # Alias for the marimo app.
 alias marimo := app
