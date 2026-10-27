@@ -41,6 +41,22 @@ Metal. It saves the same scores, checkpoint, class metrics, and curves under
 Omit `--submit` to keep the result local; `--epochs`, `--seed`, and `--device`
 override their run settings without changing notebook defaults.
 
+For analysis after a run finishes, `python scripts/continue_experiment.py
+runs/<parent-run> --submit` continues its selected weights and exact saved split
+in a separate run directory. A weights-only parent restarts optimizer and random
+state; this is recorded and is not an uninterrupted training trajectory. Every
+new epoch saves `last.pt` with optimizer and random state, allowing an exact
+epoch-boundary resume with `--checkpoint last.pt`. `best.pt` remains the checkpoint
+with highest validation accuracy. The grading `train()` function still starts
+from scratch.
+
+The continuation stops when three consecutive checks show a three-epoch mean
+validation loss more than 1% above its minimum and above the preceding window,
+while mean training loss falls. It waits six new epochs before its first check,
+and records the loss minimum and confirmation epoch in `divergence.json`. The
+default guard is 100 total epochs; reaching it without confirmation is reported
+as `epoch_guard`, not divergence. Change it with `--max-epochs`.
+
 The first run reached 55.54% clean training, 49.98% validation, and 48.27% test
 accuracy. The wider configuration doubles classifier width from 256 to 512 and
 block hidden width from 512 to 1024, and widens window outputs from 16 to 64

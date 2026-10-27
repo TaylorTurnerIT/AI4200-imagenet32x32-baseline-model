@@ -50,6 +50,12 @@ def main():
         "torch_version": torch.__version__,
     }
     (run_dir / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+    finish_run(root, run_dir, model, X_train, y_train, X_test, y_test, minutes, args.submit)
+
+
+def finish_run(root, run_dir, model, X_train, y_train, X_test, y_test, minutes, submit=False):
+    """Evaluate and report a selected checkpoint, then optionally submit once."""
+    task = model.run_config["task"]
 
     # Keep evaluation bounded and reuse the same predictions for class metrics.
     print("Evaluating selected validation checkpoint on test images...", flush=True)
@@ -57,7 +63,7 @@ def main():
     for start in range(0, len(y_test), notebook.BATCH_SIZE):
         probabilities = notebook.predict(model, X_test[start:start + notebook.BATCH_SIZE])
         expected_size = min(notebook.BATCH_SIZE, len(y_test) - start)
-        if probabilities.shape != (expected_size, notebook.TASKS[args.task]["num_classes"]):
+        if probabilities.shape != (expected_size, notebook.TASKS[task]["num_classes"]):
             raise ValueError("Unexpected prediction shape")
         if not torch.isfinite(probabilities).all() or not (probabilities >= 0).all():
             raise ValueError("Invalid test probabilities")
@@ -65,21 +71,21 @@ def main():
         predictions.append(probabilities.argmax(1).numpy())
     predicted = np.concatenate(predictions)
     accuracy = float(np.mean(predicted == y_test))
-    test_rows = notebook.per_class_accuracy(args.task, y_test, predicted)
+    test_rows = notebook.per_class_accuracy(task, y_test, predicted)
     print(f"Test accuracy: {accuracy:.4%}. Scoring clean training and validation splits...", flush=True)
     train_rows = notebook.evaluate_per_class(
-        model, args.task, X_train, y_train, model.training_indices.numpy(), chunk=notebook.BATCH_SIZE)
+        model, task, X_train, y_train, model.training_indices.numpy(), chunk=notebook.BATCH_SIZE)
     validation_rows = notebook.evaluate_per_class(
-        model, args.task, X_train, y_train, model.validation_indices.numpy(), chunk=notebook.BATCH_SIZE)
+        model, task, X_train, y_train, model.validation_indices.numpy(), chunk=notebook.BATCH_SIZE)
     train_accuracy = sum(row["correct"] for row in train_rows) / len(model.training_indices)
     per_class = [dict(split=split, **row)
                  for split, rows in (("train", train_rows), ("validation", validation_rows), ("test", test_rows))
                  for row in rows]
     notebook.save_run_result(root / "results.csv", run_dir, model, accuracy, train_accuracy,
                              minutes, len(y_test), per_class=per_class)
-    if args.submit:
+    if submit:
         notebook.LEADERBOARD_ENABLED = True
-        print(notebook.submit_run_to_leaderboard(args.task, accuracy, minutes, run_dir), flush=True)
+        print(notebook.submit_run_to_leaderboard(task, accuracy, minutes, run_dir), flush=True)
 
     os.environ.setdefault("MPLCONFIGDIR", str(root / ".cache" / "matplotlib"))
     import matplotlib
