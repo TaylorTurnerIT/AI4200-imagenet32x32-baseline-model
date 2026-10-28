@@ -6,4 +6,11 @@ if ! command -v uv >/dev/null 2>&1; then
     echo "uv is required. Install it from https://docs.astral.sh/uv/getting-started/installation/" >&2
     exit 1
 fi
-exec uv run --locked marimo edit src/residual_mlp_baseline/notebook.py --watch "$@"
+notebook_target=src/residual_mlp_baseline/notebooks
+case "${1-}" in
+    mnist|cifar10|imagenet32)
+        notebook_target="$notebook_target/$1.py"
+        shift
+        ;;
+esac
+exec uv run --locked marimo edit "$notebook_target" --watch "$@"

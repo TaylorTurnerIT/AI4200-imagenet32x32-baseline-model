@@ -45,15 +45,19 @@ class NotebookReloadTests(unittest.TestCase):
             uv = Path(folder) / 'uv'
             uv.write_text('#!/bin/sh\nprintf \'%s\\n\' "$@"\n')
             uv.chmod(0o755)
-            result = subprocess.run(
-                ['/bin/sh', str(project / 'run'), '--headless', '--port', '2718'],
-                env={**os.environ, 'PATH': folder + os.pathsep + os.environ.get('PATH', '')},
-                capture_output=True, text=True, check=True,
-            )
-        self.assertEqual(result.stdout.splitlines(), [
-            'run', '--locked', 'marimo', 'edit', 'src/residual_mlp_baseline/notebook.py',
-            '--watch', '--headless', '--port', '2718',
-        ])
+            for task in (None, 'mnist', 'cifar10', 'imagenet32'):
+                with self.subTest(task=task):
+                    arguments = ([task] if task else []) + ['--headless', '--port', '2718']
+                    result = subprocess.run(
+                        ['/bin/sh', str(project / 'run'), *arguments],
+                        env={**os.environ, 'PATH': folder + os.pathsep + os.environ.get('PATH', '')},
+                        capture_output=True, text=True, check=True,
+                    )
+                    target = 'src/residual_mlp_baseline/notebooks' + (f'/{task}.py' if task else '')
+                    self.assertEqual(result.stdout.splitlines(), [
+                        'run', '--locked', 'marimo', 'edit', target,
+                        '--watch', '--headless', '--port', '2718',
+                    ])
 
 
 if __name__ == '__main__':

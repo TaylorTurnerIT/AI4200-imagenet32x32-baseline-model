@@ -5,6 +5,41 @@ for the frozen task-specific grading recipes and exact-harness reproduction.
 The [development log draft](LOG.md) and [report figures](outputs/report-figures/)
 preserve the experimental history.
 
+## Dataset notebooks
+
+Run `./run` to browse three independent editable notebooks, or open one with
+`./run mnist`, `./run cifar10`, or `./run imagenet32`.
+
+| Notebook | Current default run | Validation | Historical test |
+| --- | --- | ---: | ---: |
+| [MNIST](src/residual_mlp_baseline/notebooks/mnist.py) | `mnist-c628ed51` | 99.3667% | 99.15% |
+| [CIFAR-10](src/residual_mlp_baseline/notebooks/cifar10.py) | `cifar10-32ae8cde` | 76.64% | 74.76% |
+| [ImageNet32](src/residual_mlp_baseline/notebooks/imagenet32.py) | `imagenet32-8856b095` | 22.0222% | 19.96% |
+
+Defaults use the highest validation accuracy among completed saved runs, with
+the earliest run ID breaking ties. They restore architecture, optimizer,
+augmentation, seed, epoch count, and any saved time limit. Pressing **Run**
+trains fresh weights. These scores describe the saved A100 runs; opening a
+notebook does not load their weights or reproduce their accuracy automatically.
+
+Each notebook only loads and trains its own dataset. Its **Saved runs** panel
+combines local `runs/` with the committed metadata in `histories/`: 17 MNIST,
+89 CIFAR-10, and 6 ImageNet32 configurations, including source snapshots,
+metrics, scores, unfinished attempts, and original result rows. Older settings
+remain loadable after cloning without checkpoint files. New runs and existing
+local weights stay under the shared project `runs/`; histories are filtered by
+dataset. Loading settings edits only the selected dataset notebook.
+
+The public grading API retains its frozen recipes in `submission.py`.
+The [MLP-Mixer exploration](docs/mlp-mixer.md) is also merged through its separate
+model and training API, with its original worktree edits archived. No full-data
+Mixer score was recorded, so it does not replace a measured default.
+
+`uv run --locked python scripts/sync_dataset_notebooks.py --source-root PATH` explicitly refreshes
+portable history and regenerates all three notebook presets. Commit notebook
+edits first: this maintenance command rewrites their source. Normal startup
+never regenerates notebooks or starts training.
+
 ## Rolling 2×2 window experiment
 
 The model uses six hand-built window MLP stages for 32×32 images:
@@ -136,13 +171,12 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run:
 ```
 
 This installs Python 3.12 and the locked dependencies into `.venv`, installs this
-package in editable mode, and opens the single notebook,
-`src/residual_mlp_baseline/notebook.py`. Select a task using the controls at the
-top, then click **Train and evaluate**. The first run downloads the dataset; later runs reuse
-`data/`. The app prefers CUDA, then Apple Silicon MPS, then CPU. You can select
-CPU manually. The status panel verifies an actual Metal forward/backward operation
-and shows the Python interpreter. Select **Apple Metal (MPS)** to train on this
-Mac's GPU. CUDA is NVIDIA-specific and is not required on macOS.
+package in editable mode, and opens the dataset notebook browser. Choose MNIST,
+CIFAR-10, or ImageNet32, then click **Run**. The first run downloads the dataset;
+later runs reuse `data/`. Each notebook uses its saved device when available,
+falling back to CUDA, Apple Silicon MPS, then CPU. The status panel verifies a
+real Metal forward/backward operation and shows the Python interpreter.
+CUDA is NVIDIA-specific and is not required on macOS.
 Results append to `results.csv`. With `LEADERBOARD_ENABLED = True`, each completed
 app run posts its test accuracy, training duration, and repository URL to the
 unofficial class leaderboard as **TaylorT**, section **5000**. Posting is disabled
@@ -343,29 +377,30 @@ uv sync --locked
 To launch the app without the editor:
 
 ```bash
-uv run --locked marimo run src/residual_mlp_baseline/notebook.py
+uv run --locked marimo run src/residual_mlp_baseline/notebooks/cifar10.py
 ```
 
 In VS Code, install the recommended Python and marimo extensions and select
 `.venv/bin/python` as the interpreter. Open
-`src/residual_mlp_baseline/notebook.py` with the marimo extension. Model classes,
-training functions, dataset loading, and evaluation live together in this file.
-The package and grading harness import these same definitions.
+one of `src/residual_mlp_baseline/notebooks/{mnist,cifar10,imagenet32}.py` with
+the marimo extension. Each file contains its editable model, training controls,
+dataset loading, and evaluation. The grading harness uses `submission.py`.
 
 With [just](https://github.com/casey/just) installed, use these shortcuts:
 
 ```bash
-just model       # Open the consolidated notebook source in Zed.
-just train       # Open the same notebook source in Zed.
-just app         # Open the consolidated marimo notebook.
-just app-source  # Open the notebook source in Zed.
+just model mnist        # Open the MNIST notebook source in Zed.
+just train imagenet32   # Open ImageNet training source in Zed.
+just app                # Browse all three dataset notebooks.
+just app cifar10        # Open the CIFAR-10 notebook directly.
+just app-source cifar10 # Open the CIFAR-10 source in Zed.
 ```
 
 Run `just` to list commands. Pass another macOS app name to a source shortcut,
-for example `just model "Visual Studio Code"`. `just marimo` aliases `just app`;
+for example `just model mnist "Visual Studio Code"`. `just marimo` aliases `just app`;
 extra marimo options work too, such as `just app --headless --port 2718`.
 
-The **Train and evaluate** button, task, device, and seed controls appear first,
+The **Run** button, fixed dataset, epoch, time limit, and seed controls appear first,
 with run results directly below. Edit imports and settings in the setup cell,
 and model classes and training functions in their cells below. Training starts
 only when you click the button. `just app` also watches files saved from an
@@ -374,8 +409,8 @@ external editor.
 `project1_harness.ipynb` is the grading notebook. Its setup cell's `PACKAGE_URL`
 points to `git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git`.
 Change that value if your submission repository changes. The harness defaults to
-`LEADERBOARD_ALIAS = "TaylorT"` and `SECTION = "5000"`; set its alias to an empty
-string to disable harness submissions. The app and harness submit their own
+an empty leaderboard alias and `SECTION = "5000"`. Setting an alias enables
+harness submissions. The app and harness submit their own
 completed evaluations; calling the package's `train()` alone does not post.
 The notebook also selects MPS on Macs when CUDA is unavailable.
 The marimo app uses the same dataset sources, cache format, and required
@@ -391,7 +426,9 @@ pip install git+https://github.com/JesseTNRoberts/AI4200-imagenet32x32-baseline-
 
 ## Files
 
-- `src/residual_mlp_baseline/notebook.py`: the single marimo notebook containing the model, training, prediction, and local evaluation controls.
+- `src/residual_mlp_baseline/notebooks/`: the MNIST, CIFAR-10, and ImageNet32 notebooks, with independent models and controls.
+- `src/residual_mlp_baseline/histories/`: portable dataset-specific configurations, metrics, and result metadata.
+- `src/residual_mlp_baseline/notebook.py`: shared notebook template and legacy compatibility dashboard.
 - `src/residual_mlp_baseline/model.py`: compatibility imports for the model classes and task sizes.
 - `src/residual_mlp_baseline/train.py`: compatibility imports for the required `train` and `predict` functions.
 - `project1_harness.ipynb`: the test harness. It downloads and caches the datasets, installs a package from GitHub, and reports test accuracy.

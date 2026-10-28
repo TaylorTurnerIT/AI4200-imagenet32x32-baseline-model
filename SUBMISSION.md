@@ -79,7 +79,8 @@ procedure. Keep this distinction explicit in the report.
 
 ## Consolidation scope
 
-The final main branch includes the saved-run reconstruction, draft `LOG.md`,
-report images, model walkthrough, and frozen submission path. Personal Why and
-Expected sections remain TODOs unless journal wording was available. The
-separate `t3/implement-google-paper` MLP-Mixer exploration is excluded.
+The main branch includes the saved-run reconstruction, draft `LOG.md`, report
+images, model walkthrough, frozen submission path, and three independent
+dataset notebooks. The MLP-Mixer exploration is preserved through its separate
+model/training API and documentation; it does not replace the grading recipes.
+Personal Why and Expected sections remain TODOs unless journal wording was available.

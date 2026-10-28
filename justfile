@@ -6,7 +6,7 @@ default:
 setup:
     uv sync --locked
 
-# Open the consolidated notebook; watch for external edits.
+# Open the three dataset notebooks; watch for external edits.
 app *args:
     ./run {{args}}
 
@@ -14,13 +14,13 @@ app *args:
 alias marimo := app
 
 # Open the network architecture in Zed (or another macOS editor).
-model editor="Zed":
-    open -a {{quote(editor)}} src/residual_mlp_baseline/notebook.py
+model task="cifar10" editor="Zed":
+    open -a {{quote(editor)}} src/residual_mlp_baseline/notebooks/{{task}}.py
 
 # Open training and prediction in Zed (or another macOS editor).
-train editor="Zed":
-    open -a {{quote(editor)}} src/residual_mlp_baseline/notebook.py
+train task="cifar10" editor="Zed":
+    open -a {{quote(editor)}} src/residual_mlp_baseline/notebooks/{{task}}.py
 
 # Open the marimo app's Python source in Zed (or another macOS editor).
-app-source editor="Zed":
-    open -a {{quote(editor)}} src/residual_mlp_baseline/notebook.py
+app-source task="cifar10" editor="Zed":
+    open -a {{quote(editor)}} src/residual_mlp_baseline/notebooks/{{task}}.py

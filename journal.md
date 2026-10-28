@@ -1025,6 +1025,10 @@ The [ImageNet32 run](runs/imagenet32-20261027-000850-1c570f4f/summary.txt) with 
 
 > The above was written by my agent, but I assure you the two by two rolling window was an idea I came up with. Though I've since learned I was certainly not the first. I could not believe the incredible jump in performance. It truly is the case that convolutional style approaches are incedible. 
 
+### Dataset notebooks
+
+MNIST, CIFAR-10, and ImageNet32 now have separate notebooks, each starting from its highest-validation completed run. Their 112 saved configurations and metrics are preserved by dataset, and loading settings in one notebook leaves the others alone.
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.

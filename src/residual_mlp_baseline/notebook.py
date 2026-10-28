@@ -979,7 +979,7 @@ def submit_run_to_leaderboard(task, accuracy, train_minutes, run_dir):
 
 
 @app.function
-def list_saved_runs(results_file, task):
+def list_saved_runs(results_file, task, include_archived=False):
     """Read local configuration snapshots and scores without loading weights."""
     results_file = Path(results_file)
     rows = {}
@@ -1021,6 +1021,9 @@ def list_saved_runs(results_file, task):
         except (OSError, ValueError, TypeError, AttributeError):
             # An interrupted or malformed run must not hide other saved runs.
             continue
+    if include_archived:
+        from residual_mlp_baseline.saved_history import merge_archived_runs
+        entries = merge_archived_runs(task, entries)
     return entries
 
 
@@ -1249,6 +1252,11 @@ def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=N
     task = config["task"]
     if task not in TASKS:
         raise ValueError("Unknown saved dataset")
+    setup_names = {target.id for node in ast.parse(source).body
+                   if isinstance(node, ast.With) for child in node.body if isinstance(child, ast.Assign)
+                   for target in child.targets if isinstance(target, ast.Name)}
+    if "NOTEBOOK_TASK" in setup_names and setup_value(source, "NOTEBOOK_TASK") != task:
+        raise ValueError("This notebook only loads settings for its own dataset")
     architecture = restored_architecture(config)
     tree = ast.parse(source)
     classes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
@@ -1267,7 +1275,9 @@ def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=N
         model_name, model_source = class_snapshot(config["model_source"])
         block_name, block_source = class_snapshot(config["block_source"])
         if model_name != "ResidualMLP":
-            raise ValueError("The saved model class is not ResidualMLP")
+            # Grading runs can save task-specific class names. Keep the editable
+            # dashboard's public class name while preserving its implementation.
+            model_source = model_source.replace(f"class {model_name}(", "class ResidualMLP(", 1)
         model_source = configure_class_snapshot(model_source, architecture)
         block_source = configure_class_snapshot(block_source, architecture)
     else:
@@ -1323,6 +1333,12 @@ def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=N
               "RESTORED_FROM": {"run_id": entry["id"], "task": task,
                                 "legacy_activation": legacy_activation, "legacy_optimizer": legacy_optimizer,
                                 "legacy_augmentation": legacy_augmentation}}
+    if "MAX_TRAIN_SECONDS" in setup_names:
+        limit = config.get("max_seconds")
+        if limit is not None and (isinstance(limit, bool) or not isinstance(limit, (int, float))
+                                  or not 0 < limit < float("inf")):
+            raise ValueError("Invalid saved training time limit")
+        values["MAX_TRAIN_SECONDS"] = limit
     for name, value in values.items():
         source = patch_setup_value(source, name, value)
     ast.parse(source)

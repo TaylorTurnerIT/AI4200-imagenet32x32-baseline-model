@@ -1,0 +1,2505 @@
+{
+  "task": "imagenet32",
+  "selection_metric": "validation_accuracy",
+  "default_run_id": "imagenet32-8856b095",
+  "entries": [
+    {
+      "id": "imagenet32-20261026-195826-4b2dc142",
+      "config": {
+        "task": "imagenet32",
+        "seed": 42,
+        "device": "mps",
+        "epochs": 10,
+        "restored_from": null,
+        "batch_size": 256,
+        "learning_rate": 0.03,
+        "weight_decay": 1e-05,
+        "momentum": 0.95,
+        "dampening": null,
+        "betas": null,
+        "eps": 1e-07,
+        "optimizer": "Muon",
+        "loss": "CrossEntropyLoss()",
+        "optimizer_settings": {
+          "name": "Muon",
+          "lr": 0.03,
+          "weight_decay": 1e-05,
+          "momentum": 0.95,
+          "nesterov": true,
+          "ns_steps": 5,
+          "eps": 1e-07,
+          "adjust_lr_fn": "original",
+          "auxiliary_lr": 0.001,
+          "auxiliary_weight_decay": 1e-05,
+          "auxiliary_beta1": 0.9,
+          "auxiliary_beta2": 0.999,
+          "auxiliary_eps": 1e-08
+        },
+        "optimizer_groups": [
+          {
+            "optimizer": "Muon",
+            "lr": 0.03,
+            "weight_decay": 1e-05,
+            "momentum": 0.95,
+            "nesterov": true,
+            "ns_coefficients": [
+              3.4445,
+              -4.775,
+              2.0315
+            ],
+            "eps": 1e-07,
+            "ns_steps": 5,
+            "adjust_lr_fn": "original",
+            "parameter_names": [
+              "blocks.0.value_up.weight",
+              "blocks.0.gate_up.weight",
+              "blocks.0.down.weight",
+              "blocks.1.value_up.weight",
+              "blocks.1.gate_up.weight",
+              "blocks.1.down.weight",
+              "blocks.2.value_up.weight",
+              "blocks.2.gate_up.weight",
+              "blocks.2.down.weight",
+              "blocks.3.value_up.weight",
+              "blocks.3.gate_up.weight",
+              "blocks.3.down.weight",
+              "blocks.4.value_up.weight",
+              "blocks.4.gate_up.weight",
+              "blocks.4.down.weight",
+              "blocks.5.value_up.weight",
+              "blocks.5.gate_up.weight",
+              "blocks.5.down.weight"
+            ],
+            "parameter_count": 9437184
+          },
+          {
+            "optimizer": "AdamW",
+            "lr": 0.001,
+            "betas": [
+              0.9,
+              0.999
+            ],
+            "eps": 1e-08,
+            "weight_decay": 1e-05,
+            "amsgrad": false,
+            "maximize": false,
+            "foreach": null,
+            "capturable": false,
+            "differentiable": false,
+            "fused": null,
+            "decoupled_weight_decay": true,
+            "parameter_names": [
+              "input_layer.weight",
+              "input_layer.bias",
+              "blocks.0.input_norm.weight",
+              "blocks.0.input_norm.bias",
+              "blocks.0.value_up.bias",
+              "blocks.0.value_norm.weight",
+              "blocks.0.value_norm.bias",
+              "blocks.0.gate_up.bias",
+              "blocks.0.gate_norm.weight",
+              "blocks.0.gate_norm.bias",
+              "blocks.0.down.bias",
+              "blocks.1.input_norm.weight",
+              "blocks.1.input_norm.bias",
+              "blocks.1.value_up.bias",
+              "blocks.1.value_norm.weight",
+              "blocks.1.value_norm.bias",
+              "blocks.1.gate_up.bias",
+              "blocks.1.gate_norm.weight",
+              "blocks.1.gate_norm.bias",
+              "blocks.1.down.bias",
+              "blocks.2.input_norm.weight",
+              "blocks.2.input_norm.bias",
+              "blocks.2.value_up.bias",
+              "blocks.2.value_norm.weight",
+              "blocks.2.value_norm.bias",
+              "blocks.2.gate_up.bias",
+              "blocks.2.gate_norm.weight",
+              "blocks.2.gate_norm.bias",
+              "blocks.2.down.bias",
+              "blocks.3.input_norm.weight",
+              "blocks.3.input_norm.bias",
+              "blocks.3.value_up.bias",
+              "blocks.3.value_norm.weight",
+              "blocks.3.value_norm.bias",
+              "blocks.3.gate_up.bias",
+              "blocks.3.gate_norm.weight",
+              "blocks.3.gate_norm.bias",
+              "blocks.3.down.bias",
+              "blocks.4.input_norm.weight",
+              "blocks.4.input_norm.bias",
+              "blocks.4.value_up.bias",
+              "blocks.4.value_norm.weight",
+              "blocks.4.value_norm.bias",
+              "blocks.4.gate_up.bias",
+              "blocks.4.gate_norm.weight",
+              "blocks.4.gate_norm.bias",
+              "blocks.4.down.bias",
+              "blocks.5.input_norm.weight",
+              "blocks.5.input_norm.bias",
+              "blocks.5.value_up.bias",
+              "blocks.5.value_norm.weight",
+              "blocks.5.value_norm.bias",
+              "blocks.5.gate_up.bias",
+              "blocks.5.gate_norm.weight",
+              "blocks.5.gate_norm.bias",
+              "blocks.5.down.bias",
+              "head_fc2.weight",
+              "head_fc2.bias"
+            ],
+            "parameter_count": 2132456
+          }
+        ],
+        "learning_rate_schedule": "constant",
+        "shuffle": true,
+        "architecture": {
+          "width": 512,
+          "hidden": 1024,
+          "depth": 6,
+          "in_features": 3072,
+          "num_classes": 1000,
+          "normalization": [
+            "LayerNorm"
+          ],
+          "parameters": 11569640,
+          "functional_operations": [
+            "gelu"
+          ]
+        },
+        "model_source": "@app.class_definition\nclass ResidualMLP(nn.Module):\n    # torch-canvas input x: e, 3, 32, 32\n    # torch-canvas sizes: in_features=3072, num_classes=10\n    \"\"\"Baseline residual MLP.\n\n    input -> Linear(in_features -> width)            project into the backbone\n          -> depth x Block                           residual backbone, stays `width` wide\n          -> LayerNorm -> Linear -> GELU -> Linear   head: a block without the skip\n          -> logits (num_classes)\n\n    The head has no skip connection because its output size (num_classes)\n    differs from its input size (width), so the two cannot be added.\n    \"\"\"\n\n    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1):\n        super().__init__()\n\n        # Project the flattened image down to the backbone width.\n        self.input_layer = nn.Linear(in_features, width)\n        self.blocks = nn.ModuleList([Block19(width, hidden1, dropout=dropout) for _ in range(depth)])\n        self.head_fc2 = nn.Linear(width, num_classes)\n\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def forward(self, x):\n        \"\"\"Training forward pass. Returns raw logits (no softmax).\n\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\n        \"\"\"\n        x = x.flatten(1)\n        x = self.input_layer(x)\n        for blk in self.blocks:\n            x = blk(x)\n        return self.head_fc2(x)\n\n    def predict(self, x):\n        \"\"\"Inference pass, never used during training. Returns class probabilities.\"\"\"\n        self.eval()                           # switch layers to inference behavior\n        with torch.no_grad():                 # no gradients needed at inference\n            return torch.softmax(self.forward(x), dim=1)\n",
+        "block_source": "@app.class_definition\nclass Block19(nn.Module):\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\n        super().__init__()\n        self.input_norm = nn.LayerNorm(width)\n        self.value_up = nn.Linear(width, hidden)\n        self.value_norm = nn.LayerNorm(hidden)\n        self.gate_up = nn.Linear(width, hidden)\n        self.gate_norm = nn.LayerNorm(hidden)\n        self.down = nn.Linear(hidden, width)\n        self.dropout = nn.Dropout(p=dropout)\n\n    def forward(self, x):\n        normalized = self.input_norm(x)\n        h = self.value_up(normalized)\n        value = self.value_norm(h)\n        a = F.gelu(self.gate_up(normalized))\n        gate = self.gate_norm(a)\n        gated = value * gate\n        return self.dropout(self.down(gated))\n",
+        "validation_fraction": 0.1,
+        "training_examples": 1153051,
+        "validation_examples": 128116,
+        "selection_metric": "validation_accuracy",
+        "tie_break": "earliest_epoch",
+        "model": "ResidualMLP(\n  (input_layer): Linear(in_features=3072, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-5): 6 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+        "augmentation": {
+          "enabled": false,
+          "default": {
+            "rotation": {
+              "probability": 0.0,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.0,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.0,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.2
+            },
+            "noise": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "horizontal_flip": {
+              "probability": 0.5,
+              "amount": 1.0
+            }
+          },
+          "classes": {},
+          "task": "imagenet32"
+        },
+        "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update"
+      },
+      "validation_accuracy": 0.12163195853757532,
+      "test_accuracy": 0.11106,
+      "completed": true,
+      "time": "2026-10-26 20:40:56",
+      "metrics": [
+        {
+          "epoch": "1",
+          "train_loss": "6.1846509824803935",
+          "train_accuracy": "0.022591368465054884",
+          "validation_loss": "5.829358745199663",
+          "validation_accuracy": "0.040221361890786476",
+          "elapsed_seconds": "254.9387249579886"
+        },
+        {
+          "epoch": "2",
+          "train_loss": "5.661715743709515",
+          "train_accuracy": "0.051061921805713714",
+          "validation_loss": "5.5063121507071715",
+          "validation_accuracy": "0.06283368197570952",
+          "elapsed_seconds": "505.64039058308117"
+        },
+        {
+          "epoch": "3",
+          "train_loss": "5.426270824100582",
+          "train_accuracy": "0.0694288457318887",
+          "validation_loss": "5.32854990789597",
+          "validation_accuracy": "0.07806987417652753",
+          "elapsed_seconds": "756.0619593750453"
+        },
+        {
+          "epoch": "4",
+          "train_loss": "5.263048642254332",
+          "train_accuracy": "0.0830657100162959",
+          "validation_loss": "5.212148072840239",
+          "validation_accuracy": "0.08928627181616659",
+          "elapsed_seconds": "1008.2600030000322"
+        },
+        {
+          "epoch": "5",
+          "train_loss": "5.134358757765268",
+          "train_accuracy": "0.09550921858616834",
+          "validation_loss": "5.124175064004496",
+          "validation_accuracy": "0.09850448031471479",
+          "elapsed_seconds": "1260.3927545420593"
+        },
+        {
+          "epoch": "6",
+          "train_loss": "5.021300445513685",
+          "train_accuracy": "0.10628064153276828",
+          "validation_loss": "5.0673149723687905",
+          "validation_accuracy": "0.10425707952168348",
+          "elapsed_seconds": "1510.956733167055"
+        },
+        {
+          "epoch": "7",
+          "train_loss": "4.91866751774206",
+          "train_accuracy": "0.11632182791567762",
+          "validation_loss": "5.040105256174092",
+          "validation_accuracy": "0.10978332136501295",
+          "elapsed_seconds": "1760.9737393329851"
+        },
+        {
+          "epoch": "8",
+          "train_loss": "4.823508673944171",
+          "train_accuracy": "0.1262164466272524",
+          "validation_loss": "4.980637176465079",
+          "validation_accuracy": "0.1156139748353055",
+          "elapsed_seconds": "2012.5755260000005"
+        },
+        {
+          "epoch": "9",
+          "train_loss": "4.731757311688728",
+          "train_accuracy": "0.13557943230611655",
+          "validation_loss": "4.982300707952168",
+          "validation_accuracy": "0.11879078335258672",
+          "elapsed_seconds": "2262.288078958052"
+        },
+        {
+          "epoch": "10",
+          "train_loss": "4.644329262105492",
+          "train_accuracy": "0.14489905476860954",
+          "validation_loss": "4.963407673514627",
+          "validation_accuracy": "0.12163195853757532",
+          "elapsed_seconds": "2513.3320117500843"
+        }
+      ],
+      "archive_origin": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model/runs/imagenet32-20261026-195826-4b2dc142"
+    },
+    {
+      "id": "imagenet32-20261026-204057-1f232b47",
+      "config": {
+        "task": "imagenet32",
+        "seed": 42,
+        "device": "mps",
+        "epochs": 10,
+        "restored_from": null,
+        "batch_size": 256,
+        "learning_rate": 0.03,
+        "weight_decay": 1e-05,
+        "momentum": 0.95,
+        "dampening": null,
+        "betas": null,
+        "eps": 1e-07,
+        "optimizer": "Muon",
+        "loss": "CrossEntropyLoss()",
+        "optimizer_settings": {
+          "name": "Muon",
+          "lr": 0.03,
+          "weight_decay": 1e-05,
+          "momentum": 0.95,
+          "nesterov": true,
+          "ns_steps": 5,
+          "eps": 1e-07,
+          "adjust_lr_fn": "original",
+          "auxiliary_lr": 0.001,
+          "auxiliary_weight_decay": 1e-05,
+          "auxiliary_beta1": 0.9,
+          "auxiliary_beta2": 0.999,
+          "auxiliary_eps": 1e-08
+        },
+        "optimizer_groups": [
+          {
+            "optimizer": "Muon",
+            "lr": 0.03,
+            "weight_decay": 1e-05,
+            "momentum": 0.95,
+            "nesterov": true,
+            "ns_coefficients": [
+              3.4445,
+              -4.775,
+              2.0315
+            ],
+            "eps": 1e-07,
+            "ns_steps": 5,
+            "adjust_lr_fn": "original",
+            "parameter_names": [
+              "blocks.0.value_up.weight",
+              "blocks.0.gate_up.weight",
+              "blocks.0.down.weight",
+              "blocks.1.value_up.weight",
+              "blocks.1.gate_up.weight",
+              "blocks.1.down.weight",
+              "blocks.2.value_up.weight",
+              "blocks.2.gate_up.weight",
+              "blocks.2.down.weight",
+              "blocks.3.value_up.weight",
+              "blocks.3.gate_up.weight",
+              "blocks.3.down.weight",
+              "blocks.4.value_up.weight",
+              "blocks.4.gate_up.weight",
+              "blocks.4.down.weight",
+              "blocks.5.value_up.weight",
+              "blocks.5.gate_up.weight",
+              "blocks.5.down.weight"
+            ],
+            "parameter_count": 9437184
+          },
+          {
+            "optimizer": "AdamW",
+            "lr": 0.001,
+            "betas": [
+              0.9,
+              0.999
+            ],
+            "eps": 1e-08,
+            "weight_decay": 1e-05,
+            "amsgrad": false,
+            "maximize": false,
+            "foreach": null,
+            "capturable": false,
+            "differentiable": false,
+            "fused": null,
+            "decoupled_weight_decay": true,
+            "parameter_names": [
+              "input_layer.weight",
+              "input_layer.bias",
+              "blocks.0.input_norm.weight",
+              "blocks.0.input_norm.bias",
+              "blocks.0.value_up.bias",
+              "blocks.0.value_norm.weight",
+              "blocks.0.value_norm.bias",
+              "blocks.0.gate_up.bias",
+              "blocks.0.gate_norm.weight",
+              "blocks.0.gate_norm.bias",
+              "blocks.0.down.bias",
+              "blocks.1.input_norm.weight",
+              "blocks.1.input_norm.bias",
+              "blocks.1.value_up.bias",
+              "blocks.1.value_norm.weight",
+              "blocks.1.value_norm.bias",
+              "blocks.1.gate_up.bias",
+              "blocks.1.gate_norm.weight",
+              "blocks.1.gate_norm.bias",
+              "blocks.1.down.bias",
+              "blocks.2.input_norm.weight",
+              "blocks.2.input_norm.bias",
+              "blocks.2.value_up.bias",
+              "blocks.2.value_norm.weight",
+              "blocks.2.value_norm.bias",
+              "blocks.2.gate_up.bias",
+              "blocks.2.gate_norm.weight",
+              "blocks.2.gate_norm.bias",
+              "blocks.2.down.bias",
+              "blocks.3.input_norm.weight",
+              "blocks.3.input_norm.bias",
+              "blocks.3.value_up.bias",
+              "blocks.3.value_norm.weight",
+              "blocks.3.value_norm.bias",
+              "blocks.3.gate_up.bias",
+              "blocks.3.gate_norm.weight",
+              "blocks.3.gate_norm.bias",
+              "blocks.3.down.bias",
+              "blocks.4.input_norm.weight",
+              "blocks.4.input_norm.bias",
+              "blocks.4.value_up.bias",
+              "blocks.4.value_norm.weight",
+              "blocks.4.value_norm.bias",
+              "blocks.4.gate_up.bias",
+              "blocks.4.gate_norm.weight",
+              "blocks.4.gate_norm.bias",
+              "blocks.4.down.bias",
+              "blocks.5.input_norm.weight",
+              "blocks.5.input_norm.bias",
+              "blocks.5.value_up.bias",
+              "blocks.5.value_norm.weight",
+              "blocks.5.value_norm.bias",
+              "blocks.5.gate_up.bias",
+              "blocks.5.gate_norm.weight",
+              "blocks.5.gate_norm.bias",
+              "blocks.5.down.bias",
+              "head_fc2.weight",
+              "head_fc2.bias"
+            ],
+            "parameter_count": 2132456
+          }
+        ],
+        "learning_rate_schedule": "constant",
+        "shuffle": true,
+        "architecture": {
+          "width": 512,
+          "hidden": 1024,
+          "depth": 6,
+          "in_features": 3072,
+          "num_classes": 1000,
+          "normalization": [
+            "LayerNorm"
+          ],
+          "parameters": 11569640,
+          "functional_operations": [
+            "gelu"
+          ]
+        },
+        "model_source": "@app.class_definition\nclass ResidualMLP(nn.Module):\n    # torch-canvas input x: e, 3, 32, 32\n    # torch-canvas sizes: in_features=3072, num_classes=10\n    \"\"\"Baseline residual MLP.\n\n    input -> Linear(in_features -> width)            project into the backbone\n          -> depth x Block                           residual backbone, stays `width` wide\n          -> LayerNorm -> Linear -> GELU -> Linear   head: a block without the skip\n          -> logits (num_classes)\n\n    The head has no skip connection because its output size (num_classes)\n    differs from its input size (width), so the two cannot be added.\n    \"\"\"\n\n    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1):\n        super().__init__()\n\n        # Project the flattened image down to the backbone width.\n        self.input_layer = nn.Linear(in_features, width)\n        self.blocks = nn.ModuleList([Block19(width, hidden1, dropout=dropout) for _ in range(depth)])\n        self.head_fc2 = nn.Linear(width, num_classes)\n\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def forward(self, x):\n        \"\"\"Training forward pass. Returns raw logits (no softmax).\n\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\n        \"\"\"\n        x = x.flatten(1)\n        x = self.input_layer(x)\n        for blk in self.blocks:\n            x = blk(x)\n        return self.head_fc2(x)\n\n    def predict(self, x):\n        \"\"\"Inference pass, never used during training. Returns class probabilities.\"\"\"\n        self.eval()                           # switch layers to inference behavior\n        with torch.no_grad():                 # no gradients needed at inference\n            return torch.softmax(self.forward(x), dim=1)\n",
+        "block_source": "@app.class_definition\nclass Block19(nn.Module):\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\n        super().__init__()\n        self.input_norm = nn.LayerNorm(width)\n        self.value_up = nn.Linear(width, hidden)\n        self.value_norm = nn.LayerNorm(hidden)\n        self.gate_up = nn.Linear(width, hidden)\n        self.gate_norm = nn.LayerNorm(hidden)\n        self.down = nn.Linear(hidden, width)\n        self.dropout = nn.Dropout(p=dropout)\n\n    def forward(self, x):\n        normalized = self.input_norm(x)\n        h = self.value_up(normalized)\n        value = self.value_norm(h)\n        a = F.gelu(self.gate_up(normalized))\n        gate = self.gate_norm(a)\n        gated = value * gate\n        return self.dropout(self.down(gated))\n",
+        "validation_fraction": 0.1,
+        "training_examples": 1153051,
+        "validation_examples": 128116,
+        "selection_metric": "validation_accuracy",
+        "tie_break": "earliest_epoch",
+        "model": "ResidualMLP(\n  (input_layer): Linear(in_features=3072, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-5): 6 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+        "augmentation": {
+          "enabled": false,
+          "default": {
+            "rotation": {
+              "probability": 0.0,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.0,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.0,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.2
+            },
+            "noise": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "horizontal_flip": {
+              "probability": 0.5,
+              "amount": 1.0
+            }
+          },
+          "classes": {},
+          "task": "imagenet32"
+        },
+        "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update"
+      },
+      "validation_accuracy": 0.08928627181616659,
+      "test_accuracy": null,
+      "completed": false,
+      "time": "imagenet32-20261026-204057-1f232b47",
+      "metrics": [
+        {
+          "epoch": "1",
+          "train_loss": "6.1846509824803935",
+          "train_accuracy": "0.022591368465054884",
+          "validation_loss": "5.829358745199663",
+          "validation_accuracy": "0.040221361890786476",
+          "elapsed_seconds": "276.4580688329879"
+        },
+        {
+          "epoch": "2",
+          "train_loss": "5.661715743709515",
+          "train_accuracy": "0.051061921805713714",
+          "validation_loss": "5.5063121507071715",
+          "validation_accuracy": "0.06283368197570952",
+          "elapsed_seconds": "568.5614377909806"
+        },
+        {
+          "epoch": "3",
+          "train_loss": "5.426270824100582",
+          "train_accuracy": "0.0694288457318887",
+          "validation_loss": "5.32854990789597",
+          "validation_accuracy": "0.07806987417652753",
+          "elapsed_seconds": "844.5763256659266"
+        },
+        {
+          "epoch": "4",
+          "train_loss": "5.263048642254332",
+          "train_accuracy": "0.0830657100162959",
+          "validation_loss": "5.212148072840239",
+          "validation_accuracy": "0.08928627181616659",
+          "elapsed_seconds": "1130.4502793329302"
+        }
+      ],
+      "archive_origin": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model/runs/imagenet32-20261026-204057-1f232b47"
+    },
+    {
+      "id": "imagenet32-20261026-210325-b9c04e03",
+      "config": {
+        "task": "imagenet32",
+        "seed": 42,
+        "device": "mps",
+        "epochs": 20,
+        "restored_from": null,
+        "batch_size": 256,
+        "learning_rate": 0.03,
+        "weight_decay": 1e-05,
+        "momentum": 0.95,
+        "dampening": null,
+        "betas": null,
+        "eps": 1e-07,
+        "optimizer": "Muon",
+        "loss": "CrossEntropyLoss()",
+        "optimizer_settings": {
+          "name": "Muon",
+          "lr": 0.03,
+          "weight_decay": 1e-05,
+          "momentum": 0.95,
+          "nesterov": true,
+          "ns_steps": 5,
+          "eps": 1e-07,
+          "adjust_lr_fn": "original",
+          "auxiliary_lr": 0.001,
+          "auxiliary_weight_decay": 1e-05,
+          "auxiliary_beta1": 0.9,
+          "auxiliary_beta2": 0.999,
+          "auxiliary_eps": 1e-08
+        },
+        "optimizer_groups": [
+          {
+            "optimizer": "Muon",
+            "lr": 0.03,
+            "weight_decay": 1e-05,
+            "momentum": 0.95,
+            "nesterov": true,
+            "ns_coefficients": [
+              3.4445,
+              -4.775,
+              2.0315
+            ],
+            "eps": 1e-07,
+            "ns_steps": 5,
+            "adjust_lr_fn": "original",
+            "parameter_names": [
+              "blocks.0.value_up.weight",
+              "blocks.0.gate_up.weight",
+              "blocks.0.down.weight",
+              "blocks.1.value_up.weight",
+              "blocks.1.gate_up.weight",
+              "blocks.1.down.weight",
+              "blocks.2.value_up.weight",
+              "blocks.2.gate_up.weight",
+              "blocks.2.down.weight",
+              "blocks.3.value_up.weight",
+              "blocks.3.gate_up.weight",
+              "blocks.3.down.weight",
+              "blocks.4.value_up.weight",
+              "blocks.4.gate_up.weight",
+              "blocks.4.down.weight",
+              "blocks.5.value_up.weight",
+              "blocks.5.gate_up.weight",
+              "blocks.5.down.weight"
+            ],
+            "parameter_count": 9437184
+          },
+          {
+            "optimizer": "AdamW",
+            "lr": 0.001,
+            "betas": [
+              0.9,
+              0.999
+            ],
+            "eps": 1e-08,
+            "weight_decay": 1e-05,
+            "amsgrad": false,
+            "maximize": false,
+            "foreach": null,
+            "capturable": false,
+            "differentiable": false,
+            "fused": null,
+            "decoupled_weight_decay": true,
+            "parameter_names": [
+              "input_layer.weight",
+              "input_layer.bias",
+              "blocks.0.input_norm.weight",
+              "blocks.0.input_norm.bias",
+              "blocks.0.value_up.bias",
+              "blocks.0.value_norm.weight",
+              "blocks.0.value_norm.bias",
+              "blocks.0.gate_up.bias",
+              "blocks.0.gate_norm.weight",
+              "blocks.0.gate_norm.bias",
+              "blocks.0.down.bias",
+              "blocks.1.input_norm.weight",
+              "blocks.1.input_norm.bias",
+              "blocks.1.value_up.bias",
+              "blocks.1.value_norm.weight",
+              "blocks.1.value_norm.bias",
+              "blocks.1.gate_up.bias",
+              "blocks.1.gate_norm.weight",
+              "blocks.1.gate_norm.bias",
+              "blocks.1.down.bias",
+              "blocks.2.input_norm.weight",
+              "blocks.2.input_norm.bias",
+              "blocks.2.value_up.bias",
+              "blocks.2.value_norm.weight",
+              "blocks.2.value_norm.bias",
+              "blocks.2.gate_up.bias",
+              "blocks.2.gate_norm.weight",
+              "blocks.2.gate_norm.bias",
+              "blocks.2.down.bias",
+              "blocks.3.input_norm.weight",
+              "blocks.3.input_norm.bias",
+              "blocks.3.value_up.bias",
+              "blocks.3.value_norm.weight",
+              "blocks.3.value_norm.bias",
+              "blocks.3.gate_up.bias",
+              "blocks.3.gate_norm.weight",
+              "blocks.3.gate_norm.bias",
+              "blocks.3.down.bias",
+              "blocks.4.input_norm.weight",
+              "blocks.4.input_norm.bias",
+              "blocks.4.value_up.bias",
+              "blocks.4.value_norm.weight",
+              "blocks.4.value_norm.bias",
+              "blocks.4.gate_up.bias",
+              "blocks.4.gate_norm.weight",
+              "blocks.4.gate_norm.bias",
+              "blocks.4.down.bias",
+              "blocks.5.input_norm.weight",
+              "blocks.5.input_norm.bias",
+              "blocks.5.value_up.bias",
+              "blocks.5.value_norm.weight",
+              "blocks.5.value_norm.bias",
+              "blocks.5.gate_up.bias",
+              "blocks.5.gate_norm.weight",
+              "blocks.5.gate_norm.bias",
+              "blocks.5.down.bias",
+              "head_fc2.weight",
+              "head_fc2.bias"
+            ],
+            "parameter_count": 2132456
+          }
+        ],
+        "learning_rate_schedule": "constant",
+        "shuffle": true,
+        "architecture": {
+          "width": 512,
+          "hidden": 1024,
+          "depth": 6,
+          "in_features": 3072,
+          "num_classes": 1000,
+          "normalization": [
+            "LayerNorm"
+          ],
+          "parameters": 11569640,
+          "functional_operations": [
+            "gelu"
+          ]
+        },
+        "model_source": "@app.class_definition\nclass ResidualMLP(nn.Module):\n    # torch-canvas input x: e, 3, 32, 32\n    # torch-canvas sizes: in_features=3072, num_classes=10\n    \"\"\"Baseline residual MLP.\n\n    input -> Linear(in_features -> width)            project into the backbone\n          -> depth x Block                           residual backbone, stays `width` wide\n          -> LayerNorm -> Linear -> GELU -> Linear   head: a block without the skip\n          -> logits (num_classes)\n\n    The head has no skip connection because its output size (num_classes)\n    differs from its input size (width), so the two cannot be added.\n    \"\"\"\n\n    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1):\n        super().__init__()\n\n        # Project the flattened image down to the backbone width.\n        self.input_layer = nn.Linear(in_features, width)\n        self.blocks = nn.ModuleList([Block19(width, hidden1, dropout=dropout) for _ in range(depth)])\n        self.head_fc2 = nn.Linear(width, num_classes)\n\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def forward(self, x):\n        \"\"\"Training forward pass. Returns raw logits (no softmax).\n\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\n        \"\"\"\n        x = x.flatten(1)\n        x = self.input_layer(x)\n        for blk in self.blocks:\n            x = blk(x)\n        return self.head_fc2(x)\n\n    def predict(self, x):\n        \"\"\"Inference pass, never used during training. Returns class probabilities.\"\"\"\n        self.eval()                           # switch layers to inference behavior\n        with torch.no_grad():                 # no gradients needed at inference\n            return torch.softmax(self.forward(x), dim=1)\n",
+        "block_source": "@app.class_definition\nclass Block19(nn.Module):\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\n        super().__init__()\n        self.input_norm = nn.LayerNorm(width)\n        self.value_up = nn.Linear(width, hidden)\n        self.value_norm = nn.LayerNorm(hidden)\n        self.gate_up = nn.Linear(width, hidden)\n        self.gate_norm = nn.LayerNorm(hidden)\n        self.down = nn.Linear(hidden, width)\n        self.dropout = nn.Dropout(p=dropout)\n\n    def forward(self, x):\n        normalized = self.input_norm(x)\n        h = self.value_up(normalized)\n        value = self.value_norm(h)\n        a = F.gelu(self.gate_up(normalized))\n        gate = self.gate_norm(a)\n        gated = value * gate\n        return self.dropout(self.down(gated))\n",
+        "validation_fraction": 0.1,
+        "training_examples": 1153051,
+        "validation_examples": 128116,
+        "selection_metric": "validation_accuracy",
+        "tie_break": "earliest_epoch",
+        "model": "ResidualMLP(\n  (input_layer): Linear(in_features=3072, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-5): 6 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+        "augmentation": {
+          "enabled": false,
+          "default": {
+            "rotation": {
+              "probability": 0.0,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.0,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.0,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.2
+            },
+            "noise": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "horizontal_flip": {
+              "probability": 0.5,
+              "amount": 1.0
+            }
+          },
+          "classes": {},
+          "task": "imagenet32"
+        },
+        "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update"
+      },
+      "validation_accuracy": 0.12730650348122013,
+      "test_accuracy": 0.11648,
+      "completed": true,
+      "time": "2026-10-26 22:58:27",
+      "metrics": [
+        {
+          "epoch": "1",
+          "train_loss": "6.1846509824803935",
+          "train_accuracy": "0.022591368465054884",
+          "validation_loss": "5.829358745199663",
+          "validation_accuracy": "0.040221361890786476",
+          "elapsed_seconds": "255.63692366692703"
+        },
+        {
+          "epoch": "2",
+          "train_loss": "5.661715743709515",
+          "train_accuracy": "0.051061921805713714",
+          "validation_loss": "5.5063121507071715",
+          "validation_accuracy": "0.06283368197570952",
+          "elapsed_seconds": "505.6433665829245"
+        },
+        {
+          "epoch": "3",
+          "train_loss": "5.426270824100582",
+          "train_accuracy": "0.0694288457318887",
+          "validation_loss": "5.32854990789597",
+          "validation_accuracy": "0.07806987417652753",
+          "elapsed_seconds": "759.3439366249368"
+        },
+        {
+          "epoch": "4",
+          "train_loss": "5.263048642254332",
+          "train_accuracy": "0.0830657100162959",
+          "validation_loss": "5.212148072840239",
+          "validation_accuracy": "0.08928627181616659",
+          "elapsed_seconds": "1049.9075014169794"
+        },
+        {
+          "epoch": "5",
+          "train_loss": "5.134358757765268",
+          "train_accuracy": "0.09550921858616834",
+          "validation_loss": "5.124175064004496",
+          "validation_accuracy": "0.09850448031471479",
+          "elapsed_seconds": "1732.3930908750044"
+        },
+        {
+          "epoch": "6",
+          "train_loss": "5.021300445513685",
+          "train_accuracy": "0.10628064153276828",
+          "validation_loss": "5.0673149723687905",
+          "validation_accuracy": "0.10425707952168348",
+          "elapsed_seconds": "2000.2171375829494"
+        },
+        {
+          "epoch": "7",
+          "train_loss": "4.91866751774206",
+          "train_accuracy": "0.11632182791567762",
+          "validation_loss": "5.040105256174092",
+          "validation_accuracy": "0.10978332136501295",
+          "elapsed_seconds": "2253.2876678329194"
+        },
+        {
+          "epoch": "8",
+          "train_loss": "4.823508673944171",
+          "train_accuracy": "0.1262164466272524",
+          "validation_loss": "4.980637176465079",
+          "validation_accuracy": "0.1156139748353055",
+          "elapsed_seconds": "2509.339084791951"
+        },
+        {
+          "epoch": "9",
+          "train_loss": "4.731757311688728",
+          "train_accuracy": "0.13557943230611655",
+          "validation_loss": "4.982300707952168",
+          "validation_accuracy": "0.11879078335258672",
+          "elapsed_seconds": "2844.427610041923"
+        },
+        {
+          "epoch": "10",
+          "train_loss": "4.644329262105492",
+          "train_accuracy": "0.14489905476860954",
+          "validation_loss": "4.963407673514627",
+          "validation_accuracy": "0.12163195853757532",
+          "elapsed_seconds": "3299.418174332939"
+        },
+        {
+          "epoch": "11",
+          "train_loss": "4.56172190128624",
+          "train_accuracy": "0.15403481719368875",
+          "validation_loss": "4.947097259514814",
+          "validation_accuracy": "0.12384869961597303",
+          "elapsed_seconds": "3622.8172074999893"
+        },
+        {
+          "epoch": "12",
+          "train_loss": "4.479230320254699",
+          "train_accuracy": "0.1629910559029913",
+          "validation_loss": "4.966243482469013",
+          "validation_accuracy": "0.12576102906740766",
+          "elapsed_seconds": "3926.7265974999173"
+        },
+        {
+          "epoch": "13",
+          "train_loss": "4.403342089812159",
+          "train_accuracy": "0.17133934231876993",
+          "validation_loss": "4.9708252677261235",
+          "validation_accuracy": "0.1251600112398139",
+          "elapsed_seconds": "4572.9388210419565"
+        },
+        {
+          "epoch": "14",
+          "train_loss": "4.328287734020438",
+          "train_accuracy": "0.17996255152634186",
+          "validation_loss": "5.018637406725155",
+          "validation_accuracy": "0.12572980736207812",
+          "elapsed_seconds": "5087.334154874901"
+        },
+        {
+          "epoch": "15",
+          "train_loss": "4.258661152021896",
+          "train_accuracy": "0.187642177145677",
+          "validation_loss": "5.025356903119048",
+          "validation_accuracy": "0.12600299728371164",
+          "elapsed_seconds": "5343.164367457968"
+        },
+        {
+          "epoch": "16",
+          "train_loss": "4.190993286506841",
+          "train_accuracy": "0.19519344764455346",
+          "validation_loss": "5.0276638944394145",
+          "validation_accuracy": "0.12666645852196448",
+          "elapsed_seconds": "5601.938732541981"
+        },
+        {
+          "epoch": "17",
+          "train_loss": "4.127258464716652",
+          "train_accuracy": "0.20264585001010363",
+          "validation_loss": "5.037324085204034",
+          "validation_accuracy": "0.12730650348122013",
+          "elapsed_seconds": "5866.497384749935"
+        },
+        {
+          "epoch": "18",
+          "train_loss": "4.066758538867751",
+          "train_accuracy": "0.2096698237979066",
+          "validation_loss": "5.097123895532174",
+          "validation_accuracy": "0.1272674763495582",
+          "elapsed_seconds": "6245.32601041696"
+        },
+        {
+          "epoch": "19",
+          "train_loss": "4.009256745798755",
+          "train_accuracy": "0.21678225854710675",
+          "validation_loss": "5.106502115270536",
+          "validation_accuracy": "0.1265259608479815",
+          "elapsed_seconds": "6606.346578957979"
+        },
+        {
+          "epoch": "20",
+          "train_loss": "3.953907502790423",
+          "train_accuracy": "0.2233543876203221",
+          "validation_loss": "5.179975081176434",
+          "validation_accuracy": "0.1259171375940554",
+          "elapsed_seconds": "6855.480330666993"
+        }
+      ],
+      "archive_origin": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model/runs/imagenet32-20261026-210325-b9c04e03"
+    },
+    {
+      "id": "imagenet32-20261027-000850-1c570f4f",
+      "config": {
+        "task": "imagenet32",
+        "seed": 42,
+        "device": "mps",
+        "epochs": 10,
+        "restored_from": null,
+        "batch_size": 256,
+        "learning_rate": 0.001,
+        "weight_decay": 1e-05,
+        "momentum": null,
+        "dampening": null,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "optimizer": "AdamW",
+        "loss": "CrossEntropyLoss()",
+        "optimizer_settings": {
+          "name": "AdamW",
+          "lr": 0.001,
+          "weight_decay": 1e-05,
+          "beta1": 0.9,
+          "beta2": 0.999,
+          "eps": 1e-08,
+          "amsgrad": true
+        },
+        "optimizer_groups": [
+          {
+            "optimizer": "AdamW",
+            "lr": 0.001,
+            "betas": [
+              0.9,
+              0.999
+            ],
+            "eps": 1e-08,
+            "weight_decay": 1e-05,
+            "amsgrad": true,
+            "maximize": false,
+            "foreach": null,
+            "capturable": false,
+            "differentiable": false,
+            "fused": null,
+            "decoupled_weight_decay": true,
+            "parameter_names": [
+              "window_mlps.0.0.weight",
+              "window_mlps.0.0.bias",
+              "window_mlps.0.2.weight",
+              "window_mlps.0.2.bias",
+              "window_mlps.1.0.weight",
+              "window_mlps.1.0.bias",
+              "window_mlps.1.2.weight",
+              "window_mlps.1.2.bias",
+              "window_mlps.2.0.weight",
+              "window_mlps.2.0.bias",
+              "window_mlps.2.2.weight",
+              "window_mlps.2.2.bias",
+              "window_mlps.3.0.weight",
+              "window_mlps.3.0.bias",
+              "window_mlps.3.2.weight",
+              "window_mlps.3.2.bias",
+              "window_mlps.4.0.weight",
+              "window_mlps.4.0.bias",
+              "window_mlps.4.2.weight",
+              "window_mlps.4.2.bias",
+              "window_mlps.5.0.weight",
+              "window_mlps.5.0.bias",
+              "window_mlps.5.2.weight",
+              "window_mlps.5.2.bias",
+              "input_layer.weight",
+              "input_layer.bias",
+              "blocks.0.input_norm.weight",
+              "blocks.0.input_norm.bias",
+              "blocks.0.value_up.weight",
+              "blocks.0.value_up.bias",
+              "blocks.0.value_norm.weight",
+              "blocks.0.value_norm.bias",
+              "blocks.0.gate_up.weight",
+              "blocks.0.gate_up.bias",
+              "blocks.0.gate_norm.weight",
+              "blocks.0.gate_norm.bias",
+              "blocks.0.down.weight",
+              "blocks.0.down.bias",
+              "blocks.1.input_norm.weight",
+              "blocks.1.input_norm.bias",
+              "blocks.1.value_up.weight",
+              "blocks.1.value_up.bias",
+              "blocks.1.value_norm.weight",
+              "blocks.1.value_norm.bias",
+              "blocks.1.gate_up.weight",
+              "blocks.1.gate_up.bias",
+              "blocks.1.gate_norm.weight",
+              "blocks.1.gate_norm.bias",
+              "blocks.1.down.weight",
+              "blocks.1.down.bias",
+              "head_fc2.weight",
+              "head_fc2.bias"
+            ],
+            "parameter_count": 3923048
+          }
+        ],
+        "learning_rate_schedule": "constant",
+        "shuffle": true,
+        "architecture": {
+          "width": 512,
+          "hidden": 1024,
+          "depth": 2,
+          "in_features": 3072,
+          "num_classes": 1000,
+          "normalization": [
+            "LayerNorm"
+          ],
+          "parameters": 3923048,
+          "window_size": 2,
+          "shrinking_stride": 2,
+          "window_strides": [
+            1,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "window_shapes": [
+            [
+              3,
+              32,
+              32
+            ],
+            [
+              64,
+              31,
+              31
+            ],
+            [
+              64,
+              16,
+              16
+            ],
+            [
+              64,
+              8,
+              8
+            ],
+            [
+              64,
+              4,
+              4
+            ],
+            [
+              64,
+              2,
+              2
+            ],
+            [
+              64,
+              1,
+              1
+            ]
+          ],
+          "window_hidden": 128,
+          "window_features": 64,
+          "window_order": "row, column, channel, dy, dx",
+          "window_padding": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "window_weight_sharing": "within each stage",
+          "window_aggregation": "hierarchical",
+          "functional_operations": [
+            "gelu",
+            "pad"
+          ]
+        },
+        "model_source": "@app.class_definition\nclass ResidualMLP(nn.Module):\n    # torch-canvas input x: e, channels, 32, 32\n    # torch-canvas sizes: in_features=3072, num_classes=10\n    \"\"\"Hierarchical shared window MLPs, followed by a residual classifier.\n\n    input -> sliding 2x2 windows, first stride 1, later shrinking_stride\n          -> shared Linear -> GELU -> Linear -> GELU per window\n          -> restore feature map and repeat until the spatial size is 1x1\n          -> flatten final features -> Linear into the backbone\n          -> depth x Block                           residual backbone, stays `width` wide\n          -> Linear(width -> num_classes)            classification head\n          -> logits (num_classes)\n\n    The head has no skip connection because its output size (num_classes)\n    differs from its input size (width), so the two cannot be added.\n    \"\"\"\n\n    def __init__(self, in_features, num_classes, width=512, depth=2, hidden=1024,\n                 dropout=0.1, window_hidden=128, window_features=64, shrinking_stride=2):\n        super().__init__()\n\n        if in_features != 784 and in_features != 3072:\n            raise ValueError(\"Expected MNIST (784) or RGB 32x32 (3072) input features\")\n        if shrinking_stride != 1 and shrinking_stride != 2:\n            raise ValueError(\"shrinking_stride must be 1 or 2\")\n        self.in_features = in_features\n        channels = 1 if in_features == 784 else 3\n        height = 28 if in_features == 784 else 32\n        image_width = height\n        self.image_shape = (channels, height, image_width)\n        self.window_size = 2\n        self.shrinking_stride = shrinking_stride\n        self.window_shapes = [self.image_shape]\n        self.window_strides = []\n        self.window_padding = []\n        self.window_mlps = nn.ModuleList()\n        stages = height - 1 if shrinking_stride == 1 else 6\n        for stage in range(stages):\n            stride = 1 if stage == 0 else shrinking_stride\n            self.window_strides.append(stride)\n            # Keep the final row/column when a stride-2 stage has odd size.\n            pad_height, pad_width = height % stride, image_width % stride\n            self.window_padding.append((pad_height, pad_width))\n            self.window_mlps.append(RollingWindowBlock(\n                channels, window_hidden, window_features, stride, pad_height))\n            height = (height + pad_height - self.window_size) // stride + 1\n            image_width = (image_width + pad_width - self.window_size) // stride + 1\n            channels = window_features\n            self.window_shapes.append((channels, height, image_width))\n\n        # Project the flattened window features down to the backbone width.\n        self.input_layer = nn.Linear(channels * height * image_width, width)\n        self.blocks = nn.ModuleList([Block19(width, hidden=hidden, dropout=dropout) for _ in range(depth)])\n        self.head_fc2 = nn.Linear(width, num_classes)\n\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def extract_windows(self, x, stage=0):\n        \"\"\"Return (batch, positions, C*2*2), ordered by row, column, channel, dy, dx.\"\"\"\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.window_shapes[stage]:\n            raise ValueError(f\"Expected NCHW feature map (N, C, H, W) with C,H,W={self.window_shapes[stage]}\")\n        # Tensor.unfold only creates sliding views; it performs no learned operation.\n        return self.window_mlps[stage].extract_windows(x).flatten(1, 2)\n\n    def forward(self, x):\n        \"\"\"Training forward pass. Returns raw logits (no softmax).\n\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\n        \"\"\"\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.image_shape:\n            raise ValueError(f\"Expected NCHW images with C,H,W={self.image_shape}\")\n        for window_mlp in self.window_mlps:\n            x = window_mlp(x)\n        x = self.input_layer(x.flatten(1))\n        for blk in self.blocks:\n            x = blk(x)\n        return self.head_fc2(x)\n\n    def predict(self, x):\n        \"\"\"Inference pass, never used during training. Returns class probabilities.\"\"\"\n        self.eval()                           # switch layers to inference behavior\n        with torch.no_grad():                 # no gradients needed at inference\n            return torch.softmax(self.forward(x), dim=1)\n",
+        "block_source": "@app.class_definition\nclass Block19(nn.Module):\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\n        super().__init__()\n        self.input_norm = nn.LayerNorm(width)\n        self.value_up = nn.Linear(width, hidden)\n        self.value_norm = nn.LayerNorm(hidden)\n        self.gate_up = nn.Linear(width, hidden)\n        self.gate_norm = nn.LayerNorm(hidden)\n        self.down = nn.Linear(hidden, width)\n        self.dropout = nn.Dropout(p=dropout)\n\n    def forward(self, x):\n        normalized = self.input_norm(x)\n        h = self.value_up(normalized)\n        value = self.value_norm(h)\n        a = F.gelu(self.gate_up(normalized))\n        gate = self.gate_norm(a)\n        gated = value * gate\n        return x + self.dropout(self.down(gated))\n",
+        "support_sources": {
+          "RollingWindowBlock": "@app.class_definition\nclass RollingWindowBlock(nn.Sequential):\n    \"\"\"Gather padded 2x2 windows, apply a shared MLP, and return an NCHW map.\n\n    Numeric module names preserve existing window_mlps checkpoint keys.\n    \"\"\"\n\n    def __init__(self, channels=3, window_hidden=128, window_features=64, stride=1, padding=0):\n        super().__init__()\n        self.stride = stride\n        self.padding = padding\n        self.add_module(\"0\", nn.Linear(channels * 4, window_hidden))\n        self.add_module(\"1\", nn.GELU())\n        self.add_module(\"2\", nn.Linear(window_hidden, window_features))\n        self.add_module(\"3\", nn.GELU())\n\n    def extract_windows(self, x):\n        \"\"\"Return (batch, output rows, output columns, C*2*2).\"\"\"\n        x = F.pad(x, (0, self.padding, 0, self.padding))\n        x = x.unfold(2, 2, self.stride).unfold(3, 2, self.stride)\n        return x.permute(0, 2, 3, 1, 4, 5).flatten(3)\n\n    def forward(self, x):\n        x = self.extract_windows(x)\n        x = self[0](x)\n        x = self[1](x)\n        x = self[2](x)\n        x = self[3](x)\n        return x.permute(0, 3, 1, 2)\n"
+        },
+        "validation_fraction": 0.1,
+        "training_examples": 1153051,
+        "validation_examples": 128116,
+        "selection_metric": "validation_accuracy",
+        "tie_break": "earliest_epoch",
+        "model": "ResidualMLP(\n  (window_mlps): ModuleList(\n    (0): RollingWindowBlock(\n      (0): Linear(in_features=12, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n    (1-5): 5 x RollingWindowBlock(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n  )\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-1): 2 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+        "augmentation": {
+          "task": "imagenet32",
+          "enabled": false,
+          "default": {
+            "rotation": {
+              "probability": 0.0,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.0,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.0,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.2
+            },
+            "noise": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "horizontal_flip": {
+              "probability": 0.5,
+              "amount": 1.0
+            }
+          },
+          "classes": {}
+        },
+        "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update"
+      },
+      "validation_accuracy": 0.20493927378313403,
+      "test_accuracy": 0.18496,
+      "completed": true,
+      "time": "2026-10-27 01:12:34",
+      "metrics": [
+        {
+          "epoch": "1",
+          "train_loss": "5.691792036952399",
+          "train_accuracy": "0.052755689037171816",
+          "validation_loss": "5.054591639607855",
+          "validation_accuracy": "0.09489837334915233",
+          "elapsed_seconds": "481.65460337500554"
+        },
+        {
+          "epoch": "2",
+          "train_loss": "4.825300442044628",
+          "train_accuracy": "0.11615531316481231",
+          "validation_loss": "4.688935710606013",
+          "validation_accuracy": "0.13181803990133942",
+          "elapsed_seconds": "970.6833786249626"
+        },
+        {
+          "epoch": "3",
+          "train_loss": "4.532418340559091",
+          "train_accuracy": "0.1476101230561354",
+          "validation_loss": "4.505179388210684",
+          "validation_accuracy": "0.15342345998938461",
+          "elapsed_seconds": "1410.3606987500098"
+        },
+        {
+          "epoch": "4",
+          "train_loss": "4.3586719060995565",
+          "train_accuracy": "0.16806802127572848",
+          "validation_loss": "4.3987289838896",
+          "validation_accuracy": "0.16672390645977084",
+          "elapsed_seconds": "1865.6929895000067"
+        },
+        {
+          "epoch": "5",
+          "train_loss": "4.230320254698188",
+          "train_accuracy": "0.1828644179659009",
+          "validation_loss": "4.296737917200037",
+          "validation_accuracy": "0.1794233351025633",
+          "elapsed_seconds": "2270.3221740419976"
+        },
+        {
+          "epoch": "6",
+          "train_loss": "4.125450652226138",
+          "train_accuracy": "0.1961214204748966",
+          "validation_loss": "4.2327714727278405",
+          "validation_accuracy": "0.1863155265540604",
+          "elapsed_seconds": "2653.424380167038"
+        },
+        {
+          "epoch": "7",
+          "train_loss": "4.036370030466996",
+          "train_accuracy": "0.20772108085418597",
+          "validation_loss": "4.205913000718099",
+          "validation_accuracy": "0.19149832963876487",
+          "elapsed_seconds": "2931.880226999987"
+        },
+        {
+          "epoch": "8",
+          "train_loss": "3.959365197202899",
+          "train_accuracy": "0.21770155873417568",
+          "validation_loss": "4.162392870523588",
+          "validation_accuracy": "0.19731337225639264",
+          "elapsed_seconds": "3183.5450135000283"
+        },
+        {
+          "epoch": "9",
+          "train_loss": "3.8894628251482373",
+          "train_accuracy": "0.2264756719347193",
+          "validation_loss": "4.137444288769553",
+          "validation_accuracy": "0.20219176371413405",
+          "elapsed_seconds": "3445.4936328340555"
+        },
+        {
+          "epoch": "10",
+          "train_loss": "3.8269651559211173",
+          "train_accuracy": "0.2348890031750547",
+          "validation_loss": "4.1167799103937055",
+          "validation_accuracy": "0.20493927378313403",
+          "elapsed_seconds": "3707.713767500012"
+        }
+      ],
+      "archive_origin": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model/runs/imagenet32-20261027-000850-1c570f4f"
+    },
+    {
+      "id": "imagenet32-8856b095",
+      "config": {
+        "task": "imagenet32",
+        "seed": 0,
+        "device": "cuda",
+        "epochs": 25,
+        "restored_from": null,
+        "batch_size": 256,
+        "learning_rate": 0.001,
+        "max_seconds": 3600,
+        "streaming_normalization": true,
+        "weight_decay": 1e-05,
+        "momentum": null,
+        "dampening": null,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "optimizer": "AdamW",
+        "loss": "CrossEntropyLoss()",
+        "optimizer_settings": {
+          "name": "AdamW",
+          "lr": 0.001,
+          "weight_decay": 1e-05,
+          "beta1": 0.9,
+          "beta2": 0.999,
+          "eps": 1e-08,
+          "amsgrad": true
+        },
+        "optimizer_groups": [
+          {
+            "optimizer": "AdamW",
+            "lr": 0.001,
+            "betas": [
+              0.9,
+              0.999
+            ],
+            "eps": 1e-08,
+            "weight_decay": 1e-05,
+            "amsgrad": true,
+            "maximize": false,
+            "foreach": null,
+            "capturable": false,
+            "differentiable": false,
+            "fused": null,
+            "decoupled_weight_decay": true,
+            "parameter_names": [
+              "window_mlps.0.0.weight",
+              "window_mlps.0.0.bias",
+              "window_mlps.0.2.weight",
+              "window_mlps.0.2.bias",
+              "window_mlps.1.0.weight",
+              "window_mlps.1.0.bias",
+              "window_mlps.1.2.weight",
+              "window_mlps.1.2.bias",
+              "window_mlps.2.0.weight",
+              "window_mlps.2.0.bias",
+              "window_mlps.2.2.weight",
+              "window_mlps.2.2.bias",
+              "window_mlps.3.0.weight",
+              "window_mlps.3.0.bias",
+              "window_mlps.3.2.weight",
+              "window_mlps.3.2.bias",
+              "window_mlps.4.0.weight",
+              "window_mlps.4.0.bias",
+              "window_mlps.4.2.weight",
+              "window_mlps.4.2.bias",
+              "window_mlps.5.0.weight",
+              "window_mlps.5.0.bias",
+              "window_mlps.5.2.weight",
+              "window_mlps.5.2.bias",
+              "input_layer.weight",
+              "input_layer.bias",
+              "blocks.0.input_norm.weight",
+              "blocks.0.input_norm.bias",
+              "blocks.0.value_up.weight",
+              "blocks.0.value_up.bias",
+              "blocks.0.value_norm.weight",
+              "blocks.0.value_norm.bias",
+              "blocks.0.gate_up.weight",
+              "blocks.0.gate_up.bias",
+              "blocks.0.gate_norm.weight",
+              "blocks.0.gate_norm.bias",
+              "blocks.0.down.weight",
+              "blocks.0.down.bias",
+              "blocks.1.input_norm.weight",
+              "blocks.1.input_norm.bias",
+              "blocks.1.value_up.weight",
+              "blocks.1.value_up.bias",
+              "blocks.1.value_norm.weight",
+              "blocks.1.value_norm.bias",
+              "blocks.1.gate_up.weight",
+              "blocks.1.gate_up.bias",
+              "blocks.1.gate_norm.weight",
+              "blocks.1.gate_norm.bias",
+              "blocks.1.down.weight",
+              "blocks.1.down.bias",
+              "head_fc2.weight",
+              "head_fc2.bias"
+            ],
+            "parameter_count": 3923048
+          }
+        ],
+        "learning_rate_schedule": "constant",
+        "shuffle": true,
+        "architecture": {
+          "width": 512,
+          "hidden": 1024,
+          "depth": 2,
+          "in_features": 3072,
+          "num_classes": 1000,
+          "normalization": [
+            "LayerNorm"
+          ],
+          "parameters": 3923048,
+          "window_size": 2,
+          "shrinking_stride": 2,
+          "window_strides": [
+            1,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "window_shapes": [
+            [
+              3,
+              32,
+              32
+            ],
+            [
+              64,
+              31,
+              31
+            ],
+            [
+              64,
+              16,
+              16
+            ],
+            [
+              64,
+              8,
+              8
+            ],
+            [
+              64,
+              4,
+              4
+            ],
+            [
+              64,
+              2,
+              2
+            ],
+            [
+              64,
+              1,
+              1
+            ]
+          ],
+          "window_hidden": 128,
+          "window_features": 64,
+          "window_order": "row, column, channel, dy, dx",
+          "window_padding": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "window_weight_sharing": "within each stage",
+          "window_aggregation": "hierarchical",
+          "functional_operations": [
+            "gelu",
+            "pad"
+          ]
+        },
+        "model_source": "class ResidualMLP(nn.Module):\n    # torch-canvas input x: e, channels, 32, 32\n    # torch-canvas sizes: in_features=3072, num_classes=10\n    \"\"\"Hierarchical shared window MLPs, followed by a residual classifier.\n\n    input -> sliding 2x2 windows, first stride 1, later shrinking_stride\n          -> shared Linear -> GELU -> Linear -> GELU per window\n          -> restore feature map and repeat until the spatial size is 1x1\n          -> flatten final features -> Linear into the backbone\n          -> depth x Block                           residual backbone, stays `width` wide\n          -> Linear(width -> num_classes)            classification head\n          -> logits (num_classes)\n\n    The head has no skip connection because its output size (num_classes)\n    differs from its input size (width), so the two cannot be added.\n    \"\"\"\n\n    def __init__(self, in_features, num_classes, width=512, depth=2, hidden=1024,\n                 dropout=0.1, window_hidden=128, window_features=64, shrinking_stride=2):\n        super().__init__()\n\n        if in_features != 784 and in_features != 3072:\n            raise ValueError(\"Expected MNIST (784) or RGB 32x32 (3072) input features\")\n        if shrinking_stride != 1 and shrinking_stride != 2:\n            raise ValueError(\"shrinking_stride must be 1 or 2\")\n        self.in_features = in_features\n        channels = 1 if in_features == 784 else 3\n        height = 28 if in_features == 784 else 32\n        image_width = height\n        self.image_shape = (channels, height, image_width)\n        self.window_size = 2\n        self.shrinking_stride = shrinking_stride\n        self.window_shapes = [self.image_shape]\n        self.window_strides = []\n        self.window_padding = []\n        self.window_mlps = nn.ModuleList()\n        stages = height - 1 if shrinking_stride == 1 else 6\n        for stage in range(stages):\n            stride = 1 if stage == 0 else shrinking_stride\n            self.window_strides.append(stride)\n            # Keep the final row/column when a stride-2 stage has odd size.\n            pad_height, pad_width = height % stride, image_width % stride\n            self.window_padding.append((pad_height, pad_width))\n            self.window_mlps.append(RollingWindowBlock(\n                channels, window_hidden, window_features, stride, pad_height))\n            height = (height + pad_height - self.window_size) // stride + 1\n            image_width = (image_width + pad_width - self.window_size) // stride + 1\n            channels = window_features\n            self.window_shapes.append((channels, height, image_width))\n\n        # Project the flattened window features down to the backbone width.\n        self.input_layer = nn.Linear(channels * height * image_width, width)\n        self.blocks = nn.ModuleList([Block19(width, hidden=hidden, dropout=dropout) for _ in range(depth)])\n        self.head_fc2 = nn.Linear(width, num_classes)\n\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def extract_windows(self, x, stage=0):\n        \"\"\"Return (batch, positions, C*2*2), ordered by row, column, channel, dy, dx.\"\"\"\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.window_shapes[stage]:\n            raise ValueError(f\"Expected NCHW feature map (N, C, H, W) with C,H,W={self.window_shapes[stage]}\")\n        # Tensor.unfold only creates sliding views; it performs no learned operation.\n        return self.window_mlps[stage].extract_windows(x).flatten(1, 2)\n\n    def forward(self, x):\n        \"\"\"Training forward pass. Returns raw logits (no softmax).\n\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\n        \"\"\"\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.image_shape:\n            raise ValueError(f\"Expected NCHW images with C,H,W={self.image_shape}\")\n        for window_mlp in self.window_mlps:\n            x = window_mlp(x)\n        x = self.input_layer(x.flatten(1))\n        for blk in self.blocks:\n            x = blk(x)\n        return self.head_fc2(x)\n\n    def predict(self, x):\n        \"\"\"Inference pass, never used during training. Returns class probabilities.\"\"\"\n        self.eval()                           # switch layers to inference behavior\n        with torch.no_grad():                 # no gradients needed at inference\n            return torch.softmax(self.forward(x), dim=1)\n",
+        "block_source": "class Block19(nn.Module):\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\n        super().__init__()\n        self.input_norm = nn.LayerNorm(width)\n        self.value_up = nn.Linear(width, hidden)\n        self.value_norm = nn.LayerNorm(hidden)\n        self.gate_up = nn.Linear(width, hidden)\n        self.gate_norm = nn.LayerNorm(hidden)\n        self.down = nn.Linear(hidden, width)\n        self.dropout = nn.Dropout(p=dropout)\n\n    def forward(self, x):\n        normalized = self.input_norm(x)\n        h = self.value_up(normalized)\n        value = self.value_norm(h)\n        a = F.gelu(self.gate_up(normalized))\n        gate = self.gate_norm(a)\n        gated = value * gate\n        return x + self.dropout(self.down(gated))\n",
+        "support_sources": {
+          "RollingWindowBlock": "class RollingWindowBlock(nn.Sequential):\n    \"\"\"Gather padded 2x2 windows, apply a shared MLP, and return an NCHW map.\n\n    Numeric module names preserve existing window_mlps checkpoint keys.\n    \"\"\"\n\n    def __init__(self, channels=3, window_hidden=128, window_features=64, stride=1, padding=0):\n        super().__init__()\n        self.stride = stride\n        self.padding = padding\n        self.add_module(\"0\", nn.Linear(channels * 4, window_hidden))\n        self.add_module(\"1\", nn.GELU())\n        self.add_module(\"2\", nn.Linear(window_hidden, window_features))\n        self.add_module(\"3\", nn.GELU())\n\n    def extract_windows(self, x):\n        \"\"\"Return (batch, output rows, output columns, C*2*2).\"\"\"\n        x = F.pad(x, (0, self.padding, 0, self.padding))\n        x = x.unfold(2, 2, self.stride).unfold(3, 2, self.stride)\n        return x.permute(0, 2, 3, 1, 4, 5).flatten(3)\n\n    def forward(self, x):\n        x = self.extract_windows(x)\n        x = self[0](x)\n        x = self[1](x)\n        x = self[2](x)\n        x = self[3](x)\n        return x.permute(0, 3, 1, 2)\n"
+        },
+        "validation_fraction": 0.1,
+        "training_examples": 1153051,
+        "validation_examples": 128116,
+        "selection_metric": "validation_accuracy",
+        "tie_break": "earliest_epoch",
+        "model": "ResidualMLP(\n  (window_mlps): ModuleList(\n    (0): RollingWindowBlock(\n      (0): Linear(in_features=12, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n    (1-5): 5 x RollingWindowBlock(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n  )\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-1): 2 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+        "augmentation": {
+          "task": "imagenet32",
+          "enabled": false,
+          "default": {
+            "rotation": {
+              "probability": 0.5,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.5,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.25,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.1
+            },
+            "noise": {
+              "probability": 0.25,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.1,
+              "amount": 0.05
+            },
+            "horizontal_flip": {
+              "probability": 0.5,
+              "amount": 1.0
+            }
+          },
+          "classes": {}
+        },
+        "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update"
+      },
+      "validation_accuracy": 0.22022229854194636,
+      "test_accuracy": 0.1996,
+      "completed": true,
+      "time": "2026-10-27 19:22",
+      "metrics": [
+        {
+          "epoch": "1",
+          "train_loss": "5.651390094627211",
+          "train_accuracy": "0.05411035591660733",
+          "validation_loss": "5.012927249523869",
+          "validation_accuracy": "0.096225295825658",
+          "elapsed_seconds": "53.23420758500015"
+        },
+        {
+          "epoch": "2",
+          "train_loss": "4.795927066539121",
+          "train_accuracy": "0.11880480568509112",
+          "validation_loss": "4.645189710887009",
+          "validation_accuracy": "0.13573636392019733",
+          "elapsed_seconds": "106.38813207099975"
+        },
+        {
+          "epoch": "3",
+          "train_loss": "4.518837848455966",
+          "train_accuracy": "0.14865170751337103",
+          "validation_loss": "4.489743181960098",
+          "validation_accuracy": "0.1530331886727653",
+          "elapsed_seconds": "159.47389104800004"
+        },
+        {
+          "epoch": "4",
+          "train_loss": "4.346639914453046",
+          "train_accuracy": "0.1690384900581154",
+          "validation_loss": "4.377584083955166",
+          "validation_accuracy": "0.16781666614630492",
+          "elapsed_seconds": "212.10947129499982"
+        },
+        {
+          "epoch": "5",
+          "train_loss": "4.219949074238694",
+          "train_accuracy": "0.18421995210966383",
+          "validation_loss": "4.303172027693653",
+          "validation_accuracy": "0.17788566611508322",
+          "elapsed_seconds": "264.6159804220001"
+        },
+        {
+          "epoch": "6",
+          "train_loss": "4.1176248925676315",
+          "train_accuracy": "0.19752812321397753",
+          "validation_loss": "4.24872673982953",
+          "validation_accuracy": "0.18624527771706892",
+          "elapsed_seconds": "317.03992013800007"
+        },
+        {
+          "epoch": "7",
+          "train_loss": "4.030322596311872",
+          "train_accuracy": "0.20821021793485284",
+          "validation_loss": "4.218092880670643",
+          "validation_accuracy": "0.19015579630959442",
+          "elapsed_seconds": "369.601476583"
+        },
+        {
+          "epoch": "8",
+          "train_loss": "3.9539465296851573",
+          "train_accuracy": "0.21799295954818998",
+          "validation_loss": "4.1532063715695156",
+          "validation_accuracy": "0.1993896156608074",
+          "elapsed_seconds": "421.5528916549997"
+        },
+        {
+          "epoch": "9",
+          "train_loss": "3.8860384319514054",
+          "train_accuracy": "0.22668901895926546",
+          "validation_loss": "4.133793788441725",
+          "validation_accuracy": "0.20147366449155452",
+          "elapsed_seconds": "473.74930642599975"
+        },
+        {
+          "epoch": "10",
+          "train_loss": "3.8238889693517457",
+          "train_accuracy": "0.23519428021830777",
+          "validation_loss": "4.121589028692747",
+          "validation_accuracy": "0.20391676293359143",
+          "elapsed_seconds": "526.1527588139998"
+        },
+        {
+          "epoch": "11",
+          "train_loss": "3.766441380303213",
+          "train_accuracy": "0.24275248883180361",
+          "validation_loss": "4.087350770005307",
+          "validation_accuracy": "0.20901370632863966",
+          "elapsed_seconds": "578.1273338329997"
+        },
+        {
+          "epoch": "12",
+          "train_loss": "3.7143513166373388",
+          "train_accuracy": "0.24966458552136897",
+          "validation_loss": "4.110718996846607",
+          "validation_accuracy": "0.20817072028474196",
+          "elapsed_seconds": "630.317121606"
+        },
+        {
+          "epoch": "13",
+          "train_loss": "3.665818337610392",
+          "train_accuracy": "0.25624625450218597",
+          "validation_loss": "4.079765846966811",
+          "validation_accuracy": "0.21165194042898622",
+          "elapsed_seconds": "682.7692279879998"
+        },
+        {
+          "epoch": "14",
+          "train_loss": "3.6201518840016615",
+          "train_accuracy": "0.2622902196000004",
+          "validation_loss": "4.081201557572824",
+          "validation_accuracy": "0.2138218489493896",
+          "elapsed_seconds": "734.8453167469997"
+        },
+        {
+          "epoch": "15",
+          "train_loss": "3.5792974465136407",
+          "train_accuracy": "0.2676152225703807",
+          "validation_loss": "4.0695963521340035",
+          "validation_accuracy": "0.21447750476131006",
+          "elapsed_seconds": "787.1649622720001"
+        },
+        {
+          "epoch": "16",
+          "train_loss": "3.537427442498207",
+          "train_accuracy": "0.2730685806612197",
+          "validation_loss": "4.088261321770895",
+          "validation_accuracy": "0.21599956289612537",
+          "elapsed_seconds": "839.4143013399998"
+        },
+        {
+          "epoch": "17",
+          "train_loss": "3.4995212700912623",
+          "train_accuracy": "0.2782947154982737",
+          "validation_loss": "4.079844876908426",
+          "validation_accuracy": "0.21600736832245776",
+          "elapsed_seconds": "891.3125728199998"
+        },
+        {
+          "epoch": "18",
+          "train_loss": "3.462416233106775",
+          "train_accuracy": "0.28363186016923797",
+          "validation_loss": "4.08443788246589",
+          "validation_accuracy": "0.2169596303350089",
+          "elapsed_seconds": "943.9178952889997"
+        },
+        {
+          "epoch": "19",
+          "train_loss": "3.426913033335039",
+          "train_accuracy": "0.28814857278645956",
+          "validation_loss": "4.087839828748947",
+          "validation_accuracy": "0.21811483343220206",
+          "elapsed_seconds": "995.6300742600001"
+        },
+        {
+          "epoch": "20",
+          "train_loss": "3.3964113469395545",
+          "train_accuracy": "0.2924649473440464",
+          "validation_loss": "4.12242567282775",
+          "validation_accuracy": "0.21609322801211403",
+          "elapsed_seconds": "1047.8478713119998"
+        },
+        {
+          "epoch": "21",
+          "train_loss": "3.3647232429441543",
+          "train_accuracy": "0.29651680628176896",
+          "validation_loss": "4.098614244122514",
+          "validation_accuracy": "0.21909051172375035",
+          "elapsed_seconds": "1100.3768707099998"
+        },
+        {
+          "epoch": "22",
+          "train_loss": "3.3337341539966574",
+          "train_accuracy": "0.30073691449901174",
+          "validation_loss": "4.1208065347029255",
+          "validation_accuracy": "0.21696743576134128",
+          "elapsed_seconds": "1152.0748464509998"
+        },
+        {
+          "epoch": "23",
+          "train_loss": "3.305215033853663",
+          "train_accuracy": "0.3049656953595288",
+          "validation_loss": "4.115573484186206",
+          "validation_accuracy": "0.22022229854194636",
+          "elapsed_seconds": "1203.8701130629997"
+        },
+        {
+          "epoch": "24",
+          "train_loss": "3.276143249518018",
+          "train_accuracy": "0.3089438368294204",
+          "validation_loss": "4.160140029348403",
+          "validation_accuracy": "0.21574198382715665",
+          "elapsed_seconds": "1256.148775218"
+        },
+        {
+          "epoch": "25",
+          "train_loss": "3.25202809762968",
+          "train_accuracy": "0.31164016162338004",
+          "validation_loss": "4.111426851447126",
+          "validation_accuracy": "0.21936370164538388",
+          "elapsed_seconds": "1308.1899949429999"
+        }
+      ],
+      "archive_origin": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model/runs/imagenet32-8856b095",
+      "training_receipt": {
+        "task": "imagenet32",
+        "seed": 0,
+        "stop_reason": "epochs",
+        "epochs_completed": 25,
+        "best_epoch": 23,
+        "best_validation_accuracy": 0.22022229854194636,
+        "training_seconds": 1308.76347636,
+        "max_seconds": 3600
+      }
+    },
+    {
+      "id": "imagenet32-continuation-20261027-013419-8e7bc688",
+      "config": {
+        "task": "imagenet32",
+        "seed": 42,
+        "device": "mps",
+        "epochs": 100,
+        "restored_from": null,
+        "batch_size": 256,
+        "learning_rate": 0.001,
+        "weight_decay": 1e-05,
+        "momentum": null,
+        "dampening": null,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "optimizer": "AdamW",
+        "loss": "CrossEntropyLoss()",
+        "optimizer_settings": {
+          "name": "AdamW",
+          "lr": 0.001,
+          "weight_decay": 1e-05,
+          "beta1": 0.9,
+          "beta2": 0.999,
+          "eps": 1e-08,
+          "amsgrad": true
+        },
+        "optimizer_groups": [
+          {
+            "optimizer": "AdamW",
+            "lr": 0.001,
+            "betas": [
+              0.9,
+              0.999
+            ],
+            "eps": 1e-08,
+            "weight_decay": 1e-05,
+            "amsgrad": true,
+            "maximize": false,
+            "foreach": null,
+            "capturable": false,
+            "differentiable": false,
+            "fused": null,
+            "decoupled_weight_decay": true,
+            "parameter_names": [
+              "window_mlps.0.0.weight",
+              "window_mlps.0.0.bias",
+              "window_mlps.0.2.weight",
+              "window_mlps.0.2.bias",
+              "window_mlps.1.0.weight",
+              "window_mlps.1.0.bias",
+              "window_mlps.1.2.weight",
+              "window_mlps.1.2.bias",
+              "window_mlps.2.0.weight",
+              "window_mlps.2.0.bias",
+              "window_mlps.2.2.weight",
+              "window_mlps.2.2.bias",
+              "window_mlps.3.0.weight",
+              "window_mlps.3.0.bias",
+              "window_mlps.3.2.weight",
+              "window_mlps.3.2.bias",
+              "window_mlps.4.0.weight",
+              "window_mlps.4.0.bias",
+              "window_mlps.4.2.weight",
+              "window_mlps.4.2.bias",
+              "window_mlps.5.0.weight",
+              "window_mlps.5.0.bias",
+              "window_mlps.5.2.weight",
+              "window_mlps.5.2.bias",
+              "input_layer.weight",
+              "input_layer.bias",
+              "blocks.0.input_norm.weight",
+              "blocks.0.input_norm.bias",
+              "blocks.0.value_up.weight",
+              "blocks.0.value_up.bias",
+              "blocks.0.value_norm.weight",
+              "blocks.0.value_norm.bias",
+              "blocks.0.gate_up.weight",
+              "blocks.0.gate_up.bias",
+              "blocks.0.gate_norm.weight",
+              "blocks.0.gate_norm.bias",
+              "blocks.0.down.weight",
+              "blocks.0.down.bias",
+              "blocks.1.input_norm.weight",
+              "blocks.1.input_norm.bias",
+              "blocks.1.value_up.weight",
+              "blocks.1.value_up.bias",
+              "blocks.1.value_norm.weight",
+              "blocks.1.value_norm.bias",
+              "blocks.1.gate_up.weight",
+              "blocks.1.gate_up.bias",
+              "blocks.1.gate_norm.weight",
+              "blocks.1.gate_norm.bias",
+              "blocks.1.down.weight",
+              "blocks.1.down.bias",
+              "head_fc2.weight",
+              "head_fc2.bias"
+            ],
+            "parameter_count": 3923048
+          }
+        ],
+        "learning_rate_schedule": "constant",
+        "shuffle": true,
+        "architecture": {
+          "width": 512,
+          "hidden": 1024,
+          "depth": 2,
+          "in_features": 3072,
+          "num_classes": 1000,
+          "normalization": [
+            "LayerNorm"
+          ],
+          "parameters": 3923048,
+          "window_size": 2,
+          "shrinking_stride": 2,
+          "window_strides": [
+            1,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "window_shapes": [
+            [
+              3,
+              32,
+              32
+            ],
+            [
+              64,
+              31,
+              31
+            ],
+            [
+              64,
+              16,
+              16
+            ],
+            [
+              64,
+              8,
+              8
+            ],
+            [
+              64,
+              4,
+              4
+            ],
+            [
+              64,
+              2,
+              2
+            ],
+            [
+              64,
+              1,
+              1
+            ]
+          ],
+          "window_hidden": 128,
+          "window_features": 64,
+          "window_order": "row, column, channel, dy, dx",
+          "window_padding": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "window_weight_sharing": "within each stage",
+          "window_aggregation": "hierarchical",
+          "functional_operations": [
+            "gelu",
+            "pad"
+          ]
+        },
+        "model_source": "@app.class_definition\nclass ResidualMLP(nn.Module):\n    # torch-canvas input x: e, channels, 32, 32\n    # torch-canvas sizes: in_features=3072, num_classes=10\n    \"\"\"Hierarchical shared window MLPs, followed by a residual classifier.\n\n    input -> sliding 2x2 windows, first stride 1, later shrinking_stride\n          -> shared Linear -> GELU -> Linear -> GELU per window\n          -> restore feature map and repeat until the spatial size is 1x1\n          -> flatten final features -> Linear into the backbone\n          -> depth x Block                           residual backbone, stays `width` wide\n          -> Linear(width -> num_classes)            classification head\n          -> logits (num_classes)\n\n    The head has no skip connection because its output size (num_classes)\n    differs from its input size (width), so the two cannot be added.\n    \"\"\"\n\n    def __init__(self, in_features, num_classes, width=512, depth=2, hidden=1024,\n                 dropout=0.1, window_hidden=128, window_features=64, shrinking_stride=2):\n        super().__init__()\n\n        if in_features != 784 and in_features != 3072:\n            raise ValueError(\"Expected MNIST (784) or RGB 32x32 (3072) input features\")\n        if shrinking_stride != 1 and shrinking_stride != 2:\n            raise ValueError(\"shrinking_stride must be 1 or 2\")\n        self.in_features = in_features\n        channels = 1 if in_features == 784 else 3\n        height = 28 if in_features == 784 else 32\n        image_width = height\n        self.image_shape = (channels, height, image_width)\n        self.window_size = 2\n        self.shrinking_stride = shrinking_stride\n        self.window_shapes = [self.image_shape]\n        self.window_strides = []\n        self.window_padding = []\n        self.window_mlps = nn.ModuleList()\n        stages = height - 1 if shrinking_stride == 1 else 6\n        for stage in range(stages):\n            stride = 1 if stage == 0 else shrinking_stride\n            self.window_strides.append(stride)\n            # Keep the final row/column when a stride-2 stage has odd size.\n            pad_height, pad_width = height % stride, image_width % stride\n            self.window_padding.append((pad_height, pad_width))\n            self.window_mlps.append(RollingWindowBlock(\n                channels, window_hidden, window_features, stride, pad_height))\n            height = (height + pad_height - self.window_size) // stride + 1\n            image_width = (image_width + pad_width - self.window_size) // stride + 1\n            channels = window_features\n            self.window_shapes.append((channels, height, image_width))\n\n        # Project the flattened window features down to the backbone width.\n        self.input_layer = nn.Linear(channels * height * image_width, width)\n        self.blocks = nn.ModuleList([Block19(width, hidden=hidden, dropout=dropout) for _ in range(depth)])\n        self.head_fc2 = nn.Linear(width, num_classes)\n\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\n        for layer in self.modules():\n            if isinstance(layer, nn.Linear):\n                nn.init.xavier_normal_(layer.weight)\n                nn.init.zeros_(layer.bias)\n\n    def extract_windows(self, x, stage=0):\n        \"\"\"Return (batch, positions, C*2*2), ordered by row, column, channel, dy, dx.\"\"\"\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.window_shapes[stage]:\n            raise ValueError(f\"Expected NCHW feature map (N, C, H, W) with C,H,W={self.window_shapes[stage]}\")\n        # Tensor.unfold only creates sliding views; it performs no learned operation.\n        return self.window_mlps[stage].extract_windows(x).flatten(1, 2)\n\n    def forward(self, x):\n        \"\"\"Training forward pass. Returns raw logits (no softmax).\n\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\n        \"\"\"\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.image_shape:\n            raise ValueError(f\"Expected NCHW images with C,H,W={self.image_shape}\")\n        for window_mlp in self.window_mlps:\n            x = window_mlp(x)\n        x = self.input_layer(x.flatten(1))\n        for blk in self.blocks:\n            x = blk(x)\n        return self.head_fc2(x)\n\n    def predict(self, x):\n        \"\"\"Inference pass, never used during training. Returns class probabilities.\"\"\"\n        self.eval()                           # switch layers to inference behavior\n        with torch.no_grad():                 # no gradients needed at inference\n            return torch.softmax(self.forward(x), dim=1)\n",
+        "block_source": "@app.class_definition\nclass Block19(nn.Module):\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\n        super().__init__()\n        self.input_norm = nn.LayerNorm(width)\n        self.value_up = nn.Linear(width, hidden)\n        self.value_norm = nn.LayerNorm(hidden)\n        self.gate_up = nn.Linear(width, hidden)\n        self.gate_norm = nn.LayerNorm(hidden)\n        self.down = nn.Linear(hidden, width)\n        self.dropout = nn.Dropout(p=dropout)\n\n    def forward(self, x):\n        normalized = self.input_norm(x)\n        h = self.value_up(normalized)\n        value = self.value_norm(h)\n        a = F.gelu(self.gate_up(normalized))\n        gate = self.gate_norm(a)\n        gated = value * gate\n        return x + self.dropout(self.down(gated))\n",
+        "support_sources": {
+          "RollingWindowBlock": "@app.class_definition\nclass RollingWindowBlock(nn.Sequential):\n    \"\"\"Gather padded 2x2 windows, apply a shared MLP, and return an NCHW map.\n\n    Numeric module names preserve existing window_mlps checkpoint keys.\n    \"\"\"\n\n    def __init__(self, channels=3, window_hidden=128, window_features=64, stride=1, padding=0):\n        super().__init__()\n        self.stride = stride\n        self.padding = padding\n        self.add_module(\"0\", nn.Linear(channels * 4, window_hidden))\n        self.add_module(\"1\", nn.GELU())\n        self.add_module(\"2\", nn.Linear(window_hidden, window_features))\n        self.add_module(\"3\", nn.GELU())\n\n    def extract_windows(self, x):\n        \"\"\"Return (batch, output rows, output columns, C*2*2).\"\"\"\n        x = F.pad(x, (0, self.padding, 0, self.padding))\n        x = x.unfold(2, 2, self.stride).unfold(3, 2, self.stride)\n        return x.permute(0, 2, 3, 1, 4, 5).flatten(3)\n\n    def forward(self, x):\n        x = self.extract_windows(x)\n        x = self[0](x)\n        x = self[1](x)\n        x = self[2](x)\n        x = self[3](x)\n        return x.permute(0, 3, 1, 2)\n"
+        },
+        "validation_fraction": 0.1,
+        "training_examples": 1153051,
+        "validation_examples": 128116,
+        "selection_metric": "validation_accuracy",
+        "tie_break": "earliest_epoch",
+        "model": "ResidualMLP(\n  (window_mlps): ModuleList(\n    (0): RollingWindowBlock(\n      (0): Linear(in_features=12, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n    (1-5): 5 x RollingWindowBlock(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n  )\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-1): 2 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+        "augmentation": {
+          "task": "imagenet32",
+          "enabled": false,
+          "default": {
+            "rotation": {
+              "probability": 0.0,
+              "amount": 10.0
+            },
+            "translation": {
+              "probability": 0.5,
+              "amount": 2.0
+            },
+            "scale": {
+              "probability": 0.0,
+              "amount": 0.1
+            },
+            "shear": {
+              "probability": 0.0,
+              "amount": 5.0
+            },
+            "brightness": {
+              "probability": 0.25,
+              "amount": 0.2
+            },
+            "noise": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "erasing": {
+              "probability": 0.0,
+              "amount": 0.05
+            },
+            "horizontal_flip": {
+              "probability": 0.5,
+              "amount": 1.0
+            }
+          },
+          "classes": {}
+        },
+        "train_accuracy_kind": "training-batch predictions (augmented when enabled), before each batch update",
+        "continuation": {
+          "parent_run": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model/runs/imagenet32-20261027-000850-1c570f4f",
+          "parent_epoch": 10,
+          "origin_epoch": 10,
+          "parent_checkpoint_sha256": "c116eb7de05312a4bc2263d7710f28642b79ac7bfaf34280dd516cec4fd30213",
+          "optimizer_state_restored": false,
+          "rng_state_restored": false,
+          "optimizer_note": "Fresh AdamW state; parent saved weights only",
+          "criterion": "Three successive 3-epoch mean validation-loss regressions >1% above minimum while train loss falls"
+        }
+      },
+      "validation_accuracy": 0.2198086109463299,
+      "test_accuracy": 0.20004,
+      "completed": true,
+      "time": "2026-10-27 02:48:53",
+      "metrics": [
+        {
+          "epoch": "1",
+          "train_loss": "5.691792036952399",
+          "train_accuracy": "0.052755689037171816",
+          "validation_loss": "5.054591639607855",
+          "validation_accuracy": "0.09489837334915233",
+          "elapsed_seconds": "481.65460337500554"
+        },
+        {
+          "epoch": "2",
+          "train_loss": "4.825300442044628",
+          "train_accuracy": "0.11615531316481231",
+          "validation_loss": "4.688935710606013",
+          "validation_accuracy": "0.13181803990133942",
+          "elapsed_seconds": "970.6833786249626"
+        },
+        {
+          "epoch": "3",
+          "train_loss": "4.532418340559091",
+          "train_accuracy": "0.1476101230561354",
+          "validation_loss": "4.505179388210684",
+          "validation_accuracy": "0.15342345998938461",
+          "elapsed_seconds": "1410.3606987500098"
+        },
+        {
+          "epoch": "4",
+          "train_loss": "4.3586719060995565",
+          "train_accuracy": "0.16806802127572848",
+          "validation_loss": "4.3987289838896",
+          "validation_accuracy": "0.16672390645977084",
+          "elapsed_seconds": "1865.6929895000067"
+        },
+        {
+          "epoch": "5",
+          "train_loss": "4.230320254698188",
+          "train_accuracy": "0.1828644179659009",
+          "validation_loss": "4.296737917200037",
+          "validation_accuracy": "0.1794233351025633",
+          "elapsed_seconds": "2270.3221740419976"
+        },
+        {
+          "epoch": "6",
+          "train_loss": "4.125450652226138",
+          "train_accuracy": "0.1961214204748966",
+          "validation_loss": "4.2327714727278405",
+          "validation_accuracy": "0.1863155265540604",
+          "elapsed_seconds": "2653.424380167038"
+        },
+        {
+          "epoch": "7",
+          "train_loss": "4.036370030466996",
+          "train_accuracy": "0.20772108085418597",
+          "validation_loss": "4.205913000718099",
+          "validation_accuracy": "0.19149832963876487",
+          "elapsed_seconds": "2931.880226999987"
+        },
+        {
+          "epoch": "8",
+          "train_loss": "3.959365197202899",
+          "train_accuracy": "0.21770155873417568",
+          "validation_loss": "4.162392870523588",
+          "validation_accuracy": "0.19731337225639264",
+          "elapsed_seconds": "3183.5450135000283"
+        },
+        {
+          "epoch": "9",
+          "train_loss": "3.8894628251482373",
+          "train_accuracy": "0.2264756719347193",
+          "validation_loss": "4.137444288769553",
+          "validation_accuracy": "0.20219176371413405",
+          "elapsed_seconds": "3445.4936328340555"
+        },
+        {
+          "epoch": "10",
+          "train_loss": "3.8269651559211173",
+          "train_accuracy": "0.2348890031750547",
+          "validation_loss": "4.1167799103937055",
+          "validation_accuracy": "0.20493927378313403",
+          "elapsed_seconds": "3707.713767500012"
+        },
+        {
+          "epoch": "11",
+          "train_loss": "3.849317159431803",
+          "train_accuracy": "0.23124475847122114",
+          "validation_loss": "4.1434705657373",
+          "validation_accuracy": "0.20127852883324487",
+          "elapsed_seconds": "4203.898308624979"
+        },
+        {
+          "epoch": "12",
+          "train_loss": "3.7781416433444837",
+          "train_accuracy": "0.24085317995474614",
+          "validation_loss": "4.126002997283711",
+          "validation_accuracy": "0.2055871241687221",
+          "elapsed_seconds": "4768.01129120891"
+        },
+        {
+          "epoch": "13",
+          "train_loss": "3.708998561208481",
+          "train_accuracy": "0.2505474606066861",
+          "validation_loss": "4.121542196134753",
+          "validation_accuracy": "0.20725748540385275",
+          "elapsed_seconds": "5260.008129541995"
+        },
+        {
+          "epoch": "14",
+          "train_loss": "3.649090543263047",
+          "train_accuracy": "0.2581039346915271",
+          "validation_loss": "4.1182805036061065",
+          "validation_accuracy": "0.2105904024477817",
+          "elapsed_seconds": "5544.460422166972"
+        },
+        {
+          "epoch": "15",
+          "train_loss": "3.5964640766106615",
+          "train_accuracy": "0.2653351846535843",
+          "validation_loss": "4.087842755783821",
+          "validation_accuracy": "0.21339255050110836",
+          "elapsed_seconds": "5792.931930833962"
+        },
+        {
+          "epoch": "16",
+          "train_loss": "3.5460432799589956",
+          "train_accuracy": "0.27188736664726887",
+          "validation_loss": "4.079126777685847",
+          "validation_accuracy": "0.2164444721970714",
+          "elapsed_seconds": "6021.483105459018"
+        },
+        {
+          "epoch": "17",
+          "train_loss": "3.4995429516994476",
+          "train_accuracy": "0.2783415477719546",
+          "validation_loss": "4.105422039401792",
+          "validation_accuracy": "0.2137750163913953",
+          "elapsed_seconds": "6249.52575337491"
+        },
+        {
+          "epoch": "18",
+          "train_loss": "3.4567753291051306",
+          "train_accuracy": "0.28486511004283416",
+          "validation_loss": "4.094216862062506",
+          "validation_accuracy": "0.21521121483655437",
+          "elapsed_seconds": "6477.692750124959"
+        },
+        {
+          "epoch": "19",
+          "train_loss": "3.4155484015884814",
+          "train_accuracy": "0.2899047830494922",
+          "validation_loss": "4.100532915482844",
+          "validation_accuracy": "0.21738892878329014",
+          "elapsed_seconds": "6705.73199612496"
+        },
+        {
+          "epoch": "20",
+          "train_loss": "3.3758699745284466",
+          "train_accuracy": "0.29486553500235463",
+          "validation_loss": "4.101080758843548",
+          "validation_accuracy": "0.21742795591495206",
+          "elapsed_seconds": "6934.1712793339975"
+        },
+        {
+          "epoch": "21",
+          "train_loss": "3.3537380393408442",
+          "train_accuracy": "0.29875955183248615",
+          "validation_loss": "4.103266766055762",
+          "validation_accuracy": "0.21855193730681569",
+          "elapsed_seconds": "7162.590538042015"
+        },
+        {
+          "epoch": "22",
+          "train_loss": "3.32041384119176",
+          "train_accuracy": "0.3029050753175705",
+          "validation_loss": "4.104763944394143",
+          "validation_accuracy": "0.21806019544787536",
+          "elapsed_seconds": "7391.092549874913"
+        },
+        {
+          "epoch": "23",
+          "train_loss": "3.287712989278011",
+          "train_accuracy": "0.3073992390622791",
+          "validation_loss": "4.151878961253864",
+          "validation_accuracy": "0.21711573886165664",
+          "elapsed_seconds": "7619.546027667006"
+        },
+        {
+          "epoch": "24",
+          "train_loss": "3.2566367402656082",
+          "train_accuracy": "0.31203823594966745",
+          "validation_loss": "4.155434820787411",
+          "validation_accuracy": "0.21881732180211683",
+          "elapsed_seconds": "7848.079904583981"
+        },
+        {
+          "epoch": "25",
+          "train_loss": "3.2293552063178472",
+          "train_accuracy": "0.31553678024649384",
+          "validation_loss": "4.105812310718411",
+          "validation_accuracy": "0.2198086109463299",
+          "elapsed_seconds": "8076.2880255419295"
+        }
+      ],
+      "archive_origin": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model/runs/imagenet32-continuation-20261027-013419-8e7bc688"
+    }
+  ],
+  "legacy_rows": [
+    {
+      "time": "2026-10-26 20:40:56",
+      "package_url": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model",
+      "import_name": "residual_mlp_baseline",
+      "task": "imagenet32",
+      "accuracy": "0.1111",
+      "train_minutes": "42.2",
+      "seed": "42",
+      "train_accuracy": "0.1876",
+      "best_epoch": "10",
+      "validation_accuracy": "0.1216",
+      "run_dir": "runs/imagenet32-20261026-195826-4b2dc142",
+      "test_accuracy": "0.1111",
+      "device": "mps",
+      "epochs_completed": "10",
+      "epochs": "10",
+      "batch_size": "256",
+      "learning_rate": "0.03",
+      "weight_decay": "1e-05",
+      "momentum": "0.95",
+      "dampening": "",
+      "optimizer": "Muon",
+      "loss": "CrossEntropyLoss()",
+      "learning_rate_schedule": "constant",
+      "shuffle": "True",
+      "validation_fraction": "0.1",
+      "training_examples": "1153051",
+      "validation_examples": "128116",
+      "test_examples": "50000",
+      "width": "512",
+      "hidden": "1024",
+      "depth": "6",
+      "functional_operations": "['gelu']",
+      "in_features": "3072",
+      "num_classes": "1000",
+      "normalization": "['LayerNorm']",
+      "parameters": "11569640",
+      "augmentation": "{\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.2, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.0}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.0}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.0}, \"scale\": {\"amount\": 0.1, \"probability\": 0.0}, \"shear\": {\"amount\": 5.0, \"probability\": 0.0}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}",
+      "model": "ResidualMLP(\n  (input_layer): Linear(in_features=3072, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-5): 6 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+      "hyperparameters": "{\"architecture\": {\"depth\": 6, \"functional_operations\": [\"gelu\"], \"hidden\": 1024, \"in_features\": 3072, \"normalization\": [\"LayerNorm\"], \"num_classes\": 1000, \"parameters\": 11569640, \"width\": 512}, \"augmentation\": {\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.2, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.0}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.0}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.0}, \"scale\": {\"amount\": 0.1, \"probability\": 0.0}, \"shear\": {\"amount\": 5.0, \"probability\": 0.0}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}, \"batch_size\": 256, \"betas\": null, \"block_source\": \"@app.class_definition\\nclass Block19(nn.Module):\\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\\n        super().__init__()\\n        self.input_norm = nn.LayerNorm(width)\\n        self.value_up = nn.Linear(width, hidden)\\n        self.value_norm = nn.LayerNorm(hidden)\\n        self.gate_up = nn.Linear(width, hidden)\\n        self.gate_norm = nn.LayerNorm(hidden)\\n        self.down = nn.Linear(hidden, width)\\n        self.dropout = nn.Dropout(p=dropout)\\n\\n    def forward(self, x):\\n        normalized = self.input_norm(x)\\n        h = self.value_up(normalized)\\n        value = self.value_norm(h)\\n        a = F.gelu(self.gate_up(normalized))\\n        gate = self.gate_norm(a)\\n        gated = value * gate\\n        return self.dropout(self.down(gated))\\n\", \"dampening\": null, \"device\": \"mps\", \"epochs\": 10, \"eps\": 1e-07, \"learning_rate\": 0.03, \"learning_rate_schedule\": \"constant\", \"loss\": \"CrossEntropyLoss()\", \"model\": \"ResidualMLP(\\n  (input_layer): Linear(in_features=3072, out_features=512, bias=True)\\n  (blocks): ModuleList(\\n    (0-5): 6 x Block19(\\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (down): Linear(in_features=1024, out_features=512, bias=True)\\n      (dropout): Dropout(p=0.1, inplace=False)\\n    )\\n  )\\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\\n)\", \"model_source\": \"@app.class_definition\\nclass ResidualMLP(nn.Module):\\n    # torch-canvas input x: e, 3, 32, 32\\n    # torch-canvas sizes: in_features=3072, num_classes=10\\n    \\\"\\\"\\\"Baseline residual MLP.\\n\\n    input -> Linear(in_features -> width)            project into the backbone\\n          -> depth x Block                           residual backbone, stays `width` wide\\n          -> LayerNorm -> Linear -> GELU -> Linear   head: a block without the skip\\n          -> logits (num_classes)\\n\\n    The head has no skip connection because its output size (num_classes)\\n    differs from its input size (width), so the two cannot be added.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1):\\n        super().__init__()\\n\\n        # Project the flattened image down to the backbone width.\\n        self.input_layer = nn.Linear(in_features, width)\\n        self.blocks = nn.ModuleList([Block19(width, hidden1, dropout=dropout) for _ in range(depth)])\\n        self.head_fc2 = nn.Linear(width, num_classes)\\n\\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\\n        for layer in self.modules():\\n            if isinstance(layer, nn.Linear):\\n                nn.init.xavier_normal_(layer.weight)\\n                nn.init.zeros_(layer.bias)\\n\\n    def forward(self, x):\\n        \\\"\\\"\\\"Training forward pass. Returns raw logits (no softmax).\\n\\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\\n        \\\"\\\"\\\"\\n        x = x.flatten(1)\\n        x = self.input_layer(x)\\n        for blk in self.blocks:\\n            x = blk(x)\\n        return self.head_fc2(x)\\n\\n    def predict(self, x):\\n        \\\"\\\"\\\"Inference pass, never used during training. Returns class probabilities.\\\"\\\"\\\"\\n        self.eval()                           # switch layers to inference behavior\\n        with torch.no_grad():                 # no gradients needed at inference\\n            return torch.softmax(self.forward(x), dim=1)\\n\", \"momentum\": 0.95, \"optimizer\": \"Muon\", \"optimizer_groups\": [{\"adjust_lr_fn\": \"original\", \"eps\": 1e-07, \"lr\": 0.03, \"momentum\": 0.95, \"nesterov\": true, \"ns_coefficients\": [3.4445, -4.775, 2.0315], \"ns_steps\": 5, \"optimizer\": \"Muon\", \"parameter_count\": 9437184, \"parameter_names\": [\"blocks.0.value_up.weight\", \"blocks.0.gate_up.weight\", \"blocks.0.down.weight\", \"blocks.1.value_up.weight\", \"blocks.1.gate_up.weight\", \"blocks.1.down.weight\", \"blocks.2.value_up.weight\", \"blocks.2.gate_up.weight\", \"blocks.2.down.weight\", \"blocks.3.value_up.weight\", \"blocks.3.gate_up.weight\", \"blocks.3.down.weight\", \"blocks.4.value_up.weight\", \"blocks.4.gate_up.weight\", \"blocks.4.down.weight\", \"blocks.5.value_up.weight\", \"blocks.5.gate_up.weight\", \"blocks.5.down.weight\"], \"weight_decay\": 1e-05}, {\"amsgrad\": false, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 2132456, \"parameter_names\": [\"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.bias\", \"blocks.2.input_norm.weight\", \"blocks.2.input_norm.bias\", \"blocks.2.value_up.bias\", \"blocks.2.value_norm.weight\", \"blocks.2.value_norm.bias\", \"blocks.2.gate_up.bias\", \"blocks.2.gate_norm.weight\", \"blocks.2.gate_norm.bias\", \"blocks.2.down.bias\", \"blocks.3.input_norm.weight\", \"blocks.3.input_norm.bias\", \"blocks.3.value_up.bias\", \"blocks.3.value_norm.weight\", \"blocks.3.value_norm.bias\", \"blocks.3.gate_up.bias\", \"blocks.3.gate_norm.weight\", \"blocks.3.gate_norm.bias\", \"blocks.3.down.bias\", \"blocks.4.input_norm.weight\", \"blocks.4.input_norm.bias\", \"blocks.4.value_up.bias\", \"blocks.4.value_norm.weight\", \"blocks.4.value_norm.bias\", \"blocks.4.gate_up.bias\", \"blocks.4.gate_norm.weight\", \"blocks.4.gate_norm.bias\", \"blocks.4.down.bias\", \"blocks.5.input_norm.weight\", \"blocks.5.input_norm.bias\", \"blocks.5.value_up.bias\", \"blocks.5.value_norm.weight\", \"blocks.5.value_norm.bias\", \"blocks.5.gate_up.bias\", \"blocks.5.gate_norm.weight\", \"blocks.5.gate_norm.bias\", \"blocks.5.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}], \"optimizer_settings\": {\"adjust_lr_fn\": \"original\", \"auxiliary_beta1\": 0.9, \"auxiliary_beta2\": 0.999, \"auxiliary_eps\": 1e-08, \"auxiliary_lr\": 0.001, \"auxiliary_weight_decay\": 1e-05, \"eps\": 1e-07, \"lr\": 0.03, \"momentum\": 0.95, \"name\": \"Muon\", \"nesterov\": true, \"ns_steps\": 5, \"weight_decay\": 1e-05}, \"restored_from\": null, \"seed\": 42, \"selection_metric\": \"validation_accuracy\", \"shuffle\": true, \"task\": \"imagenet32\", \"tie_break\": \"earliest_epoch\", \"train_accuracy_kind\": \"training-batch predictions (augmented when enabled), before each batch update\", \"training_examples\": 1153051, \"validation_examples\": 128116, \"validation_fraction\": 0.1, \"weight_decay\": 1e-05}",
+      "per_class_accuracy_file": "runs/imagenet32-20261026-195826-4b2dc142/per_class_accuracy.md",
+      "betas": "",
+      "eps": "1e-07",
+      "optimizer_settings": "{\"adjust_lr_fn\": \"original\", \"auxiliary_beta1\": 0.9, \"auxiliary_beta2\": 0.999, \"auxiliary_eps\": 1e-08, \"auxiliary_lr\": 0.001, \"auxiliary_weight_decay\": 1e-05, \"eps\": 1e-07, \"lr\": 0.03, \"momentum\": 0.95, \"name\": \"Muon\", \"nesterov\": true, \"ns_steps\": 5, \"weight_decay\": 1e-05}",
+      "optimizer_groups": "[{\"adjust_lr_fn\": \"original\", \"eps\": 1e-07, \"lr\": 0.03, \"momentum\": 0.95, \"nesterov\": true, \"ns_coefficients\": [3.4445, -4.775, 2.0315], \"ns_steps\": 5, \"optimizer\": \"Muon\", \"parameter_count\": 9437184, \"parameter_names\": [\"blocks.0.value_up.weight\", \"blocks.0.gate_up.weight\", \"blocks.0.down.weight\", \"blocks.1.value_up.weight\", \"blocks.1.gate_up.weight\", \"blocks.1.down.weight\", \"blocks.2.value_up.weight\", \"blocks.2.gate_up.weight\", \"blocks.2.down.weight\", \"blocks.3.value_up.weight\", \"blocks.3.gate_up.weight\", \"blocks.3.down.weight\", \"blocks.4.value_up.weight\", \"blocks.4.gate_up.weight\", \"blocks.4.down.weight\", \"blocks.5.value_up.weight\", \"blocks.5.gate_up.weight\", \"blocks.5.down.weight\"], \"weight_decay\": 1e-05}, {\"amsgrad\": false, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 2132456, \"parameter_names\": [\"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.bias\", \"blocks.2.input_norm.weight\", \"blocks.2.input_norm.bias\", \"blocks.2.value_up.bias\", \"blocks.2.value_norm.weight\", \"blocks.2.value_norm.bias\", \"blocks.2.gate_up.bias\", \"blocks.2.gate_norm.weight\", \"blocks.2.gate_norm.bias\", \"blocks.2.down.bias\", \"blocks.3.input_norm.weight\", \"blocks.3.input_norm.bias\", \"blocks.3.value_up.bias\", \"blocks.3.value_norm.weight\", \"blocks.3.value_norm.bias\", \"blocks.3.gate_up.bias\", \"blocks.3.gate_norm.weight\", \"blocks.3.gate_norm.bias\", \"blocks.3.down.bias\", \"blocks.4.input_norm.weight\", \"blocks.4.input_norm.bias\", \"blocks.4.value_up.bias\", \"blocks.4.value_norm.weight\", \"blocks.4.value_norm.bias\", \"blocks.4.gate_up.bias\", \"blocks.4.gate_norm.weight\", \"blocks.4.gate_norm.bias\", \"blocks.4.down.bias\", \"blocks.5.input_norm.weight\", \"blocks.5.input_norm.bias\", \"blocks.5.value_up.bias\", \"blocks.5.value_norm.weight\", \"blocks.5.value_norm.bias\", \"blocks.5.gate_up.bias\", \"blocks.5.gate_norm.weight\", \"blocks.5.gate_norm.bias\", \"blocks.5.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}]",
+      "restored_from_run": "",
+      "window_size": "",
+      "shrinking_stride": "",
+      "window_strides": "",
+      "window_shapes": "",
+      "window_hidden": "",
+      "window_features": "",
+      "window_order": "",
+      "window_padding": "",
+      "window_weight_sharing": "",
+      "window_aggregation": ""
+    },
+    {
+      "time": "2026-10-26 22:58:27",
+      "package_url": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model",
+      "import_name": "residual_mlp_baseline",
+      "task": "imagenet32",
+      "accuracy": "0.1165",
+      "train_minutes": "114.6",
+      "seed": "42",
+      "train_accuracy": "0.2814",
+      "best_epoch": "17",
+      "validation_accuracy": "0.1273",
+      "run_dir": "runs/imagenet32-20261026-210325-b9c04e03",
+      "test_accuracy": "0.1165",
+      "device": "mps",
+      "epochs_completed": "20",
+      "epochs": "20",
+      "batch_size": "256",
+      "learning_rate": "0.03",
+      "weight_decay": "1e-05",
+      "momentum": "0.95",
+      "dampening": "",
+      "optimizer": "Muon",
+      "loss": "CrossEntropyLoss()",
+      "learning_rate_schedule": "constant",
+      "shuffle": "True",
+      "validation_fraction": "0.1",
+      "training_examples": "1153051",
+      "validation_examples": "128116",
+      "test_examples": "50000",
+      "width": "512",
+      "hidden": "1024",
+      "depth": "6",
+      "functional_operations": "['gelu']",
+      "in_features": "3072",
+      "num_classes": "1000",
+      "normalization": "['LayerNorm']",
+      "parameters": "11569640",
+      "augmentation": "{\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.2, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.0}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.0}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.0}, \"scale\": {\"amount\": 0.1, \"probability\": 0.0}, \"shear\": {\"amount\": 5.0, \"probability\": 0.0}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}",
+      "model": "ResidualMLP(\n  (input_layer): Linear(in_features=3072, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-5): 6 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+      "hyperparameters": "{\"architecture\": {\"depth\": 6, \"functional_operations\": [\"gelu\"], \"hidden\": 1024, \"in_features\": 3072, \"normalization\": [\"LayerNorm\"], \"num_classes\": 1000, \"parameters\": 11569640, \"width\": 512}, \"augmentation\": {\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.2, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.0}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.0}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.0}, \"scale\": {\"amount\": 0.1, \"probability\": 0.0}, \"shear\": {\"amount\": 5.0, \"probability\": 0.0}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}, \"batch_size\": 256, \"betas\": null, \"block_source\": \"@app.class_definition\\nclass Block19(nn.Module):\\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\\n        super().__init__()\\n        self.input_norm = nn.LayerNorm(width)\\n        self.value_up = nn.Linear(width, hidden)\\n        self.value_norm = nn.LayerNorm(hidden)\\n        self.gate_up = nn.Linear(width, hidden)\\n        self.gate_norm = nn.LayerNorm(hidden)\\n        self.down = nn.Linear(hidden, width)\\n        self.dropout = nn.Dropout(p=dropout)\\n\\n    def forward(self, x):\\n        normalized = self.input_norm(x)\\n        h = self.value_up(normalized)\\n        value = self.value_norm(h)\\n        a = F.gelu(self.gate_up(normalized))\\n        gate = self.gate_norm(a)\\n        gated = value * gate\\n        return self.dropout(self.down(gated))\\n\", \"dampening\": null, \"device\": \"mps\", \"epochs\": 20, \"eps\": 1e-07, \"learning_rate\": 0.03, \"learning_rate_schedule\": \"constant\", \"loss\": \"CrossEntropyLoss()\", \"model\": \"ResidualMLP(\\n  (input_layer): Linear(in_features=3072, out_features=512, bias=True)\\n  (blocks): ModuleList(\\n    (0-5): 6 x Block19(\\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (down): Linear(in_features=1024, out_features=512, bias=True)\\n      (dropout): Dropout(p=0.1, inplace=False)\\n    )\\n  )\\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\\n)\", \"model_source\": \"@app.class_definition\\nclass ResidualMLP(nn.Module):\\n    # torch-canvas input x: e, 3, 32, 32\\n    # torch-canvas sizes: in_features=3072, num_classes=10\\n    \\\"\\\"\\\"Baseline residual MLP.\\n\\n    input -> Linear(in_features -> width)            project into the backbone\\n          -> depth x Block                           residual backbone, stays `width` wide\\n          -> LayerNorm -> Linear -> GELU -> Linear   head: a block without the skip\\n          -> logits (num_classes)\\n\\n    The head has no skip connection because its output size (num_classes)\\n    differs from its input size (width), so the two cannot be added.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, in_features, num_classes, width=512, depth=6, h1=256, h3=256, hidden1=512, dropout=0.1):\\n        super().__init__()\\n\\n        # Project the flattened image down to the backbone width.\\n        self.input_layer = nn.Linear(in_features, width)\\n        self.blocks = nn.ModuleList([Block19(width, hidden1, dropout=dropout) for _ in range(depth)])\\n        self.head_fc2 = nn.Linear(width, num_classes)\\n\\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\\n        for layer in self.modules():\\n            if isinstance(layer, nn.Linear):\\n                nn.init.xavier_normal_(layer.weight)\\n                nn.init.zeros_(layer.bias)\\n\\n    def forward(self, x):\\n        \\\"\\\"\\\"Training forward pass. Returns raw logits (no softmax).\\n\\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\\n        \\\"\\\"\\\"\\n        x = x.flatten(1)\\n        x = self.input_layer(x)\\n        for blk in self.blocks:\\n            x = blk(x)\\n        return self.head_fc2(x)\\n\\n    def predict(self, x):\\n        \\\"\\\"\\\"Inference pass, never used during training. Returns class probabilities.\\\"\\\"\\\"\\n        self.eval()                           # switch layers to inference behavior\\n        with torch.no_grad():                 # no gradients needed at inference\\n            return torch.softmax(self.forward(x), dim=1)\\n\", \"momentum\": 0.95, \"optimizer\": \"Muon\", \"optimizer_groups\": [{\"adjust_lr_fn\": \"original\", \"eps\": 1e-07, \"lr\": 0.03, \"momentum\": 0.95, \"nesterov\": true, \"ns_coefficients\": [3.4445, -4.775, 2.0315], \"ns_steps\": 5, \"optimizer\": \"Muon\", \"parameter_count\": 9437184, \"parameter_names\": [\"blocks.0.value_up.weight\", \"blocks.0.gate_up.weight\", \"blocks.0.down.weight\", \"blocks.1.value_up.weight\", \"blocks.1.gate_up.weight\", \"blocks.1.down.weight\", \"blocks.2.value_up.weight\", \"blocks.2.gate_up.weight\", \"blocks.2.down.weight\", \"blocks.3.value_up.weight\", \"blocks.3.gate_up.weight\", \"blocks.3.down.weight\", \"blocks.4.value_up.weight\", \"blocks.4.gate_up.weight\", \"blocks.4.down.weight\", \"blocks.5.value_up.weight\", \"blocks.5.gate_up.weight\", \"blocks.5.down.weight\"], \"weight_decay\": 1e-05}, {\"amsgrad\": false, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 2132456, \"parameter_names\": [\"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.bias\", \"blocks.2.input_norm.weight\", \"blocks.2.input_norm.bias\", \"blocks.2.value_up.bias\", \"blocks.2.value_norm.weight\", \"blocks.2.value_norm.bias\", \"blocks.2.gate_up.bias\", \"blocks.2.gate_norm.weight\", \"blocks.2.gate_norm.bias\", \"blocks.2.down.bias\", \"blocks.3.input_norm.weight\", \"blocks.3.input_norm.bias\", \"blocks.3.value_up.bias\", \"blocks.3.value_norm.weight\", \"blocks.3.value_norm.bias\", \"blocks.3.gate_up.bias\", \"blocks.3.gate_norm.weight\", \"blocks.3.gate_norm.bias\", \"blocks.3.down.bias\", \"blocks.4.input_norm.weight\", \"blocks.4.input_norm.bias\", \"blocks.4.value_up.bias\", \"blocks.4.value_norm.weight\", \"blocks.4.value_norm.bias\", \"blocks.4.gate_up.bias\", \"blocks.4.gate_norm.weight\", \"blocks.4.gate_norm.bias\", \"blocks.4.down.bias\", \"blocks.5.input_norm.weight\", \"blocks.5.input_norm.bias\", \"blocks.5.value_up.bias\", \"blocks.5.value_norm.weight\", \"blocks.5.value_norm.bias\", \"blocks.5.gate_up.bias\", \"blocks.5.gate_norm.weight\", \"blocks.5.gate_norm.bias\", \"blocks.5.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}], \"optimizer_settings\": {\"adjust_lr_fn\": \"original\", \"auxiliary_beta1\": 0.9, \"auxiliary_beta2\": 0.999, \"auxiliary_eps\": 1e-08, \"auxiliary_lr\": 0.001, \"auxiliary_weight_decay\": 1e-05, \"eps\": 1e-07, \"lr\": 0.03, \"momentum\": 0.95, \"name\": \"Muon\", \"nesterov\": true, \"ns_steps\": 5, \"weight_decay\": 1e-05}, \"restored_from\": null, \"seed\": 42, \"selection_metric\": \"validation_accuracy\", \"shuffle\": true, \"task\": \"imagenet32\", \"tie_break\": \"earliest_epoch\", \"train_accuracy_kind\": \"training-batch predictions (augmented when enabled), before each batch update\", \"training_examples\": 1153051, \"validation_examples\": 128116, \"validation_fraction\": 0.1, \"weight_decay\": 1e-05}",
+      "per_class_accuracy_file": "runs/imagenet32-20261026-210325-b9c04e03/per_class_accuracy.md",
+      "betas": "",
+      "eps": "1e-07",
+      "optimizer_settings": "{\"adjust_lr_fn\": \"original\", \"auxiliary_beta1\": 0.9, \"auxiliary_beta2\": 0.999, \"auxiliary_eps\": 1e-08, \"auxiliary_lr\": 0.001, \"auxiliary_weight_decay\": 1e-05, \"eps\": 1e-07, \"lr\": 0.03, \"momentum\": 0.95, \"name\": \"Muon\", \"nesterov\": true, \"ns_steps\": 5, \"weight_decay\": 1e-05}",
+      "optimizer_groups": "[{\"adjust_lr_fn\": \"original\", \"eps\": 1e-07, \"lr\": 0.03, \"momentum\": 0.95, \"nesterov\": true, \"ns_coefficients\": [3.4445, -4.775, 2.0315], \"ns_steps\": 5, \"optimizer\": \"Muon\", \"parameter_count\": 9437184, \"parameter_names\": [\"blocks.0.value_up.weight\", \"blocks.0.gate_up.weight\", \"blocks.0.down.weight\", \"blocks.1.value_up.weight\", \"blocks.1.gate_up.weight\", \"blocks.1.down.weight\", \"blocks.2.value_up.weight\", \"blocks.2.gate_up.weight\", \"blocks.2.down.weight\", \"blocks.3.value_up.weight\", \"blocks.3.gate_up.weight\", \"blocks.3.down.weight\", \"blocks.4.value_up.weight\", \"blocks.4.gate_up.weight\", \"blocks.4.down.weight\", \"blocks.5.value_up.weight\", \"blocks.5.gate_up.weight\", \"blocks.5.down.weight\"], \"weight_decay\": 1e-05}, {\"amsgrad\": false, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 2132456, \"parameter_names\": [\"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.bias\", \"blocks.2.input_norm.weight\", \"blocks.2.input_norm.bias\", \"blocks.2.value_up.bias\", \"blocks.2.value_norm.weight\", \"blocks.2.value_norm.bias\", \"blocks.2.gate_up.bias\", \"blocks.2.gate_norm.weight\", \"blocks.2.gate_norm.bias\", \"blocks.2.down.bias\", \"blocks.3.input_norm.weight\", \"blocks.3.input_norm.bias\", \"blocks.3.value_up.bias\", \"blocks.3.value_norm.weight\", \"blocks.3.value_norm.bias\", \"blocks.3.gate_up.bias\", \"blocks.3.gate_norm.weight\", \"blocks.3.gate_norm.bias\", \"blocks.3.down.bias\", \"blocks.4.input_norm.weight\", \"blocks.4.input_norm.bias\", \"blocks.4.value_up.bias\", \"blocks.4.value_norm.weight\", \"blocks.4.value_norm.bias\", \"blocks.4.gate_up.bias\", \"blocks.4.gate_norm.weight\", \"blocks.4.gate_norm.bias\", \"blocks.4.down.bias\", \"blocks.5.input_norm.weight\", \"blocks.5.input_norm.bias\", \"blocks.5.value_up.bias\", \"blocks.5.value_norm.weight\", \"blocks.5.value_norm.bias\", \"blocks.5.gate_up.bias\", \"blocks.5.gate_norm.weight\", \"blocks.5.gate_norm.bias\", \"blocks.5.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}]",
+      "restored_from_run": "",
+      "window_size": "",
+      "shrinking_stride": "",
+      "window_strides": "",
+      "window_shapes": "",
+      "window_hidden": "",
+      "window_features": "",
+      "window_order": "",
+      "window_padding": "",
+      "window_weight_sharing": "",
+      "window_aggregation": ""
+    },
+    {
+      "time": "2026-10-27 01:12:34",
+      "package_url": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model",
+      "import_name": "residual_mlp_baseline",
+      "task": "imagenet32",
+      "accuracy": "0.1850",
+      "train_minutes": "62.0",
+      "seed": "42",
+      "train_accuracy": "0.2643",
+      "best_epoch": "10",
+      "validation_accuracy": "0.2049",
+      "run_dir": "runs/imagenet32-20261027-000850-1c570f4f",
+      "test_accuracy": "0.1850",
+      "device": "mps",
+      "epochs_completed": "10",
+      "epochs": "10",
+      "batch_size": "256",
+      "learning_rate": "0.001",
+      "weight_decay": "1e-05",
+      "momentum": "",
+      "dampening": "",
+      "optimizer": "AdamW",
+      "loss": "CrossEntropyLoss()",
+      "learning_rate_schedule": "constant",
+      "shuffle": "True",
+      "validation_fraction": "0.1",
+      "training_examples": "1153051",
+      "validation_examples": "128116",
+      "test_examples": "50000",
+      "width": "512",
+      "hidden": "1024",
+      "depth": "2",
+      "functional_operations": "['gelu', 'pad']",
+      "in_features": "3072",
+      "num_classes": "1000",
+      "normalization": "['LayerNorm']",
+      "parameters": "3923048",
+      "augmentation": "{\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.2, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.0}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.0}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.0}, \"scale\": {\"amount\": 0.1, \"probability\": 0.0}, \"shear\": {\"amount\": 5.0, \"probability\": 0.0}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}",
+      "model": "ResidualMLP(\n  (window_mlps): ModuleList(\n    (0): RollingWindowBlock(\n      (0): Linear(in_features=12, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n    (1-5): 5 x RollingWindowBlock(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n  )\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-1): 2 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+      "hyperparameters": "{\"architecture\": {\"depth\": 2, \"functional_operations\": [\"gelu\", \"pad\"], \"hidden\": 1024, \"in_features\": 3072, \"normalization\": [\"LayerNorm\"], \"num_classes\": 1000, \"parameters\": 3923048, \"shrinking_stride\": 2, \"width\": 512, \"window_aggregation\": \"hierarchical\", \"window_features\": 64, \"window_hidden\": 128, \"window_order\": \"row, column, channel, dy, dx\", \"window_padding\": [[0, 0], [1, 1], [0, 0], [0, 0], [0, 0], [0, 0]], \"window_shapes\": [[3, 32, 32], [64, 31, 31], [64, 16, 16], [64, 8, 8], [64, 4, 4], [64, 2, 2], [64, 1, 1]], \"window_size\": 2, \"window_strides\": [1, 2, 2, 2, 2, 2], \"window_weight_sharing\": \"within each stage\"}, \"augmentation\": {\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.2, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.0}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.0}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.0}, \"scale\": {\"amount\": 0.1, \"probability\": 0.0}, \"shear\": {\"amount\": 5.0, \"probability\": 0.0}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}, \"batch_size\": 256, \"betas\": [0.9, 0.999], \"block_source\": \"@app.class_definition\\nclass Block19(nn.Module):\\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\\n        super().__init__()\\n        self.input_norm = nn.LayerNorm(width)\\n        self.value_up = nn.Linear(width, hidden)\\n        self.value_norm = nn.LayerNorm(hidden)\\n        self.gate_up = nn.Linear(width, hidden)\\n        self.gate_norm = nn.LayerNorm(hidden)\\n        self.down = nn.Linear(hidden, width)\\n        self.dropout = nn.Dropout(p=dropout)\\n\\n    def forward(self, x):\\n        normalized = self.input_norm(x)\\n        h = self.value_up(normalized)\\n        value = self.value_norm(h)\\n        a = F.gelu(self.gate_up(normalized))\\n        gate = self.gate_norm(a)\\n        gated = value * gate\\n        return x + self.dropout(self.down(gated))\\n\", \"dampening\": null, \"device\": \"mps\", \"epochs\": 10, \"eps\": 1e-08, \"learning_rate\": 0.001, \"learning_rate_schedule\": \"constant\", \"loss\": \"CrossEntropyLoss()\", \"model\": \"ResidualMLP(\\n  (window_mlps): ModuleList(\\n    (0): RollingWindowBlock(\\n      (0): Linear(in_features=12, out_features=128, bias=True)\\n      (1): GELU(approximate='none')\\n      (2): Linear(in_features=128, out_features=64, bias=True)\\n      (3): GELU(approximate='none')\\n    )\\n    (1-5): 5 x RollingWindowBlock(\\n      (0): Linear(in_features=256, out_features=128, bias=True)\\n      (1): GELU(approximate='none')\\n      (2): Linear(in_features=128, out_features=64, bias=True)\\n      (3): GELU(approximate='none')\\n    )\\n  )\\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\\n  (blocks): ModuleList(\\n    (0-1): 2 x Block19(\\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (down): Linear(in_features=1024, out_features=512, bias=True)\\n      (dropout): Dropout(p=0.1, inplace=False)\\n    )\\n  )\\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\\n)\", \"model_source\": \"@app.class_definition\\nclass ResidualMLP(nn.Module):\\n    # torch-canvas input x: e, channels, 32, 32\\n    # torch-canvas sizes: in_features=3072, num_classes=10\\n    \\\"\\\"\\\"Hierarchical shared window MLPs, followed by a residual classifier.\\n\\n    input -> sliding 2x2 windows, first stride 1, later shrinking_stride\\n          -> shared Linear -> GELU -> Linear -> GELU per window\\n          -> restore feature map and repeat until the spatial size is 1x1\\n          -> flatten final features -> Linear into the backbone\\n          -> depth x Block                           residual backbone, stays `width` wide\\n          -> Linear(width -> num_classes)            classification head\\n          -> logits (num_classes)\\n\\n    The head has no skip connection because its output size (num_classes)\\n    differs from its input size (width), so the two cannot be added.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, in_features, num_classes, width=512, depth=2, hidden=1024,\\n                 dropout=0.1, window_hidden=128, window_features=64, shrinking_stride=2):\\n        super().__init__()\\n\\n        if in_features != 784 and in_features != 3072:\\n            raise ValueError(\\\"Expected MNIST (784) or RGB 32x32 (3072) input features\\\")\\n        if shrinking_stride != 1 and shrinking_stride != 2:\\n            raise ValueError(\\\"shrinking_stride must be 1 or 2\\\")\\n        self.in_features = in_features\\n        channels = 1 if in_features == 784 else 3\\n        height = 28 if in_features == 784 else 32\\n        image_width = height\\n        self.image_shape = (channels, height, image_width)\\n        self.window_size = 2\\n        self.shrinking_stride = shrinking_stride\\n        self.window_shapes = [self.image_shape]\\n        self.window_strides = []\\n        self.window_padding = []\\n        self.window_mlps = nn.ModuleList()\\n        stages = height - 1 if shrinking_stride == 1 else 6\\n        for stage in range(stages):\\n            stride = 1 if stage == 0 else shrinking_stride\\n            self.window_strides.append(stride)\\n            # Keep the final row/column when a stride-2 stage has odd size.\\n            pad_height, pad_width = height % stride, image_width % stride\\n            self.window_padding.append((pad_height, pad_width))\\n            self.window_mlps.append(RollingWindowBlock(\\n                channels, window_hidden, window_features, stride, pad_height))\\n            height = (height + pad_height - self.window_size) // stride + 1\\n            image_width = (image_width + pad_width - self.window_size) // stride + 1\\n            channels = window_features\\n            self.window_shapes.append((channels, height, image_width))\\n\\n        # Project the flattened window features down to the backbone width.\\n        self.input_layer = nn.Linear(channels * height * image_width, width)\\n        self.blocks = nn.ModuleList([Block19(width, hidden=hidden, dropout=dropout) for _ in range(depth)])\\n        self.head_fc2 = nn.Linear(width, num_classes)\\n\\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\\n        for layer in self.modules():\\n            if isinstance(layer, nn.Linear):\\n                nn.init.xavier_normal_(layer.weight)\\n                nn.init.zeros_(layer.bias)\\n\\n    def extract_windows(self, x, stage=0):\\n        \\\"\\\"\\\"Return (batch, positions, C*2*2), ordered by row, column, channel, dy, dx.\\\"\\\"\\\"\\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.window_shapes[stage]:\\n            raise ValueError(f\\\"Expected NCHW feature map (N, C, H, W) with C,H,W={self.window_shapes[stage]}\\\")\\n        # Tensor.unfold only creates sliding views; it performs no learned operation.\\n        return self.window_mlps[stage].extract_windows(x).flatten(1, 2)\\n\\n    def forward(self, x):\\n        \\\"\\\"\\\"Training forward pass. Returns raw logits (no softmax).\\n\\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\\n        \\\"\\\"\\\"\\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.image_shape:\\n            raise ValueError(f\\\"Expected NCHW images with C,H,W={self.image_shape}\\\")\\n        for window_mlp in self.window_mlps:\\n            x = window_mlp(x)\\n        x = self.input_layer(x.flatten(1))\\n        for blk in self.blocks:\\n            x = blk(x)\\n        return self.head_fc2(x)\\n\\n    def predict(self, x):\\n        \\\"\\\"\\\"Inference pass, never used during training. Returns class probabilities.\\\"\\\"\\\"\\n        self.eval()                           # switch layers to inference behavior\\n        with torch.no_grad():                 # no gradients needed at inference\\n            return torch.softmax(self.forward(x), dim=1)\\n\", \"momentum\": null, \"optimizer\": \"AdamW\", \"optimizer_groups\": [{\"amsgrad\": true, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 3923048, \"parameter_names\": [\"window_mlps.0.0.weight\", \"window_mlps.0.0.bias\", \"window_mlps.0.2.weight\", \"window_mlps.0.2.bias\", \"window_mlps.1.0.weight\", \"window_mlps.1.0.bias\", \"window_mlps.1.2.weight\", \"window_mlps.1.2.bias\", \"window_mlps.2.0.weight\", \"window_mlps.2.0.bias\", \"window_mlps.2.2.weight\", \"window_mlps.2.2.bias\", \"window_mlps.3.0.weight\", \"window_mlps.3.0.bias\", \"window_mlps.3.2.weight\", \"window_mlps.3.2.bias\", \"window_mlps.4.0.weight\", \"window_mlps.4.0.bias\", \"window_mlps.4.2.weight\", \"window_mlps.4.2.bias\", \"window_mlps.5.0.weight\", \"window_mlps.5.0.bias\", \"window_mlps.5.2.weight\", \"window_mlps.5.2.bias\", \"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.weight\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.weight\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.weight\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.weight\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.weight\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.weight\", \"blocks.1.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}], \"optimizer_settings\": {\"amsgrad\": true, \"beta1\": 0.9, \"beta2\": 0.999, \"eps\": 1e-08, \"lr\": 0.001, \"name\": \"AdamW\", \"weight_decay\": 1e-05}, \"restored_from\": null, \"seed\": 42, \"selection_metric\": \"validation_accuracy\", \"shuffle\": true, \"support_sources\": {\"RollingWindowBlock\": \"@app.class_definition\\nclass RollingWindowBlock(nn.Sequential):\\n    \\\"\\\"\\\"Gather padded 2x2 windows, apply a shared MLP, and return an NCHW map.\\n\\n    Numeric module names preserve existing window_mlps checkpoint keys.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, channels=3, window_hidden=128, window_features=64, stride=1, padding=0):\\n        super().__init__()\\n        self.stride = stride\\n        self.padding = padding\\n        self.add_module(\\\"0\\\", nn.Linear(channels * 4, window_hidden))\\n        self.add_module(\\\"1\\\", nn.GELU())\\n        self.add_module(\\\"2\\\", nn.Linear(window_hidden, window_features))\\n        self.add_module(\\\"3\\\", nn.GELU())\\n\\n    def extract_windows(self, x):\\n        \\\"\\\"\\\"Return (batch, output rows, output columns, C*2*2).\\\"\\\"\\\"\\n        x = F.pad(x, (0, self.padding, 0, self.padding))\\n        x = x.unfold(2, 2, self.stride).unfold(3, 2, self.stride)\\n        return x.permute(0, 2, 3, 1, 4, 5).flatten(3)\\n\\n    def forward(self, x):\\n        x = self.extract_windows(x)\\n        x = self[0](x)\\n        x = self[1](x)\\n        x = self[2](x)\\n        x = self[3](x)\\n        return x.permute(0, 3, 1, 2)\\n\"}, \"task\": \"imagenet32\", \"tie_break\": \"earliest_epoch\", \"train_accuracy_kind\": \"training-batch predictions (augmented when enabled), before each batch update\", \"training_examples\": 1153051, \"validation_examples\": 128116, \"validation_fraction\": 0.1, \"weight_decay\": 1e-05}",
+      "per_class_accuracy_file": "runs/imagenet32-20261027-000850-1c570f4f/per_class_accuracy.md",
+      "betas": "[0.9, 0.999]",
+      "eps": "1e-08",
+      "optimizer_settings": "{\"amsgrad\": true, \"beta1\": 0.9, \"beta2\": 0.999, \"eps\": 1e-08, \"lr\": 0.001, \"name\": \"AdamW\", \"weight_decay\": 1e-05}",
+      "optimizer_groups": "[{\"amsgrad\": true, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 3923048, \"parameter_names\": [\"window_mlps.0.0.weight\", \"window_mlps.0.0.bias\", \"window_mlps.0.2.weight\", \"window_mlps.0.2.bias\", \"window_mlps.1.0.weight\", \"window_mlps.1.0.bias\", \"window_mlps.1.2.weight\", \"window_mlps.1.2.bias\", \"window_mlps.2.0.weight\", \"window_mlps.2.0.bias\", \"window_mlps.2.2.weight\", \"window_mlps.2.2.bias\", \"window_mlps.3.0.weight\", \"window_mlps.3.0.bias\", \"window_mlps.3.2.weight\", \"window_mlps.3.2.bias\", \"window_mlps.4.0.weight\", \"window_mlps.4.0.bias\", \"window_mlps.4.2.weight\", \"window_mlps.4.2.bias\", \"window_mlps.5.0.weight\", \"window_mlps.5.0.bias\", \"window_mlps.5.2.weight\", \"window_mlps.5.2.bias\", \"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.weight\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.weight\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.weight\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.weight\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.weight\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.weight\", \"blocks.1.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}]",
+      "restored_from_run": "",
+      "window_size": "2",
+      "shrinking_stride": "2",
+      "window_strides": "[1, 2, 2, 2, 2, 2]",
+      "window_shapes": "[(3, 32, 32), (64, 31, 31), (64, 16, 16), (64, 8, 8), (64, 4, 4), (64, 2, 2), (64, 1, 1)]",
+      "window_hidden": "128",
+      "window_features": "64",
+      "window_order": "row, column, channel, dy, dx",
+      "window_padding": "[(0, 0), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0)]",
+      "window_weight_sharing": "within each stage",
+      "window_aggregation": "hierarchical"
+    },
+    {
+      "time": "2026-10-27 02:48:53",
+      "package_url": "/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model",
+      "import_name": "residual_mlp_baseline",
+      "task": "imagenet32",
+      "accuracy": "0.2000",
+      "train_minutes": "134.6",
+      "seed": "42",
+      "train_accuracy": "0.3713",
+      "best_epoch": "25",
+      "validation_accuracy": "0.2198",
+      "run_dir": "runs/imagenet32-continuation-20261027-013419-8e7bc688",
+      "test_accuracy": "0.2000",
+      "device": "mps",
+      "epochs_completed": "25",
+      "epochs": "100",
+      "batch_size": "256",
+      "learning_rate": "0.001",
+      "weight_decay": "1e-05",
+      "momentum": "",
+      "dampening": "",
+      "optimizer": "AdamW",
+      "loss": "CrossEntropyLoss()",
+      "learning_rate_schedule": "constant",
+      "shuffle": "True",
+      "validation_fraction": "0.1",
+      "training_examples": "1153051",
+      "validation_examples": "128116",
+      "test_examples": "50000",
+      "width": "512",
+      "hidden": "1024",
+      "depth": "2",
+      "functional_operations": "['gelu', 'pad']",
+      "in_features": "3072",
+      "num_classes": "1000",
+      "normalization": "['LayerNorm']",
+      "parameters": "3923048",
+      "augmentation": "{\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.2, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.0}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.0}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.0}, \"scale\": {\"amount\": 0.1, \"probability\": 0.0}, \"shear\": {\"amount\": 5.0, \"probability\": 0.0}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}",
+      "model": "ResidualMLP(\n  (window_mlps): ModuleList(\n    (0): RollingWindowBlock(\n      (0): Linear(in_features=12, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n    (1-5): 5 x RollingWindowBlock(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n  )\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-1): 2 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+      "hyperparameters": "{\"architecture\": {\"depth\": 2, \"functional_operations\": [\"gelu\", \"pad\"], \"hidden\": 1024, \"in_features\": 3072, \"normalization\": [\"LayerNorm\"], \"num_classes\": 1000, \"parameters\": 3923048, \"shrinking_stride\": 2, \"width\": 512, \"window_aggregation\": \"hierarchical\", \"window_features\": 64, \"window_hidden\": 128, \"window_order\": \"row, column, channel, dy, dx\", \"window_padding\": [[0, 0], [1, 1], [0, 0], [0, 0], [0, 0], [0, 0]], \"window_shapes\": [[3, 32, 32], [64, 31, 31], [64, 16, 16], [64, 8, 8], [64, 4, 4], [64, 2, 2], [64, 1, 1]], \"window_size\": 2, \"window_strides\": [1, 2, 2, 2, 2, 2], \"window_weight_sharing\": \"within each stage\"}, \"augmentation\": {\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.2, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.0}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.0}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.0}, \"scale\": {\"amount\": 0.1, \"probability\": 0.0}, \"shear\": {\"amount\": 5.0, \"probability\": 0.0}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}, \"batch_size\": 256, \"betas\": [0.9, 0.999], \"block_source\": \"@app.class_definition\\nclass Block19(nn.Module):\\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\\n        super().__init__()\\n        self.input_norm = nn.LayerNorm(width)\\n        self.value_up = nn.Linear(width, hidden)\\n        self.value_norm = nn.LayerNorm(hidden)\\n        self.gate_up = nn.Linear(width, hidden)\\n        self.gate_norm = nn.LayerNorm(hidden)\\n        self.down = nn.Linear(hidden, width)\\n        self.dropout = nn.Dropout(p=dropout)\\n\\n    def forward(self, x):\\n        normalized = self.input_norm(x)\\n        h = self.value_up(normalized)\\n        value = self.value_norm(h)\\n        a = F.gelu(self.gate_up(normalized))\\n        gate = self.gate_norm(a)\\n        gated = value * gate\\n        return x + self.dropout(self.down(gated))\\n\", \"continuation\": {\"criterion\": \"Three successive 3-epoch mean validation-loss regressions >1% above minimum while train loss falls\", \"optimizer_note\": \"Fresh AdamW state; parent saved weights only\", \"optimizer_state_restored\": false, \"origin_epoch\": 10, \"parent_checkpoint_sha256\": \"c116eb7de05312a4bc2263d7710f28642b79ac7bfaf34280dd516cec4fd30213\", \"parent_epoch\": 10, \"parent_run\": \"/Users/taylor/Projects/AI4200-imagenet32x32-baseline-model/runs/imagenet32-20261027-000850-1c570f4f\", \"rng_state_restored\": false}, \"dampening\": null, \"device\": \"mps\", \"epochs\": 100, \"eps\": 1e-08, \"learning_rate\": 0.001, \"learning_rate_schedule\": \"constant\", \"loss\": \"CrossEntropyLoss()\", \"model\": \"ResidualMLP(\\n  (window_mlps): ModuleList(\\n    (0): RollingWindowBlock(\\n      (0): Linear(in_features=12, out_features=128, bias=True)\\n      (1): GELU(approximate='none')\\n      (2): Linear(in_features=128, out_features=64, bias=True)\\n      (3): GELU(approximate='none')\\n    )\\n    (1-5): 5 x RollingWindowBlock(\\n      (0): Linear(in_features=256, out_features=128, bias=True)\\n      (1): GELU(approximate='none')\\n      (2): Linear(in_features=128, out_features=64, bias=True)\\n      (3): GELU(approximate='none')\\n    )\\n  )\\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\\n  (blocks): ModuleList(\\n    (0-1): 2 x Block19(\\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True, bias=True)\\n      (down): Linear(in_features=1024, out_features=512, bias=True)\\n      (dropout): Dropout(p=0.1, inplace=False)\\n    )\\n  )\\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\\n)\", \"model_source\": \"@app.class_definition\\nclass ResidualMLP(nn.Module):\\n    # torch-canvas input x: e, channels, 32, 32\\n    # torch-canvas sizes: in_features=3072, num_classes=10\\n    \\\"\\\"\\\"Hierarchical shared window MLPs, followed by a residual classifier.\\n\\n    input -> sliding 2x2 windows, first stride 1, later shrinking_stride\\n          -> shared Linear -> GELU -> Linear -> GELU per window\\n          -> restore feature map and repeat until the spatial size is 1x1\\n          -> flatten final features -> Linear into the backbone\\n          -> depth x Block                           residual backbone, stays `width` wide\\n          -> Linear(width -> num_classes)            classification head\\n          -> logits (num_classes)\\n\\n    The head has no skip connection because its output size (num_classes)\\n    differs from its input size (width), so the two cannot be added.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, in_features, num_classes, width=512, depth=2, hidden=1024,\\n                 dropout=0.1, window_hidden=128, window_features=64, shrinking_stride=2):\\n        super().__init__()\\n\\n        if in_features != 784 and in_features != 3072:\\n            raise ValueError(\\\"Expected MNIST (784) or RGB 32x32 (3072) input features\\\")\\n        if shrinking_stride != 1 and shrinking_stride != 2:\\n            raise ValueError(\\\"shrinking_stride must be 1 or 2\\\")\\n        self.in_features = in_features\\n        channels = 1 if in_features == 784 else 3\\n        height = 28 if in_features == 784 else 32\\n        image_width = height\\n        self.image_shape = (channels, height, image_width)\\n        self.window_size = 2\\n        self.shrinking_stride = shrinking_stride\\n        self.window_shapes = [self.image_shape]\\n        self.window_strides = []\\n        self.window_padding = []\\n        self.window_mlps = nn.ModuleList()\\n        stages = height - 1 if shrinking_stride == 1 else 6\\n        for stage in range(stages):\\n            stride = 1 if stage == 0 else shrinking_stride\\n            self.window_strides.append(stride)\\n            # Keep the final row/column when a stride-2 stage has odd size.\\n            pad_height, pad_width = height % stride, image_width % stride\\n            self.window_padding.append((pad_height, pad_width))\\n            self.window_mlps.append(RollingWindowBlock(\\n                channels, window_hidden, window_features, stride, pad_height))\\n            height = (height + pad_height - self.window_size) // stride + 1\\n            image_width = (image_width + pad_width - self.window_size) // stride + 1\\n            channels = window_features\\n            self.window_shapes.append((channels, height, image_width))\\n\\n        # Project the flattened window features down to the backbone width.\\n        self.input_layer = nn.Linear(channels * height * image_width, width)\\n        self.blocks = nn.ModuleList([Block19(width, hidden=hidden, dropout=dropout) for _ in range(depth)])\\n        self.head_fc2 = nn.Linear(width, num_classes)\\n\\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\\n        for layer in self.modules():\\n            if isinstance(layer, nn.Linear):\\n                nn.init.xavier_normal_(layer.weight)\\n                nn.init.zeros_(layer.bias)\\n\\n    def extract_windows(self, x, stage=0):\\n        \\\"\\\"\\\"Return (batch, positions, C*2*2), ordered by row, column, channel, dy, dx.\\\"\\\"\\\"\\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.window_shapes[stage]:\\n            raise ValueError(f\\\"Expected NCHW feature map (N, C, H, W) with C,H,W={self.window_shapes[stage]}\\\")\\n        # Tensor.unfold only creates sliding views; it performs no learned operation.\\n        return self.window_mlps[stage].extract_windows(x).flatten(1, 2)\\n\\n    def forward(self, x):\\n        \\\"\\\"\\\"Training forward pass. Returns raw logits (no softmax).\\n\\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\\n        \\\"\\\"\\\"\\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.image_shape:\\n            raise ValueError(f\\\"Expected NCHW images with C,H,W={self.image_shape}\\\")\\n        for window_mlp in self.window_mlps:\\n            x = window_mlp(x)\\n        x = self.input_layer(x.flatten(1))\\n        for blk in self.blocks:\\n            x = blk(x)\\n        return self.head_fc2(x)\\n\\n    def predict(self, x):\\n        \\\"\\\"\\\"Inference pass, never used during training. Returns class probabilities.\\\"\\\"\\\"\\n        self.eval()                           # switch layers to inference behavior\\n        with torch.no_grad():                 # no gradients needed at inference\\n            return torch.softmax(self.forward(x), dim=1)\\n\", \"momentum\": null, \"optimizer\": \"AdamW\", \"optimizer_groups\": [{\"amsgrad\": true, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 3923048, \"parameter_names\": [\"window_mlps.0.0.weight\", \"window_mlps.0.0.bias\", \"window_mlps.0.2.weight\", \"window_mlps.0.2.bias\", \"window_mlps.1.0.weight\", \"window_mlps.1.0.bias\", \"window_mlps.1.2.weight\", \"window_mlps.1.2.bias\", \"window_mlps.2.0.weight\", \"window_mlps.2.0.bias\", \"window_mlps.2.2.weight\", \"window_mlps.2.2.bias\", \"window_mlps.3.0.weight\", \"window_mlps.3.0.bias\", \"window_mlps.3.2.weight\", \"window_mlps.3.2.bias\", \"window_mlps.4.0.weight\", \"window_mlps.4.0.bias\", \"window_mlps.4.2.weight\", \"window_mlps.4.2.bias\", \"window_mlps.5.0.weight\", \"window_mlps.5.0.bias\", \"window_mlps.5.2.weight\", \"window_mlps.5.2.bias\", \"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.weight\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.weight\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.weight\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.weight\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.weight\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.weight\", \"blocks.1.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}], \"optimizer_settings\": {\"amsgrad\": true, \"beta1\": 0.9, \"beta2\": 0.999, \"eps\": 1e-08, \"lr\": 0.001, \"name\": \"AdamW\", \"weight_decay\": 1e-05}, \"restored_from\": null, \"seed\": 42, \"selection_metric\": \"validation_accuracy\", \"shuffle\": true, \"support_sources\": {\"RollingWindowBlock\": \"@app.class_definition\\nclass RollingWindowBlock(nn.Sequential):\\n    \\\"\\\"\\\"Gather padded 2x2 windows, apply a shared MLP, and return an NCHW map.\\n\\n    Numeric module names preserve existing window_mlps checkpoint keys.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, channels=3, window_hidden=128, window_features=64, stride=1, padding=0):\\n        super().__init__()\\n        self.stride = stride\\n        self.padding = padding\\n        self.add_module(\\\"0\\\", nn.Linear(channels * 4, window_hidden))\\n        self.add_module(\\\"1\\\", nn.GELU())\\n        self.add_module(\\\"2\\\", nn.Linear(window_hidden, window_features))\\n        self.add_module(\\\"3\\\", nn.GELU())\\n\\n    def extract_windows(self, x):\\n        \\\"\\\"\\\"Return (batch, output rows, output columns, C*2*2).\\\"\\\"\\\"\\n        x = F.pad(x, (0, self.padding, 0, self.padding))\\n        x = x.unfold(2, 2, self.stride).unfold(3, 2, self.stride)\\n        return x.permute(0, 2, 3, 1, 4, 5).flatten(3)\\n\\n    def forward(self, x):\\n        x = self.extract_windows(x)\\n        x = self[0](x)\\n        x = self[1](x)\\n        x = self[2](x)\\n        x = self[3](x)\\n        return x.permute(0, 3, 1, 2)\\n\"}, \"task\": \"imagenet32\", \"tie_break\": \"earliest_epoch\", \"train_accuracy_kind\": \"training-batch predictions (augmented when enabled), before each batch update\", \"training_examples\": 1153051, \"validation_examples\": 128116, \"validation_fraction\": 0.1, \"weight_decay\": 1e-05}",
+      "per_class_accuracy_file": "runs/imagenet32-continuation-20261027-013419-8e7bc688/per_class_accuracy.md",
+      "betas": "[0.9, 0.999]",
+      "eps": "1e-08",
+      "optimizer_settings": "{\"amsgrad\": true, \"beta1\": 0.9, \"beta2\": 0.999, \"eps\": 1e-08, \"lr\": 0.001, \"name\": \"AdamW\", \"weight_decay\": 1e-05}",
+      "optimizer_groups": "[{\"amsgrad\": true, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 3923048, \"parameter_names\": [\"window_mlps.0.0.weight\", \"window_mlps.0.0.bias\", \"window_mlps.0.2.weight\", \"window_mlps.0.2.bias\", \"window_mlps.1.0.weight\", \"window_mlps.1.0.bias\", \"window_mlps.1.2.weight\", \"window_mlps.1.2.bias\", \"window_mlps.2.0.weight\", \"window_mlps.2.0.bias\", \"window_mlps.2.2.weight\", \"window_mlps.2.2.bias\", \"window_mlps.3.0.weight\", \"window_mlps.3.0.bias\", \"window_mlps.3.2.weight\", \"window_mlps.3.2.bias\", \"window_mlps.4.0.weight\", \"window_mlps.4.0.bias\", \"window_mlps.4.2.weight\", \"window_mlps.4.2.bias\", \"window_mlps.5.0.weight\", \"window_mlps.5.0.bias\", \"window_mlps.5.2.weight\", \"window_mlps.5.2.bias\", \"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.weight\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.weight\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.weight\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.weight\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.weight\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.weight\", \"blocks.1.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}]",
+      "restored_from_run": "",
+      "window_size": "2",
+      "shrinking_stride": "2",
+      "window_strides": "[1, 2, 2, 2, 2, 2]",
+      "window_shapes": "[(3, 32, 32), (64, 31, 31), (64, 16, 16), (64, 8, 8), (64, 4, 4), (64, 2, 2), (64, 1, 1)]",
+      "window_hidden": "128",
+      "window_features": "64",
+      "window_order": "row, column, channel, dy, dx",
+      "window_padding": "[(0, 0), (1, 1), (0, 0), (0, 0), (0, 0), (0, 0)]",
+      "window_weight_sharing": "within each stage",
+      "window_aggregation": "hierarchical"
+    },
+    {
+      "time": "2026-10-27 19:22",
+      "package_url": "git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git@b5ab6e1f75de4cfc257cf85b7e2535cfa217934c",
+      "import_name": "residual_mlp_baseline",
+      "task": "imagenet32",
+      "accuracy": "0.1996",
+      "train_minutes": "21.814236342906952",
+      "seed": "0",
+      "train_accuracy": "",
+      "best_epoch": "23",
+      "validation_accuracy": "0.22022229854194636",
+      "run_dir": "runs/imagenet32-8856b095",
+      "test_accuracy": "0.1996",
+      "device": "cuda",
+      "epochs_completed": "25",
+      "epochs": "25",
+      "batch_size": "256",
+      "learning_rate": "0.001",
+      "weight_decay": "1e-05",
+      "momentum": "",
+      "dampening": "",
+      "optimizer": "AdamW",
+      "loss": "CrossEntropyLoss()",
+      "learning_rate_schedule": "constant",
+      "shuffle": "True",
+      "validation_fraction": "0.1",
+      "training_examples": "1153051",
+      "validation_examples": "128116",
+      "test_examples": "",
+      "width": "512",
+      "hidden": "1024",
+      "depth": "2",
+      "functional_operations": "[\"gelu\", \"pad\"]",
+      "in_features": "3072",
+      "num_classes": "1000",
+      "normalization": "[\"LayerNorm\"]",
+      "parameters": "3923048",
+      "augmentation": "{\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.1, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.1}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.25}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.5}, \"scale\": {\"amount\": 0.1, \"probability\": 0.5}, \"shear\": {\"amount\": 5.0, \"probability\": 0.25}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}",
+      "model": "ResidualMLP(\n  (window_mlps): ModuleList(\n    (0): RollingWindowBlock(\n      (0): Linear(in_features=12, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n    (1-5): 5 x RollingWindowBlock(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): GELU(approximate='none')\n      (2): Linear(in_features=128, out_features=64, bias=True)\n      (3): GELU(approximate='none')\n    )\n  )\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\n  (blocks): ModuleList(\n    (0-1): 2 x Block19(\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True)\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)\n      (down): Linear(in_features=1024, out_features=512, bias=True)\n      (dropout): Dropout(p=0.1, inplace=False)\n    )\n  )\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\n)",
+      "hyperparameters": "{\"architecture\": {\"depth\": 2, \"functional_operations\": [\"gelu\", \"pad\"], \"hidden\": 1024, \"in_features\": 3072, \"normalization\": [\"LayerNorm\"], \"num_classes\": 1000, \"parameters\": 3923048, \"shrinking_stride\": 2, \"width\": 512, \"window_aggregation\": \"hierarchical\", \"window_features\": 64, \"window_hidden\": 128, \"window_order\": \"row, column, channel, dy, dx\", \"window_padding\": [[0, 0], [1, 1], [0, 0], [0, 0], [0, 0], [0, 0]], \"window_shapes\": [[3, 32, 32], [64, 31, 31], [64, 16, 16], [64, 8, 8], [64, 4, 4], [64, 2, 2], [64, 1, 1]], \"window_size\": 2, \"window_strides\": [1, 2, 2, 2, 2, 2], \"window_weight_sharing\": \"within each stage\"}, \"augmentation\": {\"classes\": {}, \"default\": {\"brightness\": {\"amount\": 0.1, \"probability\": 0.25}, \"erasing\": {\"amount\": 0.05, \"probability\": 0.1}, \"horizontal_flip\": {\"amount\": 1.0, \"probability\": 0.5}, \"noise\": {\"amount\": 0.05, \"probability\": 0.25}, \"rotation\": {\"amount\": 10.0, \"probability\": 0.5}, \"scale\": {\"amount\": 0.1, \"probability\": 0.5}, \"shear\": {\"amount\": 5.0, \"probability\": 0.25}, \"translation\": {\"amount\": 2.0, \"probability\": 0.5}}, \"enabled\": false, \"task\": \"imagenet32\"}, \"batch_size\": 256, \"betas\": [0.9, 0.999], \"block_source\": \"class Block19(nn.Module):\\n    def __init__(self, width=512, h1=256, hidden=1024, dropout=0.1):\\n        super().__init__()\\n        self.input_norm = nn.LayerNorm(width)\\n        self.value_up = nn.Linear(width, hidden)\\n        self.value_norm = nn.LayerNorm(hidden)\\n        self.gate_up = nn.Linear(width, hidden)\\n        self.gate_norm = nn.LayerNorm(hidden)\\n        self.down = nn.Linear(hidden, width)\\n        self.dropout = nn.Dropout(p=dropout)\\n\\n    def forward(self, x):\\n        normalized = self.input_norm(x)\\n        h = self.value_up(normalized)\\n        value = self.value_norm(h)\\n        a = F.gelu(self.gate_up(normalized))\\n        gate = self.gate_norm(a)\\n        gated = value * gate\\n        return x + self.dropout(self.down(gated))\\n\", \"dampening\": null, \"device\": \"cuda\", \"epochs\": 25, \"eps\": 1e-08, \"learning_rate\": 0.001, \"learning_rate_schedule\": \"constant\", \"loss\": \"CrossEntropyLoss()\", \"max_seconds\": 3600, \"model\": \"ResidualMLP(\\n  (window_mlps): ModuleList(\\n    (0): RollingWindowBlock(\\n      (0): Linear(in_features=12, out_features=128, bias=True)\\n      (1): GELU(approximate='none')\\n      (2): Linear(in_features=128, out_features=64, bias=True)\\n      (3): GELU(approximate='none')\\n    )\\n    (1-5): 5 x RollingWindowBlock(\\n      (0): Linear(in_features=256, out_features=128, bias=True)\\n      (1): GELU(approximate='none')\\n      (2): Linear(in_features=128, out_features=64, bias=True)\\n      (3): GELU(approximate='none')\\n    )\\n  )\\n  (input_layer): Linear(in_features=64, out_features=512, bias=True)\\n  (blocks): ModuleList(\\n    (0-1): 2 x Block19(\\n      (input_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True)\\n      (value_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (value_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)\\n      (gate_up): Linear(in_features=512, out_features=1024, bias=True)\\n      (gate_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)\\n      (down): Linear(in_features=1024, out_features=512, bias=True)\\n      (dropout): Dropout(p=0.1, inplace=False)\\n    )\\n  )\\n  (head_fc2): Linear(in_features=512, out_features=1000, bias=True)\\n)\", \"model_source\": \"class ResidualMLP(nn.Module):\\n    # torch-canvas input x: e, channels, 32, 32\\n    # torch-canvas sizes: in_features=3072, num_classes=10\\n    \\\"\\\"\\\"Hierarchical shared window MLPs, followed by a residual classifier.\\n\\n    input -> sliding 2x2 windows, first stride 1, later shrinking_stride\\n          -> shared Linear -> GELU -> Linear -> GELU per window\\n          -> restore feature map and repeat until the spatial size is 1x1\\n          -> flatten final features -> Linear into the backbone\\n          -> depth x Block                           residual backbone, stays `width` wide\\n          -> Linear(width -> num_classes)            classification head\\n          -> logits (num_classes)\\n\\n    The head has no skip connection because its output size (num_classes)\\n    differs from its input size (width), so the two cannot be added.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, in_features, num_classes, width=512, depth=2, hidden=1024,\\n                 dropout=0.1, window_hidden=128, window_features=64, shrinking_stride=2):\\n        super().__init__()\\n\\n        if in_features != 784 and in_features != 3072:\\n            raise ValueError(\\\"Expected MNIST (784) or RGB 32x32 (3072) input features\\\")\\n        if shrinking_stride != 1 and shrinking_stride != 2:\\n            raise ValueError(\\\"shrinking_stride must be 1 or 2\\\")\\n        self.in_features = in_features\\n        channels = 1 if in_features == 784 else 3\\n        height = 28 if in_features == 784 else 32\\n        image_width = height\\n        self.image_shape = (channels, height, image_width)\\n        self.window_size = 2\\n        self.shrinking_stride = shrinking_stride\\n        self.window_shapes = [self.image_shape]\\n        self.window_strides = []\\n        self.window_padding = []\\n        self.window_mlps = nn.ModuleList()\\n        stages = height - 1 if shrinking_stride == 1 else 6\\n        for stage in range(stages):\\n            stride = 1 if stage == 0 else shrinking_stride\\n            self.window_strides.append(stride)\\n            # Keep the final row/column when a stride-2 stage has odd size.\\n            pad_height, pad_width = height % stride, image_width % stride\\n            self.window_padding.append((pad_height, pad_width))\\n            self.window_mlps.append(RollingWindowBlock(\\n                channels, window_hidden, window_features, stride, pad_height))\\n            height = (height + pad_height - self.window_size) // stride + 1\\n            image_width = (image_width + pad_width - self.window_size) // stride + 1\\n            channels = window_features\\n            self.window_shapes.append((channels, height, image_width))\\n\\n        # Project the flattened window features down to the backbone width.\\n        self.input_layer = nn.Linear(channels * height * image_width, width)\\n        self.blocks = nn.ModuleList([Block19(width, hidden=hidden, dropout=dropout) for _ in range(depth)])\\n        self.head_fc2 = nn.Linear(width, num_classes)\\n\\n        # Xavier (Glorot) initialization for every linear layer, zero biases.\\n        for layer in self.modules():\\n            if isinstance(layer, nn.Linear):\\n                nn.init.xavier_normal_(layer.weight)\\n                nn.init.zeros_(layer.bias)\\n\\n    def extract_windows(self, x, stage=0):\\n        \\\"\\\"\\\"Return (batch, positions, C*2*2), ordered by row, column, channel, dy, dx.\\\"\\\"\\\"\\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.window_shapes[stage]:\\n            raise ValueError(f\\\"Expected NCHW feature map (N, C, H, W) with C,H,W={self.window_shapes[stage]}\\\")\\n        # Tensor.unfold only creates sliding views; it performs no learned operation.\\n        return self.window_mlps[stage].extract_windows(x).flatten(1, 2)\\n\\n    def forward(self, x):\\n        \\\"\\\"\\\"Training forward pass. Returns raw logits (no softmax).\\n\\n        nn.CrossEntropyLoss applies the softmax itself, so training uses logits.\\n        \\\"\\\"\\\"\\n        if x.ndim != 4 or tuple(x.shape[1:]) != self.image_shape:\\n            raise ValueError(f\\\"Expected NCHW images with C,H,W={self.image_shape}\\\")\\n        for window_mlp in self.window_mlps:\\n            x = window_mlp(x)\\n        x = self.input_layer(x.flatten(1))\\n        for blk in self.blocks:\\n            x = blk(x)\\n        return self.head_fc2(x)\\n\\n    def predict(self, x):\\n        \\\"\\\"\\\"Inference pass, never used during training. Returns class probabilities.\\\"\\\"\\\"\\n        self.eval()                           # switch layers to inference behavior\\n        with torch.no_grad():                 # no gradients needed at inference\\n            return torch.softmax(self.forward(x), dim=1)\\n\", \"momentum\": null, \"optimizer\": \"AdamW\", \"optimizer_groups\": [{\"amsgrad\": true, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 3923048, \"parameter_names\": [\"window_mlps.0.0.weight\", \"window_mlps.0.0.bias\", \"window_mlps.0.2.weight\", \"window_mlps.0.2.bias\", \"window_mlps.1.0.weight\", \"window_mlps.1.0.bias\", \"window_mlps.1.2.weight\", \"window_mlps.1.2.bias\", \"window_mlps.2.0.weight\", \"window_mlps.2.0.bias\", \"window_mlps.2.2.weight\", \"window_mlps.2.2.bias\", \"window_mlps.3.0.weight\", \"window_mlps.3.0.bias\", \"window_mlps.3.2.weight\", \"window_mlps.3.2.bias\", \"window_mlps.4.0.weight\", \"window_mlps.4.0.bias\", \"window_mlps.4.2.weight\", \"window_mlps.4.2.bias\", \"window_mlps.5.0.weight\", \"window_mlps.5.0.bias\", \"window_mlps.5.2.weight\", \"window_mlps.5.2.bias\", \"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.weight\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.weight\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.weight\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.weight\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.weight\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.weight\", \"blocks.1.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}], \"optimizer_settings\": {\"amsgrad\": true, \"beta1\": 0.9, \"beta2\": 0.999, \"eps\": 1e-08, \"lr\": 0.001, \"name\": \"AdamW\", \"weight_decay\": 1e-05}, \"restored_from\": null, \"seed\": 0, \"selection_metric\": \"validation_accuracy\", \"shuffle\": true, \"streaming_normalization\": true, \"support_sources\": {\"RollingWindowBlock\": \"class RollingWindowBlock(nn.Sequential):\\n    \\\"\\\"\\\"Gather padded 2x2 windows, apply a shared MLP, and return an NCHW map.\\n\\n    Numeric module names preserve existing window_mlps checkpoint keys.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, channels=3, window_hidden=128, window_features=64, stride=1, padding=0):\\n        super().__init__()\\n        self.stride = stride\\n        self.padding = padding\\n        self.add_module(\\\"0\\\", nn.Linear(channels * 4, window_hidden))\\n        self.add_module(\\\"1\\\", nn.GELU())\\n        self.add_module(\\\"2\\\", nn.Linear(window_hidden, window_features))\\n        self.add_module(\\\"3\\\", nn.GELU())\\n\\n    def extract_windows(self, x):\\n        \\\"\\\"\\\"Return (batch, output rows, output columns, C*2*2).\\\"\\\"\\\"\\n        x = F.pad(x, (0, self.padding, 0, self.padding))\\n        x = x.unfold(2, 2, self.stride).unfold(3, 2, self.stride)\\n        return x.permute(0, 2, 3, 1, 4, 5).flatten(3)\\n\\n    def forward(self, x):\\n        x = self.extract_windows(x)\\n        x = self[0](x)\\n        x = self[1](x)\\n        x = self[2](x)\\n        x = self[3](x)\\n        return x.permute(0, 3, 1, 2)\\n\"}, \"task\": \"imagenet32\", \"tie_break\": \"earliest_epoch\", \"train_accuracy_kind\": \"training-batch predictions (augmented when enabled), before each batch update\", \"training_examples\": 1153051, \"validation_examples\": 128116, \"validation_fraction\": 0.1, \"weight_decay\": 1e-05}",
+      "per_class_accuracy_file": "",
+      "betas": "[0.9, 0.999]",
+      "eps": "1e-08",
+      "optimizer_settings": "{\"amsgrad\": true, \"beta1\": 0.9, \"beta2\": 0.999, \"eps\": 1e-08, \"lr\": 0.001, \"name\": \"AdamW\", \"weight_decay\": 1e-05}",
+      "optimizer_groups": "[{\"amsgrad\": true, \"betas\": [0.9, 0.999], \"capturable\": false, \"decoupled_weight_decay\": true, \"differentiable\": false, \"eps\": 1e-08, \"foreach\": null, \"fused\": null, \"lr\": 0.001, \"maximize\": false, \"optimizer\": \"AdamW\", \"parameter_count\": 3923048, \"parameter_names\": [\"window_mlps.0.0.weight\", \"window_mlps.0.0.bias\", \"window_mlps.0.2.weight\", \"window_mlps.0.2.bias\", \"window_mlps.1.0.weight\", \"window_mlps.1.0.bias\", \"window_mlps.1.2.weight\", \"window_mlps.1.2.bias\", \"window_mlps.2.0.weight\", \"window_mlps.2.0.bias\", \"window_mlps.2.2.weight\", \"window_mlps.2.2.bias\", \"window_mlps.3.0.weight\", \"window_mlps.3.0.bias\", \"window_mlps.3.2.weight\", \"window_mlps.3.2.bias\", \"window_mlps.4.0.weight\", \"window_mlps.4.0.bias\", \"window_mlps.4.2.weight\", \"window_mlps.4.2.bias\", \"window_mlps.5.0.weight\", \"window_mlps.5.0.bias\", \"window_mlps.5.2.weight\", \"window_mlps.5.2.bias\", \"input_layer.weight\", \"input_layer.bias\", \"blocks.0.input_norm.weight\", \"blocks.0.input_norm.bias\", \"blocks.0.value_up.weight\", \"blocks.0.value_up.bias\", \"blocks.0.value_norm.weight\", \"blocks.0.value_norm.bias\", \"blocks.0.gate_up.weight\", \"blocks.0.gate_up.bias\", \"blocks.0.gate_norm.weight\", \"blocks.0.gate_norm.bias\", \"blocks.0.down.weight\", \"blocks.0.down.bias\", \"blocks.1.input_norm.weight\", \"blocks.1.input_norm.bias\", \"blocks.1.value_up.weight\", \"blocks.1.value_up.bias\", \"blocks.1.value_norm.weight\", \"blocks.1.value_norm.bias\", \"blocks.1.gate_up.weight\", \"blocks.1.gate_up.bias\", \"blocks.1.gate_norm.weight\", \"blocks.1.gate_norm.bias\", \"blocks.1.down.weight\", \"blocks.1.down.bias\", \"head_fc2.weight\", \"head_fc2.bias\"], \"weight_decay\": 1e-05}]",
+      "restored_from_run": "",
+      "window_size": "2",
+      "shrinking_stride": "2",
+      "window_strides": "[1, 2, 2, 2, 2, 2]",
+      "window_shapes": "[[3, 32, 32], [64, 31, 31], [64, 16, 16], [64, 8, 8], [64, 4, 4], [64, 2, 2], [64, 1, 1]]",
+      "window_hidden": "128",
+      "window_features": "64",
+      "window_order": "row, column, channel, dy, dx",
+      "window_padding": "[[0, 0], [1, 1], [0, 0], [0, 0], [0, 0], [0, 0]]",
+      "window_weight_sharing": "within each stage",
+      "window_aggregation": "hierarchical"
+    }
+  ]
+}

@@ -1,0 +1,946 @@
+diff --git a/README.md b/README.md
+index 4cd67e2..4089675 100644
+--- a/README.md
++++ b/README.md
+@@ -1,6 +1,86 @@
+-# AI 4200 Project 1: Residual MLP baseline
++# MLP-Mixer: local paper implementation
++
++This worktree implements Google Research's [MLP-Mixer: An all-MLP Architecture
++for Vision](https://arxiv.org/abs/2105.01601), arXiv:2105.01601v4. The marimo app
++and package `train()` use Mixer by default. Model results stay local: both the
++app and harness leaderboard senders are disabled, even if a legacy flag or
++alias is set. No leaderboard submission runs after evaluation.
++
++## Mixer implementation
++
++[`mixer.py`](src/residual_mlp_baseline/mixer.py) implements Section 2 and Appendix E:
++shared non-overlapping linear patch embeddings; channel LayerNorm before each
++residual branch; token mixing shared across channels; channel mixing shared
++across tokens; two dense layers with GELU per MLP; final LayerNorm, token mean,
++and a zero-initialized linear classifier. There are no position embeddings,
++attention layers, or convolution layers. The Linear patch projection is
++mathematically equivalent to the reference's patch-sized, strided Conv stem.
++LayerNorm epsilon and GELU approximation match Flax defaults. Dense kernels use
++Flax's LeCun truncated-normal convention; biases start at zero.
++
++All seven Table 1 configurations are available through `mixer_config()`:
++`S/32`, `S/16`, `B/32`, `B/16`, `L/32`, `L/16`, and `H/14`. Their defaults use
++224×224 input. Example:
+ 
+-The instructor baseline. Fork this repo as the starting point for your submission.
++```python
++from residual_mlp_baseline.mixer import MlpMixer, mixer_config
++
++model = MlpMixer(mixer_config("B/16", num_classes=1000))
++```
++
++[`mixer_training.py`](src/residual_mlp_baseline/mixer_training.py) implements
++linear warmup and linear decay, AdamW with betas (0.9, 0.999), global gradient
++norm clipping at 1, random resized crops, horizontal flips, two-operation
++RandAugment, mixup, dropout, and stochastic depth. Drop probabilities increase
++linearly across all residual MLP branches. `MixerRecipe()` records Table 4's
++ImageNet B/L recipe: 300 epochs, batch 4096, learning rate 0.001, weight decay
++0.1, warmup 10,000 updates, RandAugment magnitude 15, mixup alpha 0.5, dropout
++0, and maximum stochastic depth 0.1. AdamW explicitly implements decoupled
++weight decay. Pillow bilinear interpolation, black fill, the RandAugment
++operation pool and 0–30 magnitude scale are implementation choices where the
++paper does not fully specify behavior; run configuration records them.
++
++The local defaults adapt this recipe to the repository's datasets: Mixer-S
++widths/depth, 4×4 patches, original 28/32-pixel resolution, batch 256, and no
++horizontal flips for MNIST. They are **not** the paper's full-resolution
++ImageNet experiments. Warmup is capped at `total_steps - 1` for short runs;
++both requested and effective warmup are recorded. The repository's seeded 10%
++validation holdout and best-validation checkpoint selection remain local
++evaluation conventions. Training images stay uint8 until each sample is
++transformed; Mixer does not expand the full dataset to float32.
++
++Edit `MIXER_PRESET`, `MIXER_CONFIG_OVERRIDES`, and `MIXER_RECIPE_OVERRIDES` in the
++notebook setup cell. Use its **Epochs** control to change run length. The active
++architecture and recipe appear in **Next run**. Saved Mixer settings restore
++without loading checkpoint weights; historical residual runs remain loadable.
++`train_with_metrics()` retains its residual default for existing callers; pass
++`model_name="MLP-Mixer"` to select Mixer explicitly. Package `train()` already
++does this. For direct training with explicit settings:
++
++```python
++from residual_mlp_baseline.mixer_training import MixerRecipe, task_config, train_mixer
++
++model = train_mixer(
++    "cifar10", X_train, y_train, device="cpu",
++    config=task_config("cifar10"),
++    recipe=MixerRecipe(batch_size=256),
++    run_dir="runs/mixer-experiment",  # Must not already exist.
++)
++```
++
++`model.resize_for_finetuning(448)` implements Appendix C's block-diagonal token
++MLP expansion from 224 to 448, retaining patch size and ordering tokens by
++spatial tile. It returns a new model. `MixerRecipe.finetuning(...)` supplies
++SGD with momentum 0.9, batch 512, zero weight decay, cosine decay with warmup,
++and no mixup, RandAugment, dropout, or stochastic depth. Choose task-specific
++learning rate, epochs, and warmup explicitly; the paper sweeps these. Pass a
++pre-trained `model=` to `train_mixer()` for transfer, using a matching architecture. The recipe updates
++dropout and stochastic depth while retaining learned weights. Call
++`model.reset_classifier(num_classes)` to initialize a new downstream task head. The grading interface always trains from scratch.
++No pretrained checkpoints or datasets are bundled. Implementation tests use
++synthetic data; they do not reproduce or establish the paper's accuracy.
++
++The original assignment and historical residual workflow are retained below.
+ 
+ ## The assignment
+ 
+@@ -65,17 +145,13 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run:
+ This installs Python 3.12 and the locked dependencies into `.venv`, installs this
+ package in editable mode, and opens the single notebook,
+ `src/residual_mlp_baseline/notebook.py`. Select a task using the controls at the
+-top, then click **Train and evaluate**. The first run downloads the dataset; later runs reuse
+-`data/`. The app prefers CUDA, then Apple Silicon MPS, then CPU. You can select
+-CPU manually. The status panel verifies an actual Metal forward/backward operation
+-and shows the Python interpreter. Select **Apple Metal (MPS)** to train on this
+-Mac's GPU. CUDA is NVIDIA-specific and is not required on macOS.
+-Results append to `results.csv`. Each completed app run automatically posts its
+-test accuracy, training duration, and repository URL to the unofficial class
+-leaderboard as **TaylorT**, section **5000**. The result panel reports whether
+-the form confirmed the submission. Local results are saved before posting;
+-network failures do not discard them. Set `LEADERBOARD_ENABLED = False` in the
+-setup cell to disable app submissions.
++top, then click **Run**. The first run downloads the dataset; later runs reuse
++`data/`. The app uses `DEFAULT_DEVICE` (MPS on this Mac), with CPU fallback
++when unavailable. The status panel verifies a Metal forward/backward operation
++and shows the Python interpreter. CUDA is NVIDIA-specific and is not required on macOS.
++Results append to `results.csv` and local `runs/` artifacts. Leaderboard posting
++is disabled in this worktree's app and harness. The result panel confirms that
++results remain local.
+ 
+ Training holds out a seeded random 10% of the supplied training examples for
+ validation. Each epoch prints training loss and accuracy plus validation loss
+@@ -103,10 +179,7 @@ Each app run creates a unique directory under `runs/` containing:
+   checkpoint on clean images. Classes absent from a split show `N/A`.
+ - `curves.png`: loss and accuracy plots with the selected epoch marked, also
+   shown in the app after training completes.
+-- `leaderboard-submission.json`: submitted fields and confirmation/error status.
+-  `leaderboard-confirmation.html` stores the server response when available.
+-  Existing attempts are not retried automatically, avoiding duplicate posts
+-  when a response is lost. Separate completed runs each receive a submission.
++
+ 
+ The final output includes a text block you can copy into your experiment journal.
+ The summary in `results.csv` includes train, validation, and test accuracy,
+@@ -125,17 +198,13 @@ to the saved Markdown table; `summary.txt` includes the table for copying into
+ your journal. `summary.json` records the same columns as fractions from 0 to 1.
+ Test scores reuse existing predictions; no additional test evaluation is performed.
+ 
+-The default model restores the original 54.59% CIFAR-10 configuration: seven
+-residual blocks, backbone width 256, hidden width 512, LayerNorm, and GELU in
+-the blocks and head. CIFAR-10 uses 30 epochs, batch size 256, SGD with learning
+-rate 0.05, weight decay `1e-4`, zero momentum, and no augmentation. The dashboard
+-starts with seed 42 and selects the best validation checkpoint. Model depth
+-follows the `depth` constructor argument.
++The default model is the small-image Mixer adaptation described above. Loading
++a historical residual run switches back to its saved architecture and controls.
+ 
+ ### Reloading previous experiments
+ 
+-Loading restores the saved augmentation settings, including whether augmentation
+-is enabled. The visible switch, **Next run** status, preview, and training all
++For historical residual runs, loading restores the saved augmentation settings,
++including whether augmentation is enabled. The visible switch, **Next run** status, preview, and training all
+ read the same controls. Training stops if the visible switch and control state
+ disagree. Changing the switch after loading changes the next run.
+ 
+@@ -168,7 +237,7 @@ precedence. Runs without `config.json` cannot be reconstructed from a score
+ alone. Unrelated notebook text is preserved; loading stops if the file changes
+ during restoration.
+ 
+-### Optimizer selection
++### Historical residual optimizer selection
+ 
+ Choose **SGD**, **Adam**, **AdamW**, **Muon**, **RMSprop**, or **Adagrad** in the
+ **Optimizer** panel before pressing **Run**. Each optimizer has its own controls
+@@ -214,7 +283,7 @@ model = train_with_metrics("mnist", X_train, y_train, device="cpu",
+                            optimizer_settings=settings)
+ ```
+ 
+-### Dataset-specific augmentation
++### Historical residual augmentation
+ 
+ The augmentation panel follows the dashboard's **Task** selection. MNIST,
+ CIFAR-10, and ImageNet32 each have an independent toggle (off by default) and
+@@ -291,18 +360,16 @@ Run `just` to list commands. Pass another macOS app name to a source shortcut,
+ for example `just model "Visual Studio Code"`. `just marimo` aliases `just app`;
+ extra marimo options work too, such as `just app --headless --port 2718`.
+ 
+-The **Train and evaluate** button, task, device, and seed controls appear first,
++The **Run** button, task, epoch, and seed controls appear first,
+ with run results directly below. Edit imports and settings in the setup cell,
+ and model classes and training functions in their cells below. Training starts
+ only when you click the button. `just app` also watches files saved from an
+ external editor.
+ 
+-`project1_harness.ipynb` is the grading notebook. Its setup cell's `PACKAGE_URL`
+-points to `git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git`.
+-Change that value if your submission repository changes. The harness defaults to
+-`LEADERBOARD_ALIAS = "TaylorT"` and `SECTION = "5000"`; set its alias to an empty
+-string to disable harness submissions. The app and harness submit their own
+-completed evaluations; calling the package's `train()` alone does not post.
++`project1_harness.ipynb` is the grading notebook. Its setup cell uses
++`PACKAGE_URL = "."` to install this local worktree when launched from its root. The harness uses an empty
++`LEADERBOARD_ALIAS` and a disabled sender. App, harness, and package results
++remain local.
+ The notebook also selects MPS on Macs when CUDA is unavailable.
+ The marimo app uses the same dataset sources, cache format, and required
+ `train()` / `predict()` interface. It uses the local model and training definitions
+@@ -318,6 +385,8 @@ pip install git+https://github.com/JesseTNRoberts/AI4200-imagenet32x32-baseline-
+ ## Files
+ 
+ - `src/residual_mlp_baseline/notebook.py`: the single marimo notebook containing the model, training, prediction, and local evaluation controls.
++- `src/residual_mlp_baseline/mixer.py`: paper architecture, presets, and resolution transfer.
++- `src/residual_mlp_baseline/mixer_training.py`: paper training recipes, augmentation, and local artifacts.
+ - `src/residual_mlp_baseline/model.py`: compatibility imports for the model classes and task sizes.
+ - `src/residual_mlp_baseline/train.py`: compatibility imports for the required `train` and `predict` functions.
+ - `project1_harness.ipynb`: the test harness. It downloads and caches the datasets, installs a package from GitHub, and reports test accuracy.
+diff --git a/journal.md b/journal.md
+index 5febf6f..1bea032 100644
+--- a/journal.md
++++ b/journal.md
+@@ -1017,6 +1017,10 @@ All final scores use the best validation checkpoint. Train excludes the holdout.
+ 
+ > These indicate the model is seeing a lot of information most of the time, so it shouldn't overregularize. Worth tinkering with the amount of dropout. If we used 0.15 instead of 0.15, we would see only 32% probability of making it through ever layer unchanged.
+ 
++## MLP-Mixer
++
++> Implemented Google's [MLP-Mixer](https://arxiv.org/abs/2105.01601) with 4×4 patches for these small images ([implementation details](README.md#mixer-implementation)). Only synthetic checks so far, including Metal training; no full training results, and leaderboard uploads are disabled.
++
+ # Planning
+ 
+ > Everything below this point is ideas and planning, not necessarily implemented.
+diff --git a/project1_harness.ipynb b/project1_harness.ipynb
+index 397e011..5136852 100644
+--- a/project1_harness.ipynb
++++ b/project1_harness.ipynb
+@@ -99,14 +99,14 @@
+         "\n",
+         "# Your GitHub repository, in the form pip installs from. This example is the\n",
+         "# submission: https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model\n",
+-        "PACKAGE_URL = \"git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git\"\n",
++        "PACKAGE_URL = \".\"  # Install this local paper worktree, not the published baseline.\n",
+         "\n",
+         "# The name you import your package by (the folder inside src/).\n",
+         "IMPORT_NAME = \"residual_mlp_baseline\"\n",
+         "\n",
+         "# Your nickname on the unofficial leaderboard (not your real name).\n",
+         "# Set it to \"\" to keep your results off the leaderboard.\n",
+-        "LEADERBOARD_ALIAS = \"TaylorT\"\n",
++        "LEADERBOARD_ALIAS = \"\"\n",
+         "\n",
+         "# Your section: \"4000\" or \"5000\".\n",
+         "SECTION = \"5000\""
+@@ -152,7 +152,7 @@
+         "# sets these through environment variables instead of editing the cells.\n",
+         "PACKAGE_URL = os.environ.get(\"HARNESS_PACKAGE_URL\", PACKAGE_URL)\n",
+         "IMPORT_NAME = os.environ.get(\"HARNESS_IMPORT_NAME\", IMPORT_NAME)\n",
+-        "LEADERBOARD_ALIAS = os.environ.get(\"HARNESS_LEADERBOARD_ALIAS\", LEADERBOARD_ALIAS)\n",
++        "LEADERBOARD_ALIAS = \"\"\n",
+         "DATA_DIR = os.environ.get(\"HARNESS_DATA_DIR\", DATA_DIR)\n",
+         "RESULTS_FILE = os.environ.get(\"HARNESS_RESULTS_FILE\", RESULTS_FILE)\n",
+         "TASKS_TO_RUN = os.environ.get(\"HARNESS_TASKS\", \",\".join(TASKS_TO_RUN)).split(\",\")"
+@@ -357,7 +357,7 @@
+         "\n",
+         "Accuracy is computed here, by the notebook, not by your code. Each result is also added to `results.csv` as soon as that task finishes.\n",
+         "\n",
+-        "**Unofficial leaderboard.** If `LEADERBOARD_ALIAS` is set in Setup, each result is also posted to the class's live leaderboard under that nickname. It is just for fun: the official ranking for extra credit comes from the instructor's own run of your final commit.\n",
++        "**Local results only.** Leaderboard submission is disabled in this paper worktree, including when a legacy alias is set.\n",
+         "\n",
+         "**Long runs on a cluster.** If your browser loses its connection to Jupyter, training keeps going but the printed output stops appearing on the page. `results.csv` still records every finished task. To avoid the problem entirely, run the whole notebook from a terminal instead of the browser:\n",
+         "\n",
+@@ -405,24 +405,8 @@
+         "\n",
+         "\n",
+         "def post_to_leaderboard(task, accuracy, train_minutes):\n",
+-        "    \"\"\"Send one result to the unofficial leaderboard. A failure only prints a warning.\"\"\"\n",
+-        "    global _form_fields\n",
+-        "    alias = LEADERBOARD_ALIAS.strip()\n",
+-        "    if not alias or not LEADERBOARD_FORM:\n",
+-        "        return\n",
+-        "    if alias.lower() == \"baseline\" and PACKAGE_URL != BASELINE_URL:\n",
+-        "        print(\"  not posted: set LEADERBOARD_ALIAS to your own nickname to join the leaderboard\")\n",
+-        "        return\n",
+-        "    answers = [alias, SECTION, task, f\"{accuracy:.4f}\", f\"{train_minutes:.1f}\", PACKAGE_URL]\n",
+-        "    try:\n",
+-        "        if _form_fields is None:\n",
+-        "            _form_fields = find_form_fields()\n",
+-        "        address = LEADERBOARD_FORM.partition(\"?\")[0].replace(\"/viewform\", \"/formResponse\")\n",
+-        "        data = urllib.parse.urlencode(dict(zip(_form_fields, answers))).encode()\n",
+-        "        urllib.request.urlopen(address, data=data, timeout=20)\n",
+-        "        print(f\"  posted to the leaderboard as {alias}\")\n",
+-        "    except Exception as error:\n",
+-        "        print(f\"  could not post to the leaderboard ({error}); the result is still in {RESULTS_FILE}\")"
++        "    \"\"\"This paper implementation keeps all model results local.\"\"\"\n",
++        "    print(\"  leaderboard posting disabled: local results only\")"
+       ]
+     },
+     {
+diff --git a/pyproject.toml b/pyproject.toml
+index 109d687..02ce458 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -11,14 +11,14 @@ dependencies = [
+     "jupytext>=1.19.6",
+     "marimo>=0.25.1,<1",
+     "torch>=2.0",
++    "numpy>=2,<3",
++    "pillow>=11,<13",
+ ]   # lower bound only, so pip keeps your existing CUDA build
+ 
+ [dependency-groups]
+ dev = [
+     "datasets>=4,<5",
+     "matplotlib>=3.9,<4",
+-    "numpy>=2,<3",
+-    "pillow>=11,<13",
+ ]
+ 
+ [tool.setuptools.packages.find]
+diff --git a/src/residual_mlp_baseline/model.py b/src/residual_mlp_baseline/model.py
+index fa8a169..a19521d 100644
+--- a/src/residual_mlp_baseline/model.py
++++ b/src/residual_mlp_baseline/model.py
+@@ -1,9 +1,10 @@
+-"""Compatibility imports for the model defined in the consolidated notebook."""
++"""Mixer exports and compatibility imports for historical residual models."""
+ 
+ import ast
+ import inspect
+ import textwrap
+ 
++from .mixer import MlpMixer, MixerBlock, MlpBlock, MixerConfig, MIXER_PRESETS, mixer_config
+ from . import notebook
+ 
+ TASKS = notebook.TASKS
+@@ -20,4 +21,5 @@ for node in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(ResidualMLP))))
+ else:
+     raise ImportError("The model does not reference a residual block class")
+ 
+-__all__ = ["TASKS", "Block", "ResidualMLP"]
++__all__ = ["TASKS", "Block", "ResidualMLP", "MlpMixer", "MixerBlock", "MlpBlock",
++           "MixerConfig", "MIXER_PRESETS", "mixer_config"]
+diff --git a/src/residual_mlp_baseline/notebook.py b/src/residual_mlp_baseline/notebook.py
+index c79c407..aaa255d 100644
+--- a/src/residual_mlp_baseline/notebook.py
++++ b/src/residual_mlp_baseline/notebook.py
+@@ -26,6 +26,15 @@ with app.setup:
+     import torch.nn.functional as F
+     from torch.utils.data import DataLoader, Subset, TensorDataset
+ 
++    from residual_mlp_baseline.mixer import MlpMixer, MixerConfig
++    from residual_mlp_baseline.mixer_training import MixerRecipe, task_config, train_mixer, predict_mixer, ImageTransform
++
++    # This worktree implements MLP-Mixer. Historical residual runs remain loadable.
++    DEFAULT_MODEL = "MLP-Mixer"
++    MIXER_PRESET = "S/16"
++    MIXER_CONFIG_OVERRIDES = {}
++    MIXER_RECIPE_OVERRIDES = {}
++
+     # Each task differs only in its input size and its number of classes.
+     # The same model class is used for all three.
+     TASKS = {
+@@ -37,11 +46,7 @@ with app.setup:
+     DEFAULT_TASK = 'cifar10'
+     DEFAULT_SEED = 42
+     DEFAULT_DEVICE = 'mps'
+-    RESTORED_FROM = {'run_id': 'cifar10-20261026-131127-ba8e8b68',
+-     'task': 'cifar10',
+-     'legacy_activation': None,
+-     'legacy_optimizer': None,
+-     'legacy_augmentation': None}
++    RESTORED_FROM = None
+     AUGMENTATION_CONFIG_OVERRIDES = {'cifar10': {'enabled': True,
+                  'default': {'rotation': {'probability': 0.45, 'amount': 10.0},
+                              'translation': {'probability': 0.5, 'amount': 4.0},
+@@ -56,7 +61,7 @@ with app.setup:
+ 
+     LEARNING_RATE = 0.03
+     BATCH_SIZE = 256
+-    EPOCHS = {'mnist': 500, 'cifar10': 60, 'imagenet32': 10}
++    EPOCHS = {'mnist': 300, 'cifar10': 300, 'imagenet32': 300}
+     WEIGHT_DECAY = 1e-05
+     MOMENTUM = 0.0
+     DAMPENING = 0.0
+@@ -100,9 +105,9 @@ with app.setup:
+                  'initial_accumulator_value': 0.0,
+                  'eps': 1e-10}}
+ 
+-    # Post each completed app run's test result to the unofficial class leaderboard.
+-    LEADERBOARD_ENABLED = True
+-    LEADERBOARD_ALIAS = "TaylorT"
++    # Paper implementation stays local; the submission function is disabled too.
++    LEADERBOARD_ENABLED = False
++    LEADERBOARD_ALIAS = ""
+     LEADERBOARD_SECTION = "5000"
+     LEADERBOARD_REPOSITORY = "git+https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git"
+     LEADERBOARD_FORM = "https://docs.google.com/forms/d/e/1FAIpQLScZjEdbLFtn1CNvsfwYEbM4YGRxdOU5cyJ7RANM7MrxT0a4oA/viewform"
+@@ -161,12 +166,15 @@ def _():
+ def _(optimizer_choice, optimizer_controls):
+     _note = ("Muon updates hidden matrices; AdamW updates input/output weights, biases, and normalization parameters."
+              if optimizer_choice.value == "Muon" else "")
+-    mo.vstack([
++    _optimizer_panel = mo.vstack([
+         mo.md("## Optimizer\nChoose an optimizer and adjust its settings before pressing **Run**."),
+         optimizer_choice, optimizer_controls[optimizer_choice.value], mo.md(_note),
+         mo.md("Muon requires a PyTorch build with `torch.optim.Muon`."
+               if "Muon" not in available_optimizer_names() else ""),
+-    ])
++    ]) if DEFAULT_MODEL == "ResidualMLP" else mo.md(
++        "## Mixer training\nUses the paper recipe shown in **Next run**. "
++        "Set epochs beside **Run**; edit other Mixer settings in setup.")
++    _optimizer_panel
+     return
+ 
+ 
+@@ -245,7 +253,7 @@ def _(
+     _settings = (mo.ui.tabs({f"Digit {digit}": _panel(_controls["classes"][str(digit)])
+                             for digit in range(10)})
+                  if task.value == "mnist" else _panel(_controls["default"]))
+-    mo.vstack([
++    _augmentation_panel = mo.vstack([
+         mo.md(f"""
+         ## {task.value} augmentation
+ 
+@@ -266,7 +274,13 @@ def _(
+               "Search or page through classes. Previews use cached training images; "
+               "after the first dataset download, click **Refresh cached previews**."),
+         preview_refresh, preview_class, preview_seed,
++    ]) if DEFAULT_MODEL == "ResidualMLP" else mo.vstack([
++        mo.md("## Mixer augmentation\nRandom resized crop, horizontal flips for color images, "
++              "RandAugment, and mixup. Preview shows crop/flip/RandAugment before batch mixup. "
++              "Select a class from cached training images; change the seed for fresh examples."),
++        preview_refresh, preview_class, preview_seed,
+     ])
++    _augmentation_panel
+     return
+ 
+ 
+@@ -287,9 +301,16 @@ def _(
+     _indices = np.flatnonzero(_labels == int(_selected["class_id"]))[:6]
+     mo.stop(len(_indices) == 0, mo.md("No cached examples for this class."))
+     _original = prepare(_images[_indices])
+-    _augmenter = ImageAugmenter(task.value, effective_augmentation(task.value, augmentation_controls),
+-                               seed=int(preview_seed.value))
+-    _augmented = _augmenter(_original, torch.as_tensor(_labels[_indices]).long())
++    if DEFAULT_MODEL == "MLP-Mixer":
++        _config = task_config(task.value, MIXER_PRESET, **MIXER_CONFIG_OVERRIDES.get(task.value, {}))
++        _recipe = MixerRecipe(**({"batch_size": 256, "horizontal_flip": task.value != "mnist"}
++                                 | MIXER_RECIPE_OVERRIDES.get(task.value, {})))
++        _transform = ImageTransform(_config.image_size, _recipe, int(preview_seed.value), True)
++        _augmented = torch.stack([_transform(_images[_index]) for _index in _indices])
++    else:
++        _augmenter = ImageAugmenter(task.value, effective_augmentation(task.value, augmentation_controls),
++                                   seed=int(preview_seed.value))
++        _augmented = _augmenter(_original, torch.as_tensor(_labels[_indices]).long())
+     import matplotlib.pyplot as _plt
+ 
+     _figure, _axes = _plt.subplots(2, len(_indices), figsize=(9, 3), squeeze=False)
+@@ -307,7 +328,9 @@ def _(
+     _figure.tight_layout()
+     _plt.close(_figure)
+     mo.vstack([mo.md(f"**{_selected['Class']}** · Original and augmented samples. "
+-                     "Change the seed for fresh augmentation. The dataset's toggle controls this preview."), _figure])
++                     "Change the seed for fresh augmentation. "
++                     + ("Mixer preview excludes batch mixup." if DEFAULT_MODEL == "MLP-Mixer" else
++                        "The dataset's toggle controls this preview.")), _figure])
+     return
+ 
+ 
+@@ -382,7 +405,8 @@ def _(
+ @app.cell(hide_code=True)
+ def _():
+     task = mo.ui.dropdown(["mnist", "cifar10", "imagenet32"], value=DEFAULT_TASK, label="Task")
+-    device = "mps"
++    _available = {"cpu": True, "mps": torch.backends.mps.is_available(), "cuda": torch.cuda.is_available()}
++    device = DEFAULT_DEVICE if _available.get(DEFAULT_DEVICE) else "cpu"
+     seed = mo.ui.number(start=0, stop=2**32 - 1, value=DEFAULT_SEED, label="Seed")
+     run_training = mo.ui.run_button(label="Run")
+     return device, run_training, seed, task
+@@ -407,8 +431,7 @@ def _(epoch_count, run_training, seed, task):
+     mo.vstack([
+         mo.hstack([task, run_training], justify="start", wrap=True),
+         mo.hstack([seed, epoch_count], justify="start", wrap=True),
+-        mo.md(f"Completed runs post test accuracy as **{LEADERBOARD_ALIAS}**, section **{LEADERBOARD_SECTION}**."
+-              if LEADERBOARD_ENABLED else "Leaderboard posting disabled."),
++        mo.md(f"**Model: {DEFAULT_MODEL}.** Local results only. Leaderboard posting disabled."),
+     ])
+     return
+ 
+@@ -443,9 +466,22 @@ def _(
+ @app.cell(hide_code=True)
+ def _(augmentation_controls, epoch_count, optimizer_choice, task):
+     _augmentation = effective_augmentation(task.value, augmentation_controls)
+-    mo.md(f"**Next run:** {task.value} · {optimizer_choice.value} · {int(epoch_count.value)} epochs · "
+-          f"augmentation **{'ON' if _augmentation['enabled'] else 'OFF'}**. "
+-          "Loading a saved run replaces settings; check this status before pressing **Run**.")
++    if DEFAULT_MODEL == "MLP-Mixer":
++        _config = task_config(task.value, MIXER_PRESET, **MIXER_CONFIG_OVERRIDES.get(task.value, {}))
++        _recipe = MixerRecipe(**({"batch_size": 256, "horizontal_flip": task.value != "mnist"}
++                                 | MIXER_RECIPE_OVERRIDES.get(task.value, {}) | {"epochs": int(epoch_count.value)}))
++        _next_run = mo.md(f"**Next run:** MLP-Mixer · {task.value} · {_recipe.epochs} epochs · "
++              f"{_config.num_blocks} blocks · width {_config.hidden_dim} · patches {_config.patch_size}×{_config.patch_size}. "
++              f"{'SGD' if _recipe.phase == 'finetune' else 'AdamW'} · lr {_recipe.learning_rate} · batch {_recipe.batch_size} · "
++              f"RandAugment N={_recipe.randaugment_layers}, M={_recipe.randaugment_magnitude} · "
++              f"mixup {_recipe.mixup_alpha} · stochastic depth {_recipe.stochastic_depth}. "
++              "Small-image adaptation; edit MIXER_PRESET, MIXER_CONFIG_OVERRIDES and MIXER_RECIPE_OVERRIDES in setup. "
++              "Results stay local. Loading a saved run restores its model and recipe.")
++    else:
++        _next_run = mo.md(f"**Next run:** {task.value} · {optimizer_choice.value} · {int(epoch_count.value)} epochs · "
++              f"augmentation **{'ON' if _augmentation['enabled'] else 'OFF'}**. "
++              "Loading a saved run replaces settings; check this status before pressing **Run**.")
++    _next_run
+     return
+ 
+ 
+@@ -465,12 +501,12 @@ def _(
+ ):
+     mo.stop(not run_training.value, mo.md("Ready. Select a task and start training."))
+ 
+-    with mo.status.spinner(title=f"Loading {task.value} and training on Apple Metal (MPS)..."):
++    with mo.status.spinner(title=f"Loading {task.value} and training {DEFAULT_MODEL} on {device}..."):
+         _X_train, _y_train, _X_test, _y_test = load_task(task.value)
+         _start = time.perf_counter()
+         _run_dir = RESULTS_FILE.parent / "runs" / f"{task.value}-{time.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:8]}"
+         _model = train_with_metrics(task.value, _X_train, _y_train, seed=int(seed.value),
+-                                    device=device, run_dir=_run_dir, epochs=int(epoch_count.value),
++                                    device=device, run_dir=_run_dir, epochs=int(epoch_count.value), model_name=DEFAULT_MODEL,
+                                     augmentation=effective_augmentation(task.value, augmentation_controls),
+                                     optimizer_settings=selected_optimizer(optimizer_choice.value, optimizer_controls.value))
+         _minutes = (time.perf_counter() - _start) / 60
+@@ -522,8 +558,7 @@ def _(
+     if device == "mps":
+         torch.mps.empty_cache()
+ 
+-    with mo.status.spinner(title="Submitting test accuracy to the leaderboard..."):
+-        _leaderboard_status = submit_run_to_leaderboard(task.value, _accuracy, _minutes, _run_dir)
++    _leaderboard_status = "Local results only. Leaderboard posting disabled."
+ 
+     mo.vstack([
+         mo.md(f"```text\n{_summary_text}\n```"),
+@@ -541,7 +576,7 @@ def _(
+ @app.cell(hide_code=True)
+ def _():
+     mo.md("""
+-    # Residual MLP development
++    # MLP-Mixer paper implementation
+ 
+     Edit the model and training functions below, then use the controls above.
+     Train your local code on MNIST, CIFAR-10, or ImageNet 32×32.
+@@ -549,12 +584,11 @@ def _():
+     the dataset; later runs reuse `data/`. Results append to `results.csv`.
+     Each run holds out 10% of training examples for validation, records metrics
+     every epoch, and evaluates the best validation checkpoint on the test set once.
+-    Curves and checkpoints save under `runs/`. Each completed run automatically
+-    posts its test accuracy to the unofficial class leaderboard. Submission status
+-    appears with the result; a network failure does not discard local results.
++    Curves and checkpoints save under `runs/`. Results stay local. Leaderboard
++    submission is disabled in this worktree and its grading harness.
+ 
+-    ImageNet training needs substantial RAM because the baseline converts the
+-    entire training set to float32. Start with MNIST to check your environment.
++    Mixer keeps source images as uint8 and transforms each batch on demand.
++    Dataset caches still require enough RAM for the source images.
+     """)
+     return
+ 
+@@ -589,8 +623,10 @@ def _():
+     mo.md("""
+     ## Model and training
+ 
+-    Edit task sizes and training settings in the setup cell. The classes and
+-    functions below are also used by the package and grading harness.
++    Mixer architecture and training live in `mixer.py` and `mixer_training.py`.
++    Edit Mixer configuration in setup. The residual classes below support
++    historical experiments; they are active only after loading a residual run.
++    The functions below route the package and grading harness to the active model.
+     Keep the `train(task, X_train, y_train, seed=0, device="cuda")` and
+     `predict(model, X)` interfaces unchanged for grading.
+     """)
+@@ -840,72 +876,8 @@ def save_run_result(results_file, run_dir, model, test_accuracy, train_accuracy,
+ 
+ @app.function
+ def submit_run_to_leaderboard(task, accuracy, train_minutes, run_dir):
+-    """Post one completed run, preserving a receipt and avoiding duplicate attempts.
+-
+-    Network failures leave local training results intact. An ambiguous POST is
+-    never retried automatically because the form has no idempotency key.
+-    """
+-    import re
+-    import urllib.parse
+-    import urllib.request
+-
+-    if not LEADERBOARD_ENABLED:
+-        return "Leaderboard posting disabled."
+-    run_dir = Path(run_dir)
+-    receipt_path = run_dir / "leaderboard-submission.json"
+-    try:
+-        if receipt_path.exists():
+-            previous = json.loads(receipt_path.read_text())
+-            if previous.get("confirmed"):
+-                return f"Leaderboard submission confirmed as {previous['answers']['alias']} (already submitted)."
+-            return "Leaderboard submission not confirmed; an earlier attempt exists. Check the run's receipt before retrying."
+-        if task not in TASKS or not 0 <= accuracy <= 1 or not 0 <= train_minutes < float("inf"):
+-            raise ValueError("Invalid task, test accuracy, or training duration")
+-        if not LEADERBOARD_ALIAS.strip() or LEADERBOARD_SECTION not in ("4000", "5000"):
+-            raise ValueError("Set a leaderboard alias and section 4000 or 5000")
+-        answers = {
+-            "alias": LEADERBOARD_ALIAS.strip(), "section": LEADERBOARD_SECTION,
+-            "task": task, "accuracy": f"{accuracy:.4f}",
+-            "train minutes": f"{train_minutes:.1f}", "repository": LEADERBOARD_REPOSITORY,
+-        }
+-        receipt = {"answers": answers, "confirmed": False, "status": "preparing",
+-                   "submitted_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+-        receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
+-        with urllib.request.urlopen(LEADERBOARD_FORM, timeout=20) as response:
+-            page = response.read().decode("utf-8")
+-        match = re.search(r"FB_PUBLIC_LOAD_DATA_ = (.*?);\s*</script>", page, re.S)
+-        if match is None:
+-            raise ValueError("Could not read leaderboard form fields")
+-        form = json.loads(match.group(1))
+-        fields = {question[1].strip().lower(): f"entry.{question[4][0][0]}"
+-                  for question in form[1][1] if question[4]}
+-        if not set(answers).issubset(fields):
+-            raise ValueError("Leaderboard form questions changed")
+-        payload = urllib.parse.urlencode({fields[name]: value for name, value in answers.items()}).encode()
+-        receipt["status"] = "posting"
+-        receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
+-        address = LEADERBOARD_FORM.partition("?")[0].replace("/viewform", "/formResponse")
+-        request = urllib.request.Request(address, data=payload,
+-                    headers={"Content-Type": "application/x-www-form-urlencoded"})
+-        with urllib.request.urlopen(request, timeout=20) as response:
+-            confirmation = response.read().decode("utf-8")
+-            receipt["http_status"] = response.status
+-        (run_dir / "leaderboard-confirmation.html").write_text(confirmation)
+-        receipt["confirmed"] = "Your response has been recorded" in confirmation
+-        receipt["status"] = "confirmed" if receipt["confirmed"] else "unconfirmed"
+-        receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
+-        if receipt["confirmed"]:
+-            return f"Leaderboard submission confirmed as {answers['alias']}, section {answers['section']}."
+-        return "Leaderboard submission not confirmed. Local results and the server response are saved in the run directory."
+-    except Exception as error:
+-        if "receipt" in locals():
+-            receipt["status"] = "unconfirmed" if receipt["status"] == "posting" else "failed"
+-            receipt["error"] = str(error)
+-            try:
+-                receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
+-            except OSError:
+-                pass
+-        return f"Leaderboard submission not confirmed ({error}). Local results are saved; no automatic retry was sent."
++    """Keep this paper worktree local, including callers using the old API."""
++    return "Leaderboard posting disabled. Local results only."
+ 
+ 
+ @app.function
+@@ -1176,7 +1148,28 @@ def restore_run_source(source, entry, legacy_activation=None, legacy_optimizer=N
+     task = config["task"]
+     if task not in TASKS:
+         raise ValueError("Unknown saved dataset")
++    if config.get("architecture", {}).get("family") == "MLP-Mixer":
++        mixer = MixerConfig(**config["mixer_config"])
++        recipe = MixerRecipe(**config["mixer_recipe"])
++        expected = task_config(task)
++        if (mixer.in_channels, mixer.num_classes) != (expected.in_channels, expected.num_classes):
++            raise ValueError("Saved Mixer channels/classes disagree with the task")
++        if not isinstance(config.get("seed"), int) or not 0 <= config["seed"] <= 2**32-1:
++            raise ValueError("Invalid saved seed")
++        configurations = setup_value(source, "MIXER_CONFIG_OVERRIDES")
++        configurations[task] = config["mixer_config"]
++        recipes = setup_value(source, "MIXER_RECIPE_OVERRIDES")
++        recipes[task] = config["mixer_recipe"]
++        epochs = setup_value(source, "EPOCHS")
++        epochs[task] = recipe.epochs
++        for name, value in {"DEFAULT_MODEL": "MLP-Mixer", "DEFAULT_TASK": task,
++                            "DEFAULT_SEED": config["seed"], "EPOCHS": epochs,
++                            "MIXER_CONFIG_OVERRIDES": configurations, "MIXER_RECIPE_OVERRIDES": recipes,
++                            "RESTORED_FROM": {"run_id": entry["id"], "task": task}}.items():
++            source = patch_setup_value(source, name, value)
++        return source
+     architecture = restored_architecture(config)
++    source = patch_setup_value(source, "DEFAULT_MODEL", "ResidualMLP")
+     tree = ast.parse(source)
+     classes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
+     model = next(node for node in classes if node.name == "ResidualMLP")
+@@ -1484,6 +1477,8 @@ def model_architecture(model):
+     Otherwise record the first block's expansion, or backbone width when the
+     model has no expanded linear layer.
+     """
++    if isinstance(model, MlpMixer):
++        return model.architecture()
+     head = getattr(model, "head_fc1", None)
+     block_linears = [layer for layer in model.blocks[0].modules() if isinstance(layer, nn.Linear)] if len(model.blocks) else []
+     hidden = head.out_features if isinstance(head, nn.Linear) else (
+@@ -1503,17 +1498,33 @@ def model_architecture(model):
+ @app.function
+ def train(task, X_train, y_train, seed=0, device="cuda"):
+     """Train from scratch and return the best validation checkpoint's model."""
+-    return train_with_metrics(task, X_train, y_train, seed=seed, device=device)
++    return train_with_metrics(task, X_train, y_train, seed=seed, device=device, model_name=DEFAULT_MODEL)
+ 
+ 
+ @app.function
+ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=None, augmentation=None,
+-                       optimizer_settings=None, epochs=None):
++                       optimizer_settings=None, epochs=None, model_name="ResidualMLP",
++                       mixer_settings=None, mixer_recipe=None):
+     """Train with a seeded holdout; optionally persist each epoch and best weights.
+ 
++    Existing callers retain ResidualMLP; the app and train() pass DEFAULT_MODEL.
++    Mixer uses mixer_settings/mixer_recipe rather than residual augmentation or
++    optimizer_settings.
++
+     No test data enters training or checkpoint selection. Tied validation
+     accuracies keep the earlier epoch. The grading entry point remains train().
+     """
++    if model_name == "MLP-Mixer":
++        config = (MixerConfig(**mixer_settings) if mixer_settings is not None else
++                  task_config(task, MIXER_PRESET, **MIXER_CONFIG_OVERRIDES.get(task, {})))
++        settings = ({"batch_size": 256, "horizontal_flip": task != "mnist"}
++                    | MIXER_RECIPE_OVERRIDES.get(task, {}) | (mixer_recipe or {}))
++        settings["epochs"] = EPOCHS[task] if epochs is None else epochs
++        return train_mixer(task, X_train, y_train, seed=seed, device=device, run_dir=run_dir,
++                           config=config, recipe=MixerRecipe(**settings),
++                           restored_from=RESTORED_FROM if RESTORED_FROM and RESTORED_FROM["task"] == task else None)
++    if model_name != "ResidualMLP":
++        raise ValueError(f"Unknown model: {model_name}")
+     torch.manual_seed(seed)                   # makes the run reproducible
+     if len(X_train) != len(y_train) or len(X_train) < 2:
+         raise ValueError("Training needs at least two examples and matching labels")
+@@ -1657,6 +1668,8 @@ def train_with_metrics(task, X_train, y_train, seed=0, device="cuda", run_dir=No
+ @app.function
+ def predict(model, X):
+     """Return class probabilities for X, one row per example, on the CPU."""
++    if isinstance(model, MlpMixer):
++        return predict_mixer(model, X)
+     device = next(model.parameters()).device
+     X = prepare(X)
+     # Predict in chunks so a large test set does not run out of GPU memory.
+diff --git a/tests/test_augmentation.py b/tests/test_augmentation.py
+index c6f8392..4194ceb 100644
+--- a/tests/test_augmentation.py
++++ b/tests/test_augmentation.py
+@@ -237,6 +237,7 @@ class DigitAugmentationTests(unittest.TestCase):
+             and target.id == 'augmentation_controls' for target in child.targets) for child in node.body))
+         run = next(node for node in cells if node.args.args and node.args.args[0].arg == 'NUM_CLASSES')
+         namespace = dict(vars(notebook))
++        namespace['DEFAULT_MODEL'] = 'ResidualMLP'
+         create.decorator_list = []
+         exec(compile(ast.Module(body=[create], type_ignores=[]), notebook.__file__, 'exec'), namespace)
+         controls, = namespace['_']()
+diff --git a/tests/test_class_preview.py b/tests/test_class_preview.py
+index f9a8481..af73703 100644
+--- a/tests/test_class_preview.py
++++ b/tests/test_class_preview.py
+@@ -61,6 +61,7 @@ class ClassPreviewTests(unittest.TestCase):
+                 seen.append(labels.tolist())
+                 return images
+ 
++        render_namespace['DEFAULT_MODEL'] = 'ResidualMLP'
+         render_namespace['ImageAugmenter'] = RecordInputs
+         controls_cell = next(node for node in ast.parse(Path(notebook.__file__).read_text()).body
+                              if isinstance(node, ast.FunctionDef) and node.name == '_' and any(
+diff --git a/tests/test_epochs.py b/tests/test_epochs.py
+index 139599c..052ed58 100644
+--- a/tests/test_epochs.py
++++ b/tests/test_epochs.py
+@@ -63,6 +63,7 @@ class EpochTests(unittest.TestCase):
+         model_factory = partial(notebook.ResidualMLP, width=8, depth=1)
+         with tempfile.TemporaryDirectory() as directory, \
+                 patch.object(notebook, "ResidualMLP", model_factory), \
++                patch.object(notebook, "DEFAULT_MODEL", "ResidualMLP"), \
+                 patch.dict(notebook.EPOCHS, {"cifar10": 1}):
+             run_dir = Path(directory) / "run"
+             model = notebook.train_with_metrics(
+diff --git a/tests/test_leaderboard.py b/tests/test_leaderboard.py
+index c4023eb..0fedb59 100644
+--- a/tests/test_leaderboard.py
++++ b/tests/test_leaderboard.py
+@@ -1,13 +1,10 @@
+-"""Leaderboard submission checks; all network calls are mocked."""
++"""The paper worktree must save results locally without leaderboard access."""
+ 
+ import ast
+ import csv
+-import io
+ import json
+ import tempfile
+ import unittest
+-import urllib.error
+-import urllib.parse
+ from pathlib import Path
+ from types import SimpleNamespace
+ from contextlib import nullcontext
+@@ -19,17 +16,6 @@ import torch
+ from residual_mlp_baseline import notebook
+ 
+ 
+-class Response(io.BytesIO):
+-    status = 200
+-
+-
+-def form_page():
+-    titles = ['Alias', 'Section', 'Task', 'Accuracy', 'Train Minutes', 'Repository']
+-    questions = [[None, title, None, 0, [[number]]] for number, title in enumerate(titles)]
+-    data = [None, [None, questions]]
+-    return Response(f'<script>FB_PUBLIC_LOAD_DATA_ = {json.dumps(data)};</script>'.encode())
+-
+-
+ class LeaderboardTests(unittest.TestCase):
+     def setUp(self):
+         self.temp = tempfile.TemporaryDirectory()
+@@ -39,64 +25,26 @@ class LeaderboardTests(unittest.TestCase):
+         self.enabled.start()
+         self.addCleanup(self.enabled.stop)
+ 
+-    def receipt(self):
+-        return json.loads((self.run / 'leaderboard-submission.json').read_text())
+-
+-    def test_confirmed_submission_sends_expected_score_and_is_not_duplicated(self):
+-        with patch('urllib.request.urlopen', side_effect=[form_page(), Response(b'Your response has been recorded')]) as network:
++    def test_sender_stays_disabled_even_if_legacy_flag_is_enabled(self):
++        with patch('urllib.request.urlopen', side_effect=AssertionError('No leaderboard access')) as network:
+             status = notebook.submit_run_to_leaderboard('mnist', .9915, 13.7, self.run)
+-            self.assertIn('confirmed as TaylorT, section 5000', status)
+-            request = network.call_args_list[1].args[0]
+-            payload = urllib.parse.parse_qs(request.data.decode())
+-            self.assertEqual(payload['entry.0'], ['TaylorT'])
+-            self.assertEqual(payload['entry.1'], ['5000'])
+-            self.assertEqual(payload['entry.2'], ['mnist'])
+-            self.assertEqual(payload['entry.3'], ['0.9915'])
+-            self.assertEqual(payload['entry.4'], ['13.7'])
+-            self.assertEqual(payload['entry.5'], [notebook.LEADERBOARD_REPOSITORY])
+-            self.assertTrue(request.full_url.endswith('/formResponse'))
+-            self.assertTrue(self.receipt()['confirmed'])
+-            self.assertTrue((self.run / 'leaderboard-confirmation.html').exists())
+-            again = notebook.submit_run_to_leaderboard('mnist', .9915, 13.7, self.run)
+-            self.assertIn('already submitted', again)
+-            self.assertEqual(network.call_count, 2)
+-
+-    def test_network_failure_preserves_local_result(self):
+-        (self.run / 'metrics.csv').write_text('epoch,train_loss\n1,0.1\n')
+-        with patch('urllib.request.urlopen', side_effect=urllib.error.URLError('offline')) as network:
+-            status = notebook.submit_run_to_leaderboard('mnist', .9, 1, self.run)
+-            self.assertIn('not confirmed', status)
+-            self.assertEqual(self.receipt()['status'], 'failed')
+-            self.assertIn('1,0.1', (self.run / 'metrics.csv').read_text())
+-            self.assertEqual(network.call_count, 1)
+-
+-    def test_ambiguous_post_is_not_automatically_retried(self):
+-        with patch('urllib.request.urlopen', side_effect=[form_page(), TimeoutError('response lost')]) as network:
+-            status = notebook.submit_run_to_leaderboard('mnist', .9, 1, self.run)
+-            self.assertIn('not confirmed', status)
+-            self.assertEqual(self.receipt()['status'], 'unconfirmed')
+-            notebook.submit_run_to_leaderboard('mnist', .9, 1, self.run)
+-            self.assertEqual(network.call_count, 2)
+-
+-    def test_http_success_without_confirmation_is_not_reported_as_submitted(self):
+-        with patch('urllib.request.urlopen', side_effect=[form_page(), Response(b'Please correct the form')]):
+-            status = notebook.submit_run_to_leaderboard('mnist', .9, 1, self.run)
+-            self.assertIn('not confirmed', status)
+-            self.assertFalse(self.receipt()['confirmed'])
+-
+-    def test_disabled_setting_does_not_contact_leaderboard(self):
+-        with patch.object(notebook, 'LEADERBOARD_ENABLED', False), patch('urllib.request.urlopen') as network:
+-            self.assertIn('disabled', notebook.submit_run_to_leaderboard('mnist', .9, 1, self.run))
+-            network.assert_not_called()
+-            self.assertFalse((self.run / 'leaderboard-submission.json').exists())
+-
+-    def test_changed_form_is_not_submitted(self):
+-        with patch('urllib.request.urlopen', return_value=Response(b'<html>Different form</html>')) as network:
+-            self.assertIn('not confirmed', notebook.submit_run_to_leaderboard('mnist', .9, 1, self.run))
+-            self.assertEqual(network.call_count, 1)
+-            self.assertEqual(self.receipt()['status'], 'failed')
+-
+-    def test_result_cell_posts_test_accuracy_after_local_artifacts_are_saved(self):
++        self.assertIn('disabled', status)
++        network.assert_not_called()
++        self.assertEqual(list(self.run.iterdir()), [])
++
++    def test_harness_sender_stays_disabled_even_with_alias(self):
++        book = json.loads((Path(notebook.__file__).parents[2] / 'project1_harness.ipynb').read_text())
++        source = next(''.join(cell['source']) for cell in book['cells']
++                      if 'def post_to_leaderboard(' in ''.join(cell.get('source', [])))
++        node = next(node for node in ast.parse(source).body
++                    if isinstance(node, ast.FunctionDef) and node.name == 'post_to_leaderboard')
++        namespace = {'LEADERBOARD_ALIAS': 'TaylorT'}
++        exec(compile(ast.Module(body=[node], type_ignores=[]), '<harness>', 'exec'), namespace)
++        with patch('urllib.request.urlopen', side_effect=AssertionError('No leaderboard access')) as network:
++            namespace['post_to_leaderboard']('cifar10', .99, 10)
++        network.assert_not_called()
++
++    def test_result_cell_saves_artifacts_without_calling_sender(self):
+         source = Path(notebook.__file__).read_text()
+         cell = next(node for node in ast.parse(source).body
+                     if isinstance(node, ast.FunctionDef) and node.args.args
+@@ -158,7 +106,7 @@ class LeaderboardTests(unittest.TestCase):
+             self.assertEqual(rows[1]['per_class_accuracy_file'],
+                              str((run_dir / 'per_class_accuracy.md').relative_to(self.run)))
+             self.assertTrue((run_dir / 'curves.png').exists())
+-            return 'Leaderboard submission confirmed as TaylorT, section 5000.'
++            return 'Local results only.'
+ 
+         controls_cell = next(node for node in ast.parse(Path(notebook.__file__).read_text()).body
+                              if isinstance(node, ast.FunctionDef) and node.name == '_' and any(
+@@ -180,7 +128,7 @@ class LeaderboardTests(unittest.TestCase):
+         )
+         with patch.dict('os.environ', {'MPLBACKEND': 'Agg'}):
+             exec(compile(ast.Module(body=[cell], type_ignores=[]), notebook.__file__, 'exec'), namespace)
+-            with patch.dict(namespace, submit_run_to_leaderboard=check_submission), \
++            with patch.dict(namespace, submit_run_to_leaderboard=lambda *args: self.fail("No sender call")), \
+                     patch.object(notebook, 'predict', namespace['predict']):
+                 namespace['_'](
+                     NUM_CLASSES={'mnist': 2}, RESULTS_FILE=results,
+@@ -193,6 +141,7 @@ class LeaderboardTests(unittest.TestCase):
+                                             np.zeros((4, 1, 28, 28)), np.array([0, 0, 0, 1])),
+                 )
+ 
++        check_submission('mnist', .75, 0, next(self.run.glob('runs/*')))
+         summary_path = next(self.run.glob('runs/*/summary.txt'))
+         summary_text, _, markdown = summary_path.read_text().partition('\n\nPer-class accuracy:\n\n')
+         self.assertIn(summary_text, displayed[0])
+diff --git a/uv.lock b/uv.lock
+index a6a10a5..7ff3690 100644
+--- a/uv.lock
++++ b/uv.lock
+@@ -2652,6 +2652,8 @@ dependencies = [
+     { name = "ipykernel" },
+     { name = "jupytext" },
+     { name = "marimo" },
++    { name = "numpy" },
++    { name = "pillow" },
+     { name = "torch" },
+ ]
+ 
+@@ -2659,8 +2661,6 @@ dependencies = [
+ dev = [
+     { name = "datasets" },
+     { name = "matplotlib" },
+-    { name = "numpy" },
+-    { name = "pillow" },
+ ]
+ 
+ [package.metadata]
+@@ -2668,6 +2668,8 @@ requires-dist = [
+     { name = "ipykernel", specifier = ">=7.4.0" },
+     { name = "jupytext", specifier = ">=1.19.6" },
+     { name = "marimo", specifier = ">=0.25.1,<1" },
++    { name = "numpy", specifier = ">=2,<3" },
++    { name = "pillow", specifier = ">=11,<13" },
+     { name = "torch", specifier = ">=2.0" },
+ ]
+ 
+@@ -2675,8 +2677,6 @@ requires-dist = [
+ dev = [
+     { name = "datasets", specifier = ">=4,<5" },
+     { name = "matplotlib", specifier = ">=3.9,<4" },
+-    { name = "numpy", specifier = ">=2,<3" },
+-    { name = "pillow", specifier = ">=11,<13" },
+ ]
+ 
+ [[package]]
