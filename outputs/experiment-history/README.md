@@ -4,6 +4,16 @@ Final fresh CUDA qualification is recorded separately in [final-evaluation](../f
 
 This is a source-backed reconstruction for writing `LOG.md`, not a replacement development log. It preserves facts and identifies missing evidence. The student’s original journal supplies the reasons; no pre-run prediction has been invented.
 
+## Later recorded experiments
+
+### Oct 28 — Extra residual block before final ImageNet reduction
+
+One seed-0 run added a 256→512→256 pre-LayerNorm/GELU residual MLP before the final 2×2 to 1×1 window stage, adding 263,424 parameters. With the same split and training recipe, best validation accuracy was **21.1067%**, below the baseline's **22.0222%**, after 25 epochs and 23.52 minutes. Best accuracy and minimum validation loss occurred at the cutoff; longer training is unmeasured. No test evaluation, retry, or default change.
+
+Run: `imagenet32-prereduction-20261028-s0`. [Change 146](../../LOG.md#change-146--imagenet32--2026-10-28) · [Pre-run hypothesis, results and curves](../pre-reduction-experiment/README.md) · [Exact run index](run-index.md#imagenet32-prereduction-20261028-s0).
+
+This is a supplement to the historical reconstruction below; its frozen inventory and original run counts are unchanged.
+
 ## Scope and limits
 
 - Checked all five currently registered worktrees, including uncommitted model changes. Found 53 unique saved attempts in scope: 42 with final summaries and 11 without. This includes the six audit runs; there are 47 attempts after that audit cohort.

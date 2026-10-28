@@ -1029,6 +1029,10 @@ The [ImageNet32 run](runs/imagenet32-20261027-000850-1c570f4f/summary.txt) with 
 
 MNIST, CIFAR-10, and ImageNet32 now have separate notebooks, each starting from its highest-validation completed run. Their 112 saved configurations and metrics are preserved by dataset, and loading settings in one notebook leaves the others alone.
 
+### Extra residual block before final reduction — 2026-10-28
+
+The [extra-block run](outputs/pre-reduction-experiment/README.md) reached 21.1067% ImageNet32 validation after 25 epochs (23.52 minutes), below the baseline's 22.0222%. Same seed, split and recipe; no test evaluation or default change, and its best accuracy and lowest validation loss both occurred at the cutoff.
+
 # Planning
 
 > Everything below this point is ideas and planning, not necessarily implemented.

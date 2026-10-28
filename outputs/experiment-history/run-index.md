@@ -1123,3 +1123,20 @@ are recorded in [final evaluation evidence](../final-evaluation/README.md).
 **Configuration SHA-256:** `a4767fe94e29dba5e3b9459bc3b4a2052b3251a9a1bb4d710428d6697d4581a7`.
 
 [Configuration](../final-evaluation/run-records/imagenet32-8856b095/config.json) · [Epoch metrics](../final-evaluation/run-records/imagenet32-8856b095/metrics.csv) · [Training receipt](../final-evaluation/run-records/imagenet32-8856b095/training-receipt.json).
+
+
+## Later validation-only architecture experiments
+
+### imagenet32-prereduction-20261028-s0
+
+**Task:** `imagenet32`. **Change:** [146](../../LOG.md#change-146--imagenet32--2026-10-28). One extra 256→512→256 residual MLP before the final 2×2 to 1×1 reduction; 4,186,472 parameters. Seed 0, fresh weights, A100; recipe and split unchanged.
+
+**Result:** validation 21.1067% versus baseline 22.0222% (-0.9156 percentage points); selected epoch 25 of 25; 23.52 minutes. Test accuracy was not measured. Baseline remains the default.
+
+**Configuration SHA-256:** `bfa37b6344806a6acf729d1b8832543e6f9fb9ed7ce2e61f35b8a3d007bd6c2f`.
+
+**Source commit:** `71c9c2d402bfe38ee374cf18261604b615b96355`.
+
+[Method and interpretation](../pre-reduction-experiment/README.md) · [Configuration](../pre-reduction-experiment/run-record/config.json) · [Pre-run protocol](../pre-reduction-experiment/intent.json) · [Epoch metrics](../pre-reduction-experiment/run-record/metrics.csv) · [Summary](../pre-reduction-experiment/summary.json) · [Curves](../pre-reduction-experiment/validation-comparison.png).
+
+This later experiment is recorded separately from the frozen historical inventory and the qualified harness results. Its source requires the experimental runner; it is not a dataset-notebook preset.
