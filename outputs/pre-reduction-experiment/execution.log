@@ -1,0 +1,5 @@
+CompletedProcess(args=['/usr/bin/python3', '-u', 
+'/content/run_pre_reduction_experiment.py', '--data', 
+'/content/data/imagenet32', '--output', '/content/ai4200-pre-reduction-run', 
+'--protocol', '/content/pre-reduction-protocol.json', '--runtime', 
+'/content/pre-reduction-ready.json'], returncode=0)

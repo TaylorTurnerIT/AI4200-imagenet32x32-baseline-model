@@ -1,0 +1,11 @@
+{
+  "attempts": 1,
+  "epochs_completed": 25,
+  "source_hashes_verified": true,
+  "training_array_hashes_match": true,
+  "training_indices_identical": true,
+  "validation_indices_identical": true,
+  "selected_checkpoint_matches_summary": true,
+  "test_set_evaluated": false,
+  "runtime_terminated": true
+}

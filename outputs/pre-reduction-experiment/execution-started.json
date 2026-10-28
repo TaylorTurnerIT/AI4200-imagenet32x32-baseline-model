@@ -1,0 +1,8 @@
+{
+  "reserved_utc": "2026-10-28T18:02:31.075452+00:00",
+  "source_commit": "71c9c2d402bfe38ee374cf18261604b615b96355",
+  "run_id": "imagenet32-prereduction-20261028-s0",
+  "allowed_attempts": 1,
+  "session": "ai4200-prereduction-a100-20261028",
+  "automatic_retry": false
+}

@@ -2442,9 +2442,9 @@ should not be described as deleting the whole stage.
 
 **Expected:** Recorded before training: assistant-proposed hypothesis, accepted for one experiment, that extra processing before compression may increase best validation accuracy above 22.022230%. Extra capacity may instead overfit; compare validation loss and the training/validation gap. No numerical gain was predicted. This is not a recovered personal prediction.
 
-**Result:** Pending one fresh seed-0 ImageNet run on an A100, 25 epochs maximum, 60 minutes maximum. No automatic retries or promotion; no test-set evaluation.
+**Result:** One fresh seed-0 run completed 25 epochs in 23.52 minutes. Best validation accuracy 21.1067% at epoch 25, versus baseline 22.0222% at epoch 23: 0.9156 percentage points worse. Minimum validation loss 4.101746 at epoch 25, versus baseline 4.069596 at epoch 15. Epoch-25 training loss 3.419130, versus baseline 3.252028. The accuracy hypothesis was not supported within this fixed 25-epoch recipe. The candidate was still improving at the cutoff; no continuation or retry was run. No test-set evaluation or default change. TODO — add your own interpretation.
 
-**Runs:** `imagenet32-prereduction-20261028-s0`; [pre-run protocol](outputs/pre-reduction-experiment/intent.json).
+**Runs:** `imagenet32-prereduction-20261028-s0`; [pre-run protocol](outputs/pre-reduction-experiment/intent.json); [results, curves, and evidence](outputs/pre-reduction-experiment/README.md).
 
 ## Next entry
 

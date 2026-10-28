@@ -1,0 +1,16 @@
+{
+  "runtime.json": "c15044193f910d90decd3151f513fa6a55ee7ed0a6a1e4a99103d300e57201bd",
+  "protocol.json": "78f5fdca536b1fa3966b1883e783c29304a942bb4681b14a79a6cb627364b69b",
+  "attempt.json": "dd469fb301bcd495ea6a2cdd9309309bd93a16016d340c58f2a58d2899040f6c",
+  "imagenet32-prereduction-20261028-s0/summary.json": "a46658c91ec43f6c7383cc1dbd6271d6967b7b628455565e175b9aae5b2795d5",
+  "imagenet32-prereduction-20261028-s0/config.json": "bfa37b6344806a6acf729d1b8832543e6f9fb9ed7ce2e61f35b8a3d007bd6c2f",
+  "imagenet32-prereduction-20261028-s0/best.pt": "23d5e662c258eda843e1e0c25dd4f46ba7d757b1668dd907ac05753d448ac8ff",
+  "imagenet32-prereduction-20261028-s0/metrics.csv": "07b4918d9ce9202090b2bbc70cca5392eefe2e0246504b1e4a94f0e51f30dff8",
+  "imagenet32-prereduction-20261028-s0/training-receipt.json": "902c5a67f38ed7f453aec0ff82a90d58464ef8a2457fbad341f9fe39fae2ec8c",
+  "source/run_pre_reduction_experiment.py": "05ebbf26e1903fe0ef238aae0befe03f270aaa2d432d0efdb57bd01f1238efd5",
+  "source/submission.py": "7bdf78440d0d31e6723a0e202c803786ec45b60790b8a7182b9a98dd52a5d423",
+  "source/pre_reduction_model.py": "ffa9ecf9bbf58d14140e0e641329d45bb16f8c28c129aa4ae6bc4b9fadd24056",
+  "source/training_core.py": "63ee14fb45d5ca28654ac3b2179e657218eb22fd2ff1888d2686983aa8780384",
+  "diagnostics/fixed-batch.json": "8cf78f8f7e50915acaeab961da771045a54e1a9df096ea468162db504d66a5da",
+  "diagnostics/training-dynamics.json": "82c2008643cc52785b39df7b06b2c5ceec8fd074a802d1b912b2b125659cb797"
+}

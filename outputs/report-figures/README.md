@@ -9,6 +9,7 @@ curve comparison.
 - [ImageNet32 accuracy by experiment](imagenet32-accuracy.png) · [SVG](imagenet32-accuracy.svg)
 - [CIFAR-10 training curves](cifar10-training-comparison.png) · [SVG](cifar10-training-comparison.svg)
 - [ImageNet32 training dynamics](training-dynamics.png)
+- [ImageNet32 extra-block experiment](imagenet32-pre-reduction-comparison.png) · [SVG](imagenet32-pre-reduction-comparison.svg) · [Validation-only result](../pre-reduction-experiment/README.md)
 - [ImageNet32 residual branch ablation](ablation-depth.png)
 - [ImageNet32 window-stage spatial ablation](window-stage-ablation.png) · [SVG](window-stage-ablation.svg) · [Method and results](../window-stage-ablation/README.md)
 

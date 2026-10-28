@@ -1,0 +1,49 @@
+{
+  "run_id": "imagenet32-prereduction-20261028-s0",
+  "task": "imagenet32",
+  "seed": 0,
+  "fresh_weights": true,
+  "test_set_evaluated": false,
+  "selected_epoch": 25,
+  "epochs_completed": 25,
+  "stop_reason": "epochs",
+  "training_seconds": 1410.9933475,
+  "best_validation_accuracy": 0.21106653345405726,
+  "selected_metrics": {
+    "epoch": 25,
+    "train_loss": 3.4191297696285767,
+    "train_accuracy": 0.2830143679681124,
+    "validation_loss": 4.101746171438384,
+    "validation_accuracy": 0.21106653345405726,
+    "elapsed_seconds": 1404.9661954030003
+  },
+  "last_metrics": {
+    "epoch": 25,
+    "train_loss": 3.4191297696285767,
+    "train_accuracy": 0.2830143679681124,
+    "validation_loss": 4.101746171438384,
+    "validation_accuracy": 0.21106653345405726,
+    "elapsed_seconds": 1404.9661954030003
+  },
+  "minimum_validation_loss": 4.101746171438384,
+  "minimum_validation_loss_epoch": 25,
+  "parameters": 4186472,
+  "added_parameters": 263424,
+  "baseline_run_id": "imagenet32-8856b095",
+  "baseline_best_validation_accuracy": 0.22022229854194636,
+  "validation_gain_percentage_points": -0.9155765087889095,
+  "baseline_minimum_validation_loss": 4.0695963521340035,
+  "baseline_training_seconds": 1308.8541805744171,
+  "primary_success": false,
+  "diagnostics_snapshots": 8,
+  "source_commit": "71c9c2d402bfe38ee374cf18261604b615b96355",
+  "installed_baseline_origin": {
+    "url": "https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model.git",
+    "vcs_info": {
+      "commit_id": "b5ab6e1f75de4cfc257cf85b7e2535cfa217934c",
+      "requested_revision": "b5ab6e1f75de4cfc257cf85b7e2535cfa217934c",
+      "vcs": "git"
+    }
+  },
+  "comparison_note": "One seed and one fresh candidate attempt; additional capacity is the architectural intervention. No automatic promotion."
+}
