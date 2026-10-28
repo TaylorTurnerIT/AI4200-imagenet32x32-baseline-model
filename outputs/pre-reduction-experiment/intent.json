@@ -1,0 +1,100 @@
+{
+  "experiment": "One residual MLP before final ImageNet spatial reduction",
+  "recorded_before_training_utc": "2026-10-28T17:59:57.000970+00:00",
+  "user_authorization": "I understand. Let's try it once",
+  "hypothesis_source": "Assistant-proposed hypothesis accepted for one experiment; not a claim of the user's original wording.",
+  "hypothesis": "Extra nonlinear processing across the 64\u00d72\u00d72 representation may improve validation accuracy before its compression to 64\u00d71\u00d71.",
+  "risk": "Additional capacity could overfit; validation loss previously flattened while training loss fell.",
+  "primary_criterion": "Best validation accuracy above the frozen baseline under the same seed, split, recipe, 25-epoch cap, and 60-minute allocation.",
+  "secondary_measures": [
+    "minimum validation loss",
+    "selected/last train-validation gap",
+    "training time"
+  ],
+  "allowed_attempts": 1,
+  "automatic_retry": false,
+  "automatic_promotion": false,
+  "run_id": "imagenet32-prereduction-20261028-s0",
+  "seed": 0,
+  "epochs": 25,
+  "max_seconds": 3600,
+  "batch_size": 256,
+  "optimizer": {
+    "name": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "eps": 1e-08,
+    "amsgrad": true
+  },
+  "augmentation": {
+    "task": "imagenet32",
+    "enabled": false,
+    "default": {
+      "rotation": {
+        "probability": 0.5,
+        "amount": 10.0
+      },
+      "translation": {
+        "probability": 0.5,
+        "amount": 2.0
+      },
+      "scale": {
+        "probability": 0.5,
+        "amount": 0.1
+      },
+      "shear": {
+        "probability": 0.25,
+        "amount": 5.0
+      },
+      "brightness": {
+        "probability": 0.25,
+        "amount": 0.1
+      },
+      "noise": {
+        "probability": 0.25,
+        "amount": 0.05
+      },
+      "erasing": {
+        "probability": 0.1,
+        "amount": 0.05
+      },
+      "horizontal_flip": {
+        "probability": 0.5,
+        "amount": 1.0
+      }
+    },
+    "classes": {}
+  },
+  "architecture_change": "Pre-LayerNorm; Linear(256,512); GELU; Linear(512,256); identity addition; reshape to 64\u00d72\u00d72 before window stage six.",
+  "added_parameters": 263424,
+  "baseline_parameters": 3923048,
+  "candidate_parameters": 4186472,
+  "initialization": "Xavier-normal added Linear weights, zero biases. CPU RNG fork preserves baseline shared weights and subsequent shuffle state.",
+  "baseline": {
+    "run_id": "imagenet32-8856b095",
+    "source_commit": "b5ab6e1f75de4cfc257cf85b7e2535cfa217934c",
+    "best_validation_accuracy": 0.22022229854194636,
+    "selected_epoch": 23,
+    "epochs_completed": 25,
+    "minimum_validation_loss": 4.0695963521340035,
+    "training_seconds": 1308.8541805744171,
+    "device": "cuda",
+    "torch": "2.11.0+cu130",
+    "gpu": "NVIDIA A100-SXM4-80GB"
+  },
+  "baseline_source_sha256": {
+    "submission.py": "7bdf78440d0d31e6723a0e202c803786ec45b60790b8a7182b9a98dd52a5d423",
+    "training_core.py": "63ee14fb45d5ca28654ac3b2179e657218eb22fd2ff1888d2686983aa8780384",
+    "analysis.py": "3f0b8e3b7d52ee0719450ad928330e162add80ebd427bc4c9fcac70b1c954a9d",
+    "train.py": "ebf1f7a7154d5d5cbe71cbd1d605bea1388679f374acd8c87b1404ac6aee2127",
+    "__init__.py": "926c34c78756172c7555de36d59cf407804efaad2227eeadb0a9d6ad156adfd9"
+  },
+  "experiment_source_sha256": {
+    "pre_reduction_model.py": "ffa9ecf9bbf58d14140e0e641329d45bb16f8c28c129aa4ae6bc4b9fadd24056",
+    "run_pre_reduction_experiment.py": "05ebbf26e1903fe0ef238aae0befe03f270aaa2d432d0efdb57bd01f1238efd5"
+  },
+  "training_data_reference": "training-data-reference.json",
+  "test_set_evaluated": false
+}

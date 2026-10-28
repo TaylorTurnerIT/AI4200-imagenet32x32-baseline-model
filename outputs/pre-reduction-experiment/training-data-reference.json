@@ -1,0 +1,19 @@
+{
+  "X_train": {
+    "shape": [
+      1281167,
+      3,
+      32,
+      32
+    ],
+    "dtype": "uint8",
+    "array_sha256": "8cc988fefb6c1b409d6e3be6358caea91d3f135bd1455c9494d823b9ff30bd6f"
+  },
+  "y_train": {
+    "shape": [
+      1281167
+    ],
+    "dtype": "int64",
+    "array_sha256": "1dec9f26324b60ac1bd49037df23d669c46801163538b410486a2273ebae2b90"
+  }
+}

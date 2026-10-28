@@ -2434,9 +2434,21 @@ results and methods](outputs/window-stage-ablation/README.md).
 TODO — add your own interpretation. These controls retain the learned MLP and
 should not be described as deleting the whole stage.
 
+### Change 146 — imagenet32 — 2026-10-28
+
+**Change:** Add one residual MLP before the last 2×2 to 1×1 window stage. Flatten 64×2×2 to 256; pre-LayerNorm, Linear(256,512), GELU, Linear(512,256), add the original stream, and reshape. Add 263,424 parameters. Keep the final image representation, training recipe, seed 0, and split unchanged.
+
+**Why:** The user asked, “It almost seems to imply there's more signal to be extracted with additional layers somehow?” Earlier spatial controls showed sensitivity before the final compression. The extra block tests additional processing there. TODO — add your own interpretation in your own words.
+
+**Expected:** Recorded before training: assistant-proposed hypothesis, accepted for one experiment, that extra processing before compression may increase best validation accuracy above 22.022230%. Extra capacity may instead overfit; compare validation loss and the training/validation gap. No numerical gain was predicted. This is not a recovered personal prediction.
+
+**Result:** Pending one fresh seed-0 ImageNet run on an A100, 25 epochs maximum, 60 minutes maximum. No automatic retries or promotion; no test-set evaluation.
+
+**Runs:** `imagenet32-prereduction-20261028-s0`; [pre-run protocol](outputs/pre-reduction-experiment/intent.json).
+
 ## Next entry
 
-### Change 146 — TODO task — TODO date
+### Change 147 — TODO task — TODO date
 
 **Change:** TODO
 
