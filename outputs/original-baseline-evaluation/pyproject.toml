@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "residual-mlp-baseline"
+version = "0.1.0"
+dependencies = ["torch>=2.0"]   # lower bound only, so pip keeps your existing CUDA build
+
+[tool.setuptools.packages.find]
+where = ["src"]

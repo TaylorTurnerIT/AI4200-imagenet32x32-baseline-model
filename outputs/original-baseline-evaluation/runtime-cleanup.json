@@ -1,0 +1,8 @@
+{
+  "session": "ai4200-original-baseline-a100-20261028",
+  "status": "terminated",
+  "server_active_sessions_after_stop": 0,
+  "archive_verified_before_stop": true,
+  "cli_version": "0.7.5",
+  "recorded_utc": "2026-10-29T00:43:03.113367+00:00"
+}

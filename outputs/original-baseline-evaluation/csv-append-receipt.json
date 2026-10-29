@@ -1,0 +1,9 @@
+{
+  "run_id": "imagenet32-originalbaseline-20261028-s0",
+  "file": "results.csv",
+  "previous_records": 150,
+  "rows_appended": 1,
+  "legacy_bytes_preserved": true,
+  "previous_sha256": "c619aa5ef8d1d797af017520f7d796c49e173777a51ca022292cfc6e624bbb90",
+  "new_sha256": "23df734cade142d76d4375310a889acd35b8e71bf9bbc56935a161a9c97f1cf7"
+}

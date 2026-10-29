@@ -1131,7 +1131,16 @@ are recorded in [final evaluation evidence](../final-evaluation/README.md).
 
 **Task:** `imagenet32`. **Change:** [146](../../LOG.md#change-146--imagenet32--2026-10-28). One extra 256→512→256 residual MLP before the final 2×2 to 1×1 reduction; 4,186,472 parameters. Seed 0, fresh weights, A100; recipe and split unchanged.
 
-**Result:** validation 21.1067% versus baseline 22.0222% (-0.9156 percentage points); selected epoch 25 of 25; 23.52 minutes. Test accuracy was not measured. Baseline remains the default.
+**Result:**
+
+| Measure | Baseline | Extra block |
+| --- | ---: | ---: |
+| Best validation accuracy | 22.0222% | 21.1067% |
+| Selected epoch / completed epochs | 23 / 25 | 25 / 25 |
+| Training time (minutes) | 21.81 | 23.52 |
+| Accuracy change from baseline (percentage points) | — | -0.9156 |
+
+Test accuracy was not measured. Baseline remains the default.
 
 **Configuration SHA-256:** `bfa37b6344806a6acf729d1b8832543e6f9fb9ed7ce2e61f35b8a3d007bd6c2f`.
 
@@ -1140,3 +1149,23 @@ are recorded in [final evaluation evidence](../final-evaluation/README.md).
 [Method and interpretation](../pre-reduction-experiment/README.md) · [Configuration](../pre-reduction-experiment/run-record/config.json) · [Pre-run protocol](../pre-reduction-experiment/intent.json) · [Epoch metrics](../pre-reduction-experiment/run-record/metrics.csv) · [Summary](../pre-reduction-experiment/summary.json) · [Curves](../pre-reduction-experiment/validation-comparison.png).
 
 This later experiment is recorded separately from the frozen historical inventory and the qualified harness results. Its source requires the experimental runner; it is not a dataset-notebook preset.
+
+
+## Recovered original baseline
+
+### imagenet32-originalbaseline-20261028-s0
+
+**Task:** `imagenet32`. Original instructor model and trainer; fresh weights, seed 0, A100. Recorded after development, with all training images and no validation split.
+
+| Measure | Result |
+| --- | ---: |
+| Test accuracy | 6.766% |
+| Training time | 15.42 minutes |
+| Epochs completed | 10 |
+| Training loss, first → last epoch | 6.4107 → 5.3584 |
+
+**Source commit:** `b56785a206069671420fbf5c6bbd6efb99f467b9`.
+
+**Configuration SHA-256:** `5d128ece864ef7906a934e1b38af5452d89db99498157351b1af6f01ee443011`.
+
+[Method and result](../original-baseline-evaluation/README.md) · [Configuration](../original-baseline-evaluation/config.json) · [Epoch losses](../original-baseline-evaluation/metrics.csv) · [Exact summary](../original-baseline-evaluation/summary.json).

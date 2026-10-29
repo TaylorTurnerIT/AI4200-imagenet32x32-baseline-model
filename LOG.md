@@ -7,11 +7,6 @@ Reconstructed from [journal.md](journal.md) and saved experiments. Original word
 ## Before finalizing
 
 - Replace the `TODO` fields. If a prediction or reason is remembered now, label it retrospective; the position of text in the old journal does not establish when it was written.
-- Each entry uses **Change / Why / Expected / Result**. Identical saved setups may share an entry; changed model, training or data settings remain separate. Unmatched legacy results need settings or an explicit repeat designation.
-- All 109 unique saved run configurations across five worktrees are captured in [the portable evidence snapshot](outputs/experiment-history/all-runs.json), with available model source, metrics and results. [Run index](outputs/experiment-history/run-index.md) links each ID to its evidence and local originals. Earlier module-only snapshots cannot recover missing forward source or activations.
-- Early dates follow CSV timestamps where matched. No-run-ID entries use journal settings and identify unresolved discrepancies. Some early CSV columns shifted, so raw rows are preserved and journal values take precedence where stated.
-- Test scores below are historical observations. Tuning should use validation; these test observations are not a substitute for a final harness evaluation.
-- The era labels and three [draft figures](outputs/experiment-history/figures/README.md) are a working organization, not final conclusions. Gains and regressions can involve multiple changed settings.
 
 ## Era figures — design draft
 
@@ -31,13 +26,28 @@ _Original baseline_
 
 **Change:** Run the supplied baseline: 30 residual blocks, width 128, hidden width 256, tanh, pre-LayerNorm, Xavier initialization and SGD at learning rate 0.05; batch 256. Baseline source: commit `c1f6802`. Configured epochs were MNIST 10, CIFAR-10 30 and ImageNet32 10.
 
-**Why:** “I began by leaving the model architecture unchanged, only changing hyperparameters by hand to understand their impacts.”
+**Why:** “I began by leaving the model architecture unchanged, only changing hyperparameters by hand to understand their impacts.” Aka, collect my baseline.
 
-**Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
+**Expected:** My initial thoughts had been that the beginning architecture would be immediately overfit and oversized.
 
-**Result:** Earliest CSV results: MNIST 95.65% test in 1.1 minutes; CIFAR-10 48.21% test in 2.0 minutes. The journal’s MNIST baseline rerun records 95.65% in 0.5 minutes. TODO — add the original ImageNet32 baseline result, training-loss observations, and confirmation that these evaluated the unchanged baseline.
+**Result:**
 
-**Evidence:** [journal.md](journal.md); legacy CSV line(s) 2, 3, 4 (raw rows retained in the evidence snapshot).
+| Dataset / record | Test accuracy | Training time |
+|---|---:|---:|
+| MNIST ([CSV row 2](results.csv)) | 95.65% | 1.1 minutes |
+| CIFAR-10 ([CSV row 3](results.csv)) | 48.21% | 2.0 minutes |
+| MNIST (journal baseline rerun; [CSV row 4](results.csv)) | 95.65% | 0.5 minutes |
+| ImageNet32 (recovered 2026-10-28, seed 0) | 6.766% | 15.42 minutes |
+
+The ImageNet32 baseline was recovered after development from the unchanged instructor source. Saved run: [`imagenet32-originalbaseline-20261028-s0`](outputs/original-baseline-evaluation/README.md). The historical MNIST and CIFAR-10 scores above come from the early CSV rows.
+
+| ImageNet32 training measure | Result |
+| --- | ---: |
+| Epochs completed | 10 |
+| First-epoch training loss | 6.4107 |
+| Final-epoch training loss | 5.3584 |
+
+TODO — add MNIST/CIFAR-10 baseline training-loss observations and confirm that the early CSV runs used the unchanged baseline.
 
 ## M1 — Baseline, capacity and regularization
 
@@ -51,7 +61,14 @@ _Learning rate 0.01_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 95.49%. Training time 0.6 minutes. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 95.49% |
+| Training time | 0.6 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 5 (raw rows retained in the evidence snapshot).
 
@@ -65,7 +82,14 @@ _Learning rate 0.10_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 96.74%. Training time 0.5 minutes. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 96.74% |
+| Training time | 0.5 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 6 (raw rows retained in the evidence snapshot).
 
@@ -79,7 +103,14 @@ _Learning rate 0.15_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 96.11%. Training time 0.5 minutes. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 96.11% |
+| Training time | 0.5 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 7 (raw rows retained in the evidence snapshot).
 
@@ -93,7 +124,14 @@ _50 epochs at learning rate 0.01_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.56%. Training time 2.5 minutes. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.56% |
+| Training time | 2.5 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 8 (raw rows retained in the evidence snapshot).
 
@@ -107,7 +145,14 @@ _50 epochs at learning rate 0.10_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.12%. Training time 2.4 minutes. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.12% |
+| Training time | 2.4 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 9 (raw rows retained in the evidence snapshot).
 
@@ -121,7 +166,16 @@ _50 epochs at learning rate 0.15_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.97%. Training time 2.4 minutes. Journal shows loss spikes to 0.5566 and 0.2268 followed by recovery. “We see here lots of big jumps followed by recovery. Not as good as a=0.10.”
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.97% |
+| Training time | 2.4 minutes |
+| First loss spike | 0.5566 |
+| Second loss spike | 0.2268 |
+
+Journal reports that the loss spikes were followed by recovery. “We see here lots of big jumps followed by recovery. Not as good as a=0.10.”
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 10 (raw rows retained in the evidence snapshot).
 
@@ -135,7 +189,21 @@ _Add a training-accuracy check_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal: learning rate 0.05 gave 100.00% train / 98.12% test; 0.10 gave 99.97% / 98.10%; 0.15 gave 99.94% / 97.97%; each took 2.4 minutes. “We see that the baseline learning rate was perfect for this current configuration. All it truly needed was a few more epochs.” TODO — add a loss-curve comparison.
+**Result:**
+
+Journal results:
+
+| Learning rate | Training accuracy | Test accuracy |
+|---:|---:|---:|
+| 0.05 | 100.00% | 98.12% |
+| 0.10 | 99.97% | 98.10% |
+| 0.15 | 99.94% | 97.97% |
+
+| Measure | Result |
+|---|---|
+| Training time per setup | 2.4 minutes |
+
+“We see that the baseline learning rate was perfect for this current configuration. All it truly needed was a few more epochs.” TODO — add a loss-curve comparison.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 11, 12, 13 (raw rows retained in the evidence snapshot).
 
@@ -151,8 +219,17 @@ _40-layer comparison with 25 epochs_
 
 **Expected:** “Right now I assume the issue is we're losing valuable signal as the layer layers add nothing but noise to an ultimately simple problem. I expect to see some small number of layers, perhaps 10-15 perform the same or better.”
 
-**Result:** Journal test accuracy 97.79%. Training accuracy 99.7%; 1.2 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.79% |
+| Training accuracy | 99.7% |
+| Training time | 1.2 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 14 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** TODO — verify whether `a=0.5` was a typo for 0.05. The baseline had 30 blocks, while this entry says 40. Do not silently substitute either value.
@@ -167,8 +244,17 @@ _Five layers_
 
 **Expected:** “I expect to see some small number of layers, perhaps 10-15 perform the same or better.”
 
-**Result:** Journal test accuracy 97.89%. Training accuracy 99.73%; 0.3 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “An incredible gain! As predicted we actually see a performance increase by decreasing the layers and a gain of 1.2 minutes”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.89% |
+| Training accuracy | 99.73% |
+| Training time | 0.3 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “An incredible gain! As predicted we actually see a performance increase by decreasing the layers and a gain of 1.2 minutes”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 15 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** Journal’s claimed 1.2-minute gain conflicts with the recorded 1.2-to-0.3-minute change (0.9 minutes). TODO — revise the interpretation.
@@ -183,8 +269,17 @@ _1 layers_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.73%. Training accuracy 99.06%; 0.4 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.73% |
+| Training accuracy | 99.06% |
+| Training time | 0.4 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 16 (raw rows retained in the evidence snapshot).
 
 ### Change 12 — mnist — 2026-10-19
@@ -197,8 +292,17 @@ _2 layers_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.77%. Training accuracy 99.09%; 0.2 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.77% |
+| Training accuracy | 99.09% |
+| Training time | 0.2 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 17 (raw rows retained in the evidence snapshot).
 
 ### Change 13 — mnist — 2026-10-19
@@ -211,8 +315,17 @@ _3 layers_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.8%. Training accuracy 99.57%; 0.3 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.8% |
+| Training accuracy | 99.57% |
+| Training time | 0.3 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 18 (raw rows retained in the evidence snapshot).
 
 ### Change 14 — mnist — 2026-10-19
@@ -225,8 +338,18 @@ _4 layers_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.92%. Training accuracy 99.67%; 0.9 minutes, matching the old row’s shifted layout. Journal’s depth-sweep observation: loss reached the 0.0x range within approximately seven epochs. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.92% |
+| Training accuracy | 99.67% |
+| Training time | 0.9 minutes |
+| Loss milestone | 0.0x range within approximately seven epochs |
+
+TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 19 (raw rows retained in the evidence snapshot).
 
 ### Change 15 — mnist — 2026-10-19
@@ -239,8 +362,17 @@ _6 layers_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.03%. Training accuracy 99.79%; 0.4 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.03% |
+| Training accuracy | 99.79% |
+| Training time | 0.4 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 20 (raw rows retained in the evidence snapshot).
 
 ### Change 16 — mnist — 2026-10-19
@@ -253,8 +385,17 @@ _7 layers_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.6%. Training accuracy 99.67%; 0.5 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Regression. Let's roll with 6 layers for now. Going to try a run with 50 epochs and 6 layers.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.6% |
+| Training accuracy | 99.67% |
+| Training time | 0.5 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Regression. Let's roll with 6 layers for now. Going to try a run with 50 epochs and 6 layers.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 21 (raw rows retained in the evidence snapshot).
 
 ### Change 17 — mnist — 2026-10-19
@@ -267,8 +408,18 @@ _50 epochs after depth sweep_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.01%. Training accuracy 100%; 0.9 minutes, matching the old row’s shifted layout. Last four recorded losses: 0.0012, 0.0011, 0.0010, 0.0010. “Zero change in the last epoch. Clearly reached the floor of this configuration.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.01% |
+| Training accuracy | 100% |
+| Training time | 0.9 minutes |
+| Last four recorded losses (in order) | 0.0012, 0.0011, 0.0010, 0.0010 |
+
+“Zero change in the last epoch. Clearly reached the floor of this configuration.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 22 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -283,8 +434,17 @@ _Residual width 32_
 
 **Expected:** “Perhaps a smaller residual stream is equally capable, perhaps a larger residual layer will allow more signal through.”
 
-**Result:** Journal test accuracy 95.92%. Training accuracy 96.93%; 0.4 minutes, matching the old row’s shifted layout. “Immediately slower training. Didn't reach 0.0# until epoch 18.” TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 95.92% |
+| Training accuracy | 96.93% |
+| Training time | 0.4 minutes |
+
+“Immediately slower training. Didn't reach 0.0# until epoch 18.” TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 23 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -299,8 +459,18 @@ _Residual width 256_
 
 **Expected:** “perhaps a larger residual layer will allow more signal through.”
 
-**Result:** Journal test accuracy 98.04%. Training accuracy 99.99%; 0.5 minutes, matching the old row’s shifted layout. Journal: loss reached the 0.0x range in six epochs. “Incredible training accuracy but a trivial improvement in test. All we did was improve the models ability to overfit.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.04% |
+| Training accuracy | 99.99% |
+| Training time | 0.5 minutes |
+| Loss milestone | 0.0x range in six epochs |
+
+“Incredible training accuracy but a trivial improvement in test. All we did was improve the models ability to overfit.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 24 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -315,8 +485,17 @@ _50 epochs at width 256_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.01%. Training accuracy 100%; 0.9 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “We gained an incredible -0.03%. I'd say that was just further overfitting pushing our performance worse.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.01% |
+| Training accuracy | 100% |
+| Training time | 0.9 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “We gained an incredible -0.03%. I'd say that was just further overfitting pushing our performance worse.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 25 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -331,8 +510,17 @@ _Hidden width 512_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.17%. Training accuracy 100%; 1.0 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.17% |
+| Training accuracy | 100% |
+| Training time | 1.0 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 26 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown. Journal settings increase hidden width, although the preceding idea mentions reducing capacity. TODO — explain the intended comparison. The printed result is 98.17%, while the following sentence says 98.18%.
@@ -347,8 +535,17 @@ _Residual width 512_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.16%. Training accuracy 100%; 1.1 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.16% |
+| Training accuracy | 100% |
+| Training time | 1.1 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 27 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -363,8 +560,17 @@ _Hidden width 1024_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.15%. Training accuracy 100%; 1.4 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Crazy experiments over with no real change. This is obviously a dead end. Onto Regularization.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.15% |
+| Training accuracy | 100% |
+| Training time | 1.4 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Crazy experiments over with no real change. This is obviously a dead end. Onto Regularization.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 28 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -379,8 +585,18 @@ _Weight decay 0.99_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 11.35%. Training accuracy 11.24%; 1.0 minutes, matching the old row’s shifted layout. Journal: loss changed by only about 0.0001 across 50 epochs. “Didn't learn a thing.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 11.35% |
+| Training accuracy | 11.24% |
+| Training time | 1.0 minutes |
+| Loss change across 50 epochs | about 0.0001 |
+
+“Didn't learn a thing.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 29 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown. TODO — explain the SGD weight-decay update correctly. Weight decay 0.99 is not “99% of squared magnitude allowed to affect weight decay.”
@@ -395,8 +611,17 @@ _Weight decay 0.01_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 87.79%. Training accuracy 86.78%; 0.5 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 87.79% |
+| Training accuracy | 86.78% |
+| Training time | 0.5 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 30 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -411,8 +636,19 @@ _Weight decay 0.0001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.09%. Training accuracy 99.96%; 0.5 minutes, matching the old row’s shifted layout. Recorded losses at epochs 22–25: 0.0093, 0.0077, 0.0060, 0.0047. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.09% |
+| Training accuracy | 99.96% |
+| Training time | 0.5 minutes |
+| Recorded loss epochs | 22–25 |
+| Recorded losses (in order) | 0.0093, 0.0077, 0.0060, 0.0047 |
+
+TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 31 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown. TODO — identify and cite the source of the weight-decay suggestion if you remember it.
@@ -427,8 +663,17 @@ _50 epochs with weight decay 0.0001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.24%. Training accuracy 100%; 1.0 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “The plan paid off! We closed the train accuracy to 100% again and gained 0.10 of test accuracy.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.24% |
+| Training accuracy | 100% |
+| Training time | 1.0 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “The plan paid off! We closed the train accuracy to 100% again and gained 0.10 of test accuracy.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 32 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -443,8 +688,17 @@ _Weight decay 0.001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.92%. Training accuracy 99.27%; 1.0 minutes, matching the old row’s shifted layout. Journal reports oscillation. “Tried another jump in regularization and I'm starting to see a lot of oscillation. We've lost test accuracy in exchange for some train room.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.92% |
+| Training accuracy | 99.27% |
+| Training time | 1.0 minutes |
+
+Journal reports oscillation. “Tried another jump in regularization and I'm starting to see a lot of oscillation. We've lost test accuracy in exchange for some train room.”
+
+These values match the old row’s shifted layout. Journal reports oscillation.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 33 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -459,8 +713,17 @@ _Learning rate 0.03 with decay 0.001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.06%. Training accuracy 99.66%; 1.0 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “a=0.03 worked. I saw oscillation happening and it predictably solved it.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.06% |
+| Training accuracy | 99.66% |
+| Training time | 1.0 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “a=0.03 worked. I saw oscillation happening and it predictably solved it.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 34 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -475,8 +738,17 @@ _Learning rate 0.01 with decay 0.001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.97%. Training accuracy 99.91%; 1.0 minutes, matching the old row’s shifted layout. “With 0.01 we're seeing incredibly slow training with more room for training by epoch 50.” TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.97% |
+| Training accuracy | 99.91% |
+| Training time | 1.0 minutes |
+
+“With 0.01 we're seeing incredibly slow training with more room for training by epoch 50.” TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 35 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -493,8 +765,17 @@ _SGD momentum 0.9_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 96.66%. Training accuracy 98.25%; 1.1 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Well that didn't work. Let's try less.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 96.66% |
+| Training accuracy | 98.25% |
+| Training time | 1.1 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Well that didn't work. Let's try less.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 36 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -509,8 +790,17 @@ _SGD momentum 0.5_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98%. Training accuracy 100%; 1.1 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98% |
+| Training accuracy | 100% |
+| Training time | 1.1 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 37 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -525,8 +815,17 @@ _Weight decay 0.005 with momentum 0.5_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 94.08%. Training accuracy 94.67%; 1.1 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Huge overshoot. Let's try less momentum then bring in dampening. Could also try a smaller learning rate.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 94.08% |
+| Training accuracy | 94.67% |
+| Training time | 1.1 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Huge overshoot. Let's try less momentum then bring in dampening. Could also try a smaller learning rate.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 38 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -541,8 +840,17 @@ _Momentum 0.3 with decay 0.005_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 96.65%. Training accuracy 97.73%; 1.1 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 96.65% |
+| Training accuracy | 97.73% |
+| Training time | 1.1 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 39 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -557,8 +865,17 @@ _Batch 128 and weight decay 0.001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 96.36%. Training accuracy 98.41%; 2.0 minutes, matching the old row’s shifted layout. “Still oscillating.” TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 96.36% |
+| Training accuracy | 98.41% |
+| Training time | 2.0 minutes |
+
+“Still oscillating.” TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 42 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown. The nearby CSV-only result at 11:42 is not assigned this setup because the journal does not identify it.
@@ -573,8 +890,17 @@ _Learning rate 0.001 and momentum 0.9_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.76%. Training accuracy 99.96%; 1.2 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Slow training, okay results.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.76% |
+| Training accuracy | 99.96% |
+| Training time | 1.2 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “Slow training, okay results.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 43 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -589,8 +915,17 @@ _Batch 128 at learning rate 0.001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.85%. Training accuracy 99.93%; 2.0 minutes, matching the old row’s shifted layout. “Faster convergence, seeing some oscillation.” TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.85% |
+| Training accuracy | 99.93% |
+| Training time | 2.0 minutes |
+
+“Faster convergence, seeing some oscillation.” TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 44 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown. TODO — revise the explanation: a smaller batch means more optimizer updates per epoch, not a larger batch.
@@ -605,8 +940,17 @@ _Learning rate 0.0001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 97.94%. Training accuracy 100%; 2.9 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 97.94% |
+| Training accuracy | 100% |
+| Training time | 2.9 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 45 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The journal records depth 6, but its retrospective correction says these runs probably used 7. Exact transition time is unknown.
@@ -621,8 +965,17 @@ _Accidental weight decay 0.00001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.22%. Training accuracy 100%; 1.0 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “I actually made a mistake, I forgot to remove the 0. before the 1 in weight_decay and I got this 98.22%.”
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.22% |
+| Training accuracy | 100% |
+| Training time | 1.0 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. “I actually made a mistake, I forgot to remove the 0. before the 1 in weight_decay and I got this 98.22%.”
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 47 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** The preceding 12:08 CSV result also scored 98.22%, but its settings are not independently recorded. It remains in the unresolved list.
@@ -637,8 +990,17 @@ _Correct decay to 0.0001_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.16%. Training accuracy 100%; 0.9 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.16% |
+| Training accuracy | 100% |
+| Training time | 0.9 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 48 (raw rows retained in the evidence snapshot).
 
 ### Change 41 — mnist — 2026-10-20
@@ -651,8 +1013,17 @@ _Explicitly test depth 6_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal test accuracy 98.24%. Training accuracy 100%; 1.0 minutes, matching the old row’s shifted layout. TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+**Result:**
 
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.24% |
+| Training accuracy | 100% |
+| Training time | 1.0 minutes |
+
+TODO — add the loss-curve observation; no per-epoch artifact was located for this early run. TODO — explain whether this matched your expectation.
+
+These values match the old row’s shifted layout.
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 49 (raw rows retained in the evidence snapshot).
 
 **Draft notes:** Later retrospective replay evidence in the journal associates 98.24% with seven blocks and 98.16% with six. These contemporary labels say the reverse. TODO — reconcile; do not silently relabel either historical result.
@@ -667,7 +1038,13 @@ _Unmatched legacy result at 11:42_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 97.65% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 97.65% |
+
+The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 40 (raw rows retained in the evidence snapshot).
 
@@ -681,7 +1058,13 @@ _Unmatched legacy result at 11:44_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 96.36% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 96.36% |
+
+The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 41 (raw rows retained in the evidence snapshot).
 
@@ -695,7 +1078,13 @@ _Unmatched legacy result at 12:08_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.22% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.22% |
+
+The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 46 (raw rows retained in the evidence snapshot).
 
@@ -709,7 +1098,13 @@ _Unmatched legacy result at 12:40_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.18% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.18% |
+
+The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 50 (raw rows retained in the evidence snapshot).
 
@@ -725,7 +1120,13 @@ _Unmatched legacy result at 14:49_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.18% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.18% |
+
+The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 51 (raw rows retained in the evidence snapshot).
 
@@ -739,7 +1140,13 @@ _Unmatched legacy result at 14:54_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.18% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.18% |
+
+The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 52 (raw rows retained in the evidence snapshot).
 
@@ -753,7 +1160,13 @@ _Unmatched legacy result at 15:33_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.37% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.37% |
+
+The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 53 (raw rows retained in the evidence snapshot).
 
@@ -767,7 +1180,13 @@ _Unmatched legacy result at 17:30_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.07% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.07% |
+
+The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 54 (raw rows retained in the evidence snapshot).
 
@@ -781,7 +1200,14 @@ _Unmatched legacy result at 17:38_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.24% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.24% |
+| CSV warning | Column layout is shifted; printed time/train values require review |
+
+TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 55 (raw rows retained in the evidence snapshot).
 
@@ -795,7 +1221,14 @@ _Unmatched legacy result at 17:48_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 97.86% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 97.86% |
+| CSV warning | Column layout is shifted; printed time/train values require review |
+
+TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 56 (raw rows retained in the evidence snapshot).
 
@@ -809,7 +1242,14 @@ _Unmatched legacy result at 17:49_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.24% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.24% |
+| CSV warning | Column layout is shifted; printed time/train values require review |
+
+TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 57 (raw rows retained in the evidence snapshot).
 
@@ -823,7 +1263,14 @@ _Unmatched legacy result at 21:34_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.09% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.09% |
+| CSV warning | Column layout is shifted; printed time/train values require review |
+
+TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 58 (raw rows retained in the evidence snapshot).
 
@@ -837,7 +1284,14 @@ _Unmatched legacy result at 21:47_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** CSV records 98.37% test accuracy. The CSV column layout is shifted; printed time/train values require review. TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (CSV) | 98.37% |
+| CSV warning | Column layout is shifted; printed time/train values require review |
+
+TODO — add confirmed training time, train accuracy, loss behavior and interpretation.
 
 **Evidence:** [journal.md](journal.md); legacy CSV line(s) 59 (raw rows retained in the evidence snapshot).
 
@@ -851,7 +1305,15 @@ _Validation-based checkpoint selection_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261022-220617-e4881f95`: train 100%, validation 98.48%, test 98.16%; 9.10 minutes; selected epoch 368. Train loss 0.6946 to 0.0002703; minimum 0.0002227 at epoch 278; validation loss 0.3219 to 0.07032; minimum 0.05885 at epoch 358.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261022-220617-e4881f95 | 100% | 98.48% | 98.16% | 9.10 minutes | 368 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.6946 → 0.0002703 | 0.0002227 (278) | 0.3219 → 0.07032 | 0.05885 (358) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -869,7 +1331,15 @@ _Legacy mlp (module shapes saved; forward source not captured)_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261022-230308-ed671f61`: No final score; 143 completed epoch rows saved. Train loss 0.6247 to 0.000658; minimum 0.000658 at epoch 143; validation loss 0.3862 to 0.09722; minimum 0.08053 at epoch 42.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261022-230308-ed671f61 | — | — | — | — | — | 143 completed epoch rows; no final score |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.6247 → 0.000658 | 0.000658 (143) | 0.3862 → 0.09722 | 0.08053 (42) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -887,7 +1357,15 @@ _Legacy mlp (module shapes saved; forward source not captured)_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261022-230552-e687600f`: train 100%, validation 98.42%, test 98.06%; 18.50 minutes; selected epoch 653. Train loss 0.5453 to 0.000259; minimum 0.0002077 at epoch 341; validation loss 0.3552 to 0.08314; minimum 0.06415 at epoch 615.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261022-230552-e687600f | 100% | 98.42% | 98.06% | 18.50 minutes | 653 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.5453 → 0.000259 | 0.0002077 (341) | 0.3552 → 0.08314 | 0.06415 (615) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -905,7 +1383,15 @@ _MNIST data augmentation_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261023-001324-8a4087e7`: train 99.97%, validation 99.32%, test 99.15%; 13.70 minutes; selected epoch 315. Train loss 1.095 to 0.01925; minimum 0.0156 at epoch 357; validation loss 0.4271 to 0.02562; minimum 0.02282 at epoch 323.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261023-001324-8a4087e7 | 99.97% | 99.32% | 99.15% | 13.70 minutes | 315 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.095 → 0.01925 | 0.0156 (357) | 0.4271 → 0.02562 | 0.02282 (323) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -923,7 +1409,15 @@ _Legacy mlp (module shapes saved; forward source not captured)_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261023-100855-d6864421`: train 99.97%, validation 99.32%, test 99.15%; 17.40 minutes; selected epoch 315. Train loss 1.095 to 0.01711; minimum 0.0156 at epoch 357; validation loss 0.4271 to 0.02901; minimum 0.02282 at epoch 323.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261023-100855-d6864421 | 99.97% | 99.32% | 99.15% | 17.40 minutes | 315 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.095 → 0.01711 | 0.0156 (357) | 0.4271 → 0.02901 | 0.02282 (323) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -941,7 +1435,15 @@ _Legacy mlp (module shapes saved; forward source not captured)_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261023-105208-872d486e`: train 100%, validation 99.33%, test 99.23%; 17.30 minutes; selected epoch 317. Train loss 0.7405 to 0.01587; minimum 0.01001 at epoch 357; validation loss 0.207 to 0.02676; minimum 0.02371 at epoch 481.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261023-105208-872d486e | 100% | 99.33% | 99.23% | 17.30 minutes | 317 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.7405 → 0.01587 | 0.01001 (357) | 0.207 → 0.02676 | 0.02371 (481) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -959,7 +1461,15 @@ _Legacy mlp (module shapes saved; forward source not captured)_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261023-122327-464bd648`: No final score; 50 completed epoch rows saved. Train loss 0.724 to 0.04265; minimum 0.04129 at epoch 49; validation loss 0.2221 to 0.03736; minimum 0.03457 at epoch 37.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261023-122327-464bd648 | — | — | — | — | — | 50 completed epoch rows; no final score; no completed epoch metrics were saved |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.724 → 0.04265 | 0.04129 (49) | 0.2221 → 0.03736 | 0.03457 (37) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -977,9 +1487,23 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261023-123641-6d74404c`: No final score; 3 completed epoch rows saved. Train loss 0.4734 to 0.1302; minimum 0.1302 at epoch 3; validation loss 0.2188 to 0.1847; minimum 0.1786 at epoch 2.
+**Result:**
 
-`mnist-20261023-134613-19c0d4f0`: No final score; 24 completed epoch rows saved. Train loss 0.4734 to 0.001914; minimum 0.001914 at epoch 24; validation loss 0.2188 to 0.07113; minimum 0.06862 at epoch 21.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261023-123641-6d74404c | — | — | — | — | — | 3 completed epoch rows; no final score |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.4734 → 0.1302 | 0.1302 (3) | 0.2188 → 0.1847 | 0.1786 (2) |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261023-134613-19c0d4f0 | — | — | — | — | — | 24 completed epoch rows; no final score |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.4734 → 0.001914 | 0.001914 (24) | 0.2188 → 0.07113 | 0.06862 (21) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -995,7 +1519,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261024-181654-70e55ef9`: train 100%, validation 99%, test 98.62%; 13.04 minutes; selected epoch 372. Train loss 0.3796 to 2.559e-09; minimum 8.389e-11 at epoch 215; validation loss 0.1722 to 0.108; minimum 0.06154 at epoch 101.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261024-181654-70e55ef9 | 100% | 99% | 98.62% | 13.04 minutes | 372 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.3796 → 2.559e-09 | 8.389e-11 (215) | 0.1722 → 0.108 | 0.06154 (101) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1011,7 +1543,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261024-191704-b84eb60a`: No final score; 2 completed epoch rows saved. Train loss 0.6104 to 0.203; minimum 0.203 at epoch 2; validation loss 0.283 to 0.1754; minimum 0.1754 at epoch 2.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261024-191704-b84eb60a | — | — | — | — | — | 2 completed epoch rows; no final score |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.6104 → 0.203 | 0.203 (2) | 0.283 → 0.1754 | 0.1754 (2) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1027,7 +1567,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261024-194929-07c1eda8`: No final score; 14 completed epoch rows saved. Train loss 0.3918 to 0.03621; minimum 0.03621 at epoch 14; validation loss 0.2342 to 0.08784; minimum 0.07267 at epoch 9.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261024-194929-07c1eda8 | — | — | — | — | — | 14 completed epoch rows; no final score |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.3918 → 0.03621 | 0.03621 (14) | 0.2342 → 0.08784 | 0.07267 (9) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1043,7 +1591,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261024-195929-3a9805da`: No final score; 2 completed epoch rows saved. Train loss 0.4511 to 0.2075; minimum 0.2075 at epoch 2; validation loss 0.2483 to 0.1645; minimum 0.1645 at epoch 2.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261024-195929-3a9805da | — | — | — | — | — | 2 completed epoch rows; no final score |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.4511 → 0.2075 | 0.2075 (2) | 0.2483 → 0.1645 | 0.1645 (2) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1059,7 +1615,15 @@ _500-epoch double-descent experiment_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal records 98.32% test accuracy, without a training time or run ID. “And it worked!” TODO — recover the run and describe its loss curve. Nearby CSV-only 500-epoch-looking results cannot be safely equated to this claim.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Test accuracy (journal) | 98.32% |
+| Training time | Not recorded |
+| Run ID | Not recorded |
+
+“And it worked!” TODO — recover the run and describe its loss curve. Nearby CSV-only 500-epoch-looking results cannot be safely equated to this claim.
 
 ### Change 68 — mnist — date not recorded
 
@@ -1071,7 +1635,13 @@ _5000-epoch experiment_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** “Its performance was incredibly variable with loss so I decided to try checking whatever epoch was the winner.” TODO — add the actual score and time, identify the checkpoint-selection rule, and link the run. Do not assume the long CSV-only run is this experiment.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Journal result | “Its performance was incredibly variable with loss so I decided to try checking whatever epoch was the winner.” |
+
+TODO — add the actual score and time, identify the checkpoint-selection rule, and link the run. Do not assume the long CSV-only run is this experiment.
 
 ### Change 69 — mnist — date not recorded
 
@@ -1083,7 +1653,13 @@ _GELU experiment before CIFAR-10_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** “Then I tried setting all of the activations to GELU. Slight regression so I am finally moving on to CIFAR.” TODO — identify the score, time and loss curve. Later module-only snapshots do not capture the activation function.
+**Result:**
+
+| Measure | Result |
+|---|---|
+| Journal result | “Then I tried setting all of the activations to GELU. Slight regression so I am finally moving on to CIFAR.” |
+
+TODO — identify the score, time and loss curve. Later module-only snapshots do not capture the activation function.
 
 ## M4 — Rolling-window transfer
 
@@ -1097,7 +1673,15 @@ _Hierarchical 2×2 rolling-window mlp with padded full-image coverage_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261027-105310-e7eed90e`: No final score; 72 completed epoch rows saved. Train loss 1.81 to 4.343e-06; minimum 4.133e-06 at epoch 70; validation loss 0.2037 to 0.08058; minimum 0.05907 at epoch 11.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261027-105310-e7eed90e | — | — | — | — | — | 72 completed epoch rows; no final score |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.81 → 4.343e-06 | 4.133e-06 (70) | 0.2037 → 0.08058 | 0.05907 (11) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1113,7 +1697,15 @@ _Hierarchical 2×2 rolling-window mlp with padded full-image coverage_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261027-111813-3f4dc443`: No final score; 1 completed epoch rows saved. Train loss 0.7939 to 0.7939; minimum 0.7939 at epoch 1; validation loss 0.1913 to 0.1913; minimum 0.1913 at epoch 1.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261027-111813-3f4dc443 | — | — | — | — | — | 1 completed epoch rows; no final score |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.7939 → 0.7939 | 0.7939 (1) | 0.1913 → 0.1913 | 0.1913 (1) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1129,7 +1721,15 @@ _Hierarchical 2×2 rolling-window mlp with padded full-image coverage_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `mnist-20261027-111917-d3e67d1d`: train 96.2463%, validation 95.7333%, test 95.73%; 8.33 minutes; selected epoch 9. Train loss 0.7939 to 2.304; minimum 0.2109 at epoch 8; validation loss 0.1913 to 2.303; minimum 0.1592 at epoch 4.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| mnist-20261027-111917-d3e67d1d | 96.2463% | 95.7333% | 95.73% | 8.33 minutes | 9 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 0.7939 → 2.304 | 0.2109 (8) | 0.1913 → 2.303 | 0.1592 (4) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1147,7 +1747,15 @@ _Transfer MNIST configuration to CIFAR-10_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261023-112130-b25190a4`: train 99.99%, validation 56.4%, test 54.59%; 0.50 minutes; selected epoch 28. Train loss 1.68 to 0.00421; minimum 0.00421 at epoch 30; validation loss 1.559 to 2.498; minimum 1.312 at epoch 5.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-112130-b25190a4 | 99.99% | 56.4% | 54.59% | 0.50 minutes | 28 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.68 → 0.00421 | 0.00421 (30) | 1.559 → 2.498 | 1.312 (5) |
 
 Journal interpretation: “Crazy stuff. Instantly pulls out 99.99% train accuracy? 54% test? This indicates to me that it has become so difficult to learn generalizable patterns that it learned what it could then instantly memorized.” TODO — check this interpretation against the saved configuration and validation result.
 
@@ -1165,7 +1773,15 @@ _CIFAR activation comparison (legacy metadata)_
 
 **Expected:** “Let's try tanh, not expecting much. At this size of network it should be pretty much interchangable.”
 
-**Result:** `cifar10-20261023-112407-9711758e`: train 91.51%, validation 52.84%, test 52%; 0.50 minutes; selected epoch 25. Train loss 1.801 to 0.309; minimum 0.2515 at epoch 29; validation loss 1.673 to 1.8; minimum 1.402 at epoch 9.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-112407-9711758e | 91.51% | 52.84% | 52% | 0.50 minutes | 25 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.801 → 0.309 | 0.2515 (29) | 1.673 → 1.8 | 1.402 (9) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1183,7 +1799,15 @@ _Smaller CIFAR model and batch_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261023-122642-1f758bb6`: train 83.72%, validation 52.28%, test 51.78%; 0.80 minutes; selected epoch 23. Train loss 1.703 to 0.3295; minimum 0.3295 at epoch 30; validation loss 1.613 to 2.105; minimum 1.373 at epoch 10.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-122642-1f758bb6 | 83.72% | 52.28% | 51.78% | 0.80 minutes | 23 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.703 → 0.3295 | 0.3295 (30) | 1.613 → 2.105 | 1.373 (10) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1201,15 +1825,47 @@ _Record complete settings and inspect class accuracy_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261023-123652-808ffc8f`: train 68.5311%, validation 52.48%, test 52.09%; 0.74 minutes; selected epoch 10. Train loss 1.703 to 0.3152; minimum 0.3152 at epoch 30; validation loss 1.606 to 2.196; minimum 1.38 at epoch 10.
+**Result:**
 
-`cifar10-20261023-124537-020df882`: train 68.5311%, validation 52.48%, test 52.09%; 0.76 minutes; selected epoch 10. Train loss 1.703 to 0.3152; minimum 0.3152 at epoch 30; validation loss 1.606 to 2.196; minimum 1.38 at epoch 10.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-123652-808ffc8f | 68.5311% | 52.48% | 52.09% | 0.74 minutes | 10 | — |
 
-`cifar10-20261023-125414-def90612`: train 68.5311%, validation 52.48%, test 52.09%; 0.75 minutes; selected epoch 10. Train loss 1.703 to 0.3152; minimum 0.3152 at epoch 30; validation loss 1.606 to 2.196; minimum 1.38 at epoch 10.
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.703 → 0.3152 | 0.3152 (30) | 1.606 → 2.196 | 1.38 (10) |
 
-`cifar10-20261023-134453-1fe1f1ca`: No final score; 19 completed epoch rows saved. Train loss 1.703 to 0.6339; minimum 0.6339 at epoch 19; validation loss 1.606 to 1.707; minimum 1.38 at epoch 10.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-124537-020df882 | 68.5311% | 52.48% | 52.09% | 0.76 minutes | 10 | — |
 
-`cifar10-20261023-134526-bd3594de`: train 68.5311%, validation 52.48%, test 52.09%; 0.76 minutes; selected epoch 10. Train loss 1.703 to 0.3152; minimum 0.3152 at epoch 30; validation loss 1.606 to 2.196; minimum 1.38 at epoch 10.
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.703 → 0.3152 | 0.3152 (30) | 1.606 → 2.196 | 1.38 (10) |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-125414-def90612 | 68.5311% | 52.48% | 52.09% | 0.75 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.703 → 0.3152 | 0.3152 (30) | 1.606 → 2.196 | 1.38 (10) |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-134453-1fe1f1ca | — | — | — | — | — | 19 completed epoch rows; no final score |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.703 → 0.6339 | 0.6339 (19) | 1.606 → 1.707 | 1.38 (10) |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-134526-bd3594de | 68.5311% | 52.48% | 52.09% | 0.76 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.703 → 0.3152 | 0.3152 (30) | 1.606 → 2.196 | 1.38 (10) |
 
 Journal interpretation: “Cat is incredibly far off but we haven't learned much here. It's learning something about all of these” TODO — check this interpretation against the saved configuration and validation result.
 
@@ -1225,9 +1881,23 @@ _Reduce CIFAR training to 10 epochs_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261023-134657-9294e112`: train 68.5311%, validation 52.48%, test 52.09%; 0.25 minutes; selected epoch 10. Train loss 1.703 to 0.9983; minimum 0.9983 at epoch 10; validation loss 1.606 to 1.38; minimum 1.38 at epoch 10.
+**Result:**
 
-`cifar10-20261023-134752-02729c78`: train 68.5311%, validation 52.48%, test 52.09%; 0.29 minutes; selected epoch 10. Train loss 1.703 to 0.9983; minimum 0.9983 at epoch 10; validation loss 1.606 to 1.38; minimum 1.38 at epoch 10.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-134657-9294e112 | 68.5311% | 52.48% | 52.09% | 0.25 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.703 → 0.9983 | 0.9983 (10) | 1.606 → 1.38 | 1.38 (10) |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261023-134752-02729c78 | 68.5311% | 52.48% | 52.09% | 0.29 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.703 → 0.9983 | 0.9983 (10) | 1.606 → 1.38 | 1.38 (10) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1243,7 +1913,17 @@ _Journal-only ReLU comparison_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** Journal repeats train 91.51%, validation 52.84%, test 52.00%, selected epoch 25 and 0.5 minutes. TODO — verify that ReLU was actually run and describe its loss curve.
+**Result:**
+
+| Measure | Result (journal) |
+|---|---:|
+| Train accuracy | 91.51% |
+| Validation accuracy | 52.84% |
+| Test accuracy | 52.00% |
+| Selected epoch | 25 |
+| Training time | 0.5 minutes |
+
+TODO — verify that ReLU was actually run and describe its loss curve.
 
 **Draft notes:** No separate saved run was securely matched; do not invent one.
 
@@ -1257,7 +1937,15 @@ _Switch CIFAR from SGD to AdamW_
 
 **Expected:** “We will hopefully see some really nice improvements to accuracy and keep our weight decay to avoid overfitting. Turning down learning rate to match the lowerer needs of ADAMW as well.”
 
-**Result:** `cifar10-20261024-151753-14698b08`: train 68.8822%, validation 54.36%, test 53.32%; 0.45 minutes; selected epoch 8. Train loss 1.677 to 0.8629; minimum 0.8629 at epoch 10; validation loss 1.534 to 1.38; minimum 1.32 at epoch 5.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-151753-14698b08 | 68.8822% | 54.36% | 53.32% | 0.45 minutes | 8 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.677 → 0.8629 | 0.8629 (10) | 1.534 → 1.38 | 1.32 (5) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1273,7 +1961,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-174927-b3358428`: train 71.54%, validation 55.1%, test 54.73%; 0.44 minutes; selected epoch 9. Train loss 1.674 to 0.8652; minimum 0.8652 at epoch 10; validation loss 1.515 to 1.375; minimum 1.309 at epoch 9.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-174927-b3358428 | 71.54% | 55.1% | 54.73% | 0.44 minutes | 9 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.674 → 0.8652 | 0.8652 (10) | 1.515 → 1.375 | 1.309 (9) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1289,7 +1985,15 @@ _CIFAR data augmentation_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-180552-79892e5e`: train 58.1622%, validation 55.18%, test 54.14%; 0.80 minutes; selected epoch 10. Train loss 1.796 to 1.33; minimum 1.33 at epoch 10; validation loss 1.581 to 1.262; minimum 1.262 at epoch 10.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-180552-79892e5e | 58.1622% | 55.18% | 54.14% | 0.80 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.796 → 1.33 | 1.33 (10) | 1.581 → 1.262 | 1.262 (10) |
 
 Journal interpretation: “Well, Overfitting decreased. Performance is bad.” TODO — check this interpretation against the saved configuration and validation result.
 
@@ -1305,7 +2009,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-190549-b5f1f96d`: train 69.8022%, validation 54.7%, test 54.17%; 0.25 minutes; selected epoch 9. Train loss 1.7 to 0.8778; minimum 0.8778 at epoch 10; validation loss 1.516 to 1.368; minimum 1.309 at epoch 7.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-190549-b5f1f96d | 69.8022% | 54.7% | 54.17% | 0.25 minutes | 9 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.7 → 0.8778 | 0.8778 (10) | 1.516 → 1.368 | 1.309 (7) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1321,7 +2033,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-190721-622fa5d9`: train 71.6867%, validation 55.64%, test 55.43%; 0.25 minutes; selected epoch 10. Train loss 1.681 to 0.9185; minimum 0.9185 at epoch 10; validation loss 1.541 to 1.308; minimum 1.272 at epoch 8.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-190721-622fa5d9 | 71.6867% | 55.64% | 55.43% | 0.25 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.681 → 0.9185 | 0.9185 (10) | 1.541 → 1.308 | 1.272 (8) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1337,7 +2057,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-190829-4408179b`: train 68.9733%, validation 55.9%, test 55.34%; 0.27 minutes; selected epoch 9. Train loss 1.687 to 0.9351; minimum 0.9351 at epoch 10; validation loss 1.542 to 1.319; minimum 1.282 at epoch 9.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-190829-4408179b | 68.9733% | 55.9% | 55.34% | 0.27 minutes | 9 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.687 → 0.9351 | 0.9351 (10) | 1.542 → 1.319 | 1.282 (9) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1353,7 +2081,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-190942-5d5a11ec`: train 64.2911%, validation 54.94%, test 53.88%; 0.54 minutes; selected epoch 10. Train loss 1.747 to 1.087; minimum 1.087 at epoch 10; validation loss 1.582 to 1.304; minimum 1.281 at epoch 9.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-190942-5d5a11ec | 64.2911% | 54.94% | 53.88% | 0.54 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.747 → 1.087 | 1.087 (10) | 1.582 → 1.304 | 1.281 (9) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1369,7 +2105,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-191149-9e04c0c6`: train 65.2489%, validation 55.08%, test 53.86%; 1.29 minutes; selected epoch 10. Train loss 1.863 to 1.077; minimum 1.077 at epoch 10; validation loss 1.665 to 1.314; minimum 1.314 at epoch 10.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-191149-9e04c0c6 | 65.2489% | 55.08% | 53.86% | 1.29 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.863 → 1.077 | 1.077 (10) | 1.665 → 1.314 | 1.314 (10) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1385,7 +2129,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-191810-0c227281`: train 67.3644%, validation 55.76%, test 54.68%; 1.98 minutes; selected epoch 11. Train loss 1.863 to 0.8132; minimum 0.8132 at epoch 15; validation loss 1.665 to 1.376; minimum 1.288 at epoch 11.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-191810-0c227281 | 67.3644% | 55.76% | 54.68% | 1.98 minutes | 11 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.863 → 0.8132 | 0.8132 (15) | 1.665 → 1.376 | 1.288 (11) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1401,9 +2153,23 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-192349-50b5b789`: train 71.0378%, validation 56.3%, test 55.46%; 4.58 minutes; selected epoch 5. Train loss 1.661 to 0.2463; minimum 0.2463 at epoch 15; validation loss 1.501 to 1.987; minimum 1.291 at epoch 4.
+**Result:**
 
-`cifar10-20261024-193237-88e5f013`: train 71.0378%, validation 56.3%, test 55.46%; 4.61 minutes; selected epoch 5. Train loss 1.661 to 0.2463; minimum 0.2463 at epoch 15; validation loss 1.501 to 1.987; minimum 1.291 at epoch 4.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-192349-50b5b789 | 71.0378% | 56.3% | 55.46% | 4.58 minutes | 5 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.661 → 0.2463 | 0.2463 (15) | 1.501 → 1.987 | 1.291 (4) |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-193237-88e5f013 | 71.0378% | 56.3% | 55.46% | 4.61 minutes | 5 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.661 → 0.2463 | 0.2463 (15) | 1.501 → 1.987 | 1.291 (4) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1419,7 +2185,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-193733-de010494`: train 82.8289%, validation 56.26%, test 55.18%; 4.70 minutes; selected epoch 8. Train loss 1.675 to 0.2738; minimum 0.2738 at epoch 15; validation loss 1.501 to 1.933; minimum 1.285 at epoch 5.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-193733-de010494 | 82.8289% | 56.26% | 55.18% | 4.70 minutes | 8 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.675 → 0.2738 | 0.2738 (15) | 1.501 → 1.933 | 1.285 (5) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1435,7 +2209,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-194312-d0e4074c`: train 74.0978%, validation 56.46%, test 55%; 3.72 minutes; selected epoch 7. Train loss 1.705 to 0.3582; minimum 0.3582 at epoch 15; validation loss 1.529 to 1.827; minimum 1.286 at epoch 5.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-194312-d0e4074c | 74.0978% | 56.46% | 55% | 3.72 minutes | 7 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.705 → 0.3582 | 0.3582 (15) | 1.529 → 1.827 | 1.286 (5) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1451,7 +2233,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-194834-440d42d1`: train 76.2667%, validation 55.92%, test 54.58%; 0.37 minutes; selected epoch 7. Train loss 1.625 to 0.2762; minimum 0.2762 at epoch 15; validation loss 1.47 to 2.183; minimum 1.309 at epoch 4.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-194834-440d42d1 | 76.2667% | 55.92% | 54.58% | 0.37 minutes | 7 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.625 → 0.2762 | 0.2762 (15) | 1.47 → 2.183 | 1.309 (4) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1467,7 +2257,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-194948-28bf206f`: train 63.3222%, validation 54.36%, test 53.7%; 0.16 minutes; selected epoch 9. Train loss 1.698 to 1.067; minimum 1.067 at epoch 10; validation loss 1.54 to 1.326; minimum 1.302 at epoch 8.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-194948-28bf206f | 63.3222% | 54.36% | 53.7% | 0.16 minutes | 9 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.698 → 1.067 | 1.067 (10) | 1.54 → 1.326 | 1.302 (8) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1483,7 +2281,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-195018-9050bcbd`: train 56.7044%, validation 50.7%, test 51.46%; 1.19 minutes; selected epoch 10. Train loss 1.814 to 1.261; minimum 1.261 at epoch 10; validation loss 1.678 to 1.373; minimum 1.373 at epoch 10.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-195018-9050bcbd | 56.7044% | 50.7% | 51.46% | 1.19 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.814 → 1.261 | 1.261 (10) | 1.678 → 1.373 | 1.373 (10) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1499,9 +2305,23 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-195211-13ca66a0`: train 58.8289%, validation 51.92%, test 51.88%; 1.20 minutes; selected epoch 9. Train loss 1.792 to 1.192; minimum 1.192 at epoch 10; validation loss 1.642 to 1.352; minimum 1.337 at epoch 9.
+**Result:**
 
-`cifar10-20261024-195449-e6c9f45c`: train 58.8289%, validation 51.92%, test 51.88%; 1.19 minutes; selected epoch 9. Train loss 1.792 to 1.192; minimum 1.192 at epoch 10; validation loss 1.642 to 1.352; minimum 1.337 at epoch 9.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-195211-13ca66a0 | 58.8289% | 51.92% | 51.88% | 1.20 minutes | 9 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.792 → 1.192 | 1.192 (10) | 1.642 → 1.352 | 1.337 (9) |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-195449-e6c9f45c | 58.8289% | 51.92% | 51.88% | 1.19 minutes | 9 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.792 → 1.192 | 1.192 (10) | 1.642 → 1.352 | 1.337 (9) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1517,7 +2337,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-195653-50a070d4`: train 60.0933%, validation 52.46%, test 52.95%; 1.22 minutes; selected epoch 10. Train loss 1.974 to 1.209; minimum 1.209 at epoch 10; validation loss 1.793 to 1.342; minimum 1.342 at epoch 10.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-195653-50a070d4 | 60.0933% | 52.46% | 52.95% | 1.22 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.974 → 1.209 | 1.209 (10) | 1.793 → 1.342 | 1.342 (10) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1533,7 +2361,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-200016-2a3ca5fb`: train 60.3756%, validation 52.84%, test 52.73%; 2.37 minutes; selected epoch 10. Train loss 1.816 to 1.17; minimum 1.17 at epoch 10; validation loss 1.65 to 1.355; minimum 1.338 at epoch 8.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-200016-2a3ca5fb | 60.3756% | 52.84% | 52.73% | 2.37 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.816 → 1.17 | 1.17 (10) | 1.65 → 1.355 | 1.338 (8) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1549,7 +2385,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-200407-caebc9e6`: train 65.4644%, validation 54.84%, test 53.61%; 2.55 minutes; selected epoch 10. Train loss 1.824 to 1.079; minimum 1.079 at epoch 10; validation loss 1.66 to 1.296; minimum 1.296 at epoch 10.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-200407-caebc9e6 | 65.4644% | 54.84% | 53.61% | 2.55 minutes | 10 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.824 → 1.079 | 1.079 (10) | 1.66 → 1.296 | 1.296 (10) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1567,15 +2411,43 @@ _Happy Accident: restored configuration_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-210758-6cf0d0b4`: train 74.4267%, validation 60.42%, test 58.88%; 1.53 minutes; selected epoch 29. Train loss 1.784 to 0.9809; minimum 0.9809 at epoch 30; validation loss 1.552 to 1.182; minimum 1.154 at epoch 29.
+**Result:**
 
-`cifar10-20261024-214516-c1cc95e3`: train 74.4267%, validation 60.42%, test 58.88%; 1.41 minutes; selected epoch 29. Train loss 1.784 to 0.9809; minimum 0.9809 at epoch 30; validation loss 1.552 to 1.182; minimum 1.154 at epoch 29.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-210758-6cf0d0b4 | 74.4267% | 60.42% | 58.88% | 1.53 minutes | 29 | — |
 
-`cifar10-20261024-215408-cb0ff45d`: train 74.4267%, validation 60.42%, test 58.88%; 1.40 minutes; selected epoch 29. Train loss 1.784 to 0.9809; minimum 0.9809 at epoch 30; validation loss 1.552 to 1.182; minimum 1.154 at epoch 29.
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.784 → 0.9809 | 0.9809 (30) | 1.552 → 1.182 | 1.154 (29) |
 
-`cifar10-20261024-215556-2b1c3233`: No final score; 0 completed epoch rows saved. No completed epoch metrics were saved.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-214516-c1cc95e3 | 74.4267% | 60.42% | 58.88% | 1.41 minutes | 29 | — |
 
-`cifar10-20261024-220508-08117fee`: train 74.4267%, validation 60.42%, test 58.88%; 1.46 minutes; selected epoch 29. Train loss 1.784 to 0.9809; minimum 0.9809 at epoch 30; validation loss 1.552 to 1.182; minimum 1.154 at epoch 29.
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.784 → 0.9809 | 0.9809 (30) | 1.552 → 1.182 | 1.154 (29) |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-215408-cb0ff45d | 74.4267% | 60.42% | 58.88% | 1.40 minutes | 29 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.784 → 0.9809 | 0.9809 (30) | 1.552 → 1.182 | 1.154 (29) |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-215556-2b1c3233 | — | — | — | — | — | 0 completed epoch rows; no final score; no completed epoch metrics were saved |
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+|---|---:|---:|---:|---:|---:|---|
+| cifar10-20261024-220508-08117fee | 74.4267% | 60.42% | 58.88% | 1.46 minutes | 29 | — |
+
+| Run | Train loss start → end | Minimum train loss (epoch) | Validation loss start → end | Minimum validation loss (epoch) |
+|---|---:|---:|---:|---:|
+| Same run | 1.784 → 0.9809 | 0.9809 (30) | 1.552 → 1.182 | 1.154 (29) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1591,7 +2463,15 @@ _Isolate width and hidden size_
 
 **Expected:** “I imagine that a residual stream of 128 with a hidden width of 128 was bottlenecking the model.”
 
-**Result:** `cifar10-20261024-212021-44f3ab35`: train 63.9867%, validation 57.56%, test 56.68%; 1.35 minutes; selected epoch 29. Train loss 1.837 to 1.17; minimum 1.17 at epoch 30; validation loss 1.647 to 1.214; minimum 1.208 at epoch 29.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-212021-44f3ab35` | 63.9867% | 57.56% | 56.68% | 1.35 minutes | 29 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.837 → 1.17 | 1.17 (30) | 1.647 → 1.214 | 1.208 (29) |
 
 Journal interpretation: “Looks like we were a little bit right, but it only made a small difference. Reverting and moving to the next.” TODO — check this interpretation against the saved configuration and validation result.
 
@@ -1607,7 +2487,15 @@ _Activation comparison: saved source uses ReLU_
 
 **Expected:** “I expect GELU is better because by definition it was an iteration upon ReLU.”
 
-**Result:** `cifar10-20261024-212806-223e71d6`: train 71.7667%, validation 60.04%, test 58.51%; 1.43 minutes; selected epoch 29. Train loss 1.822 to 1.035; minimum 1.035 at epoch 30; validation loss 1.585 to 1.188; minimum 1.168 at epoch 29.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-212806-223e71d6` | 71.7667% | 60.04% | 58.51% | 1.43 minutes | 29 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.822 → 1.035 | 1.035 (30) | 1.585 → 1.188 | 1.168 (29) |
 
 Journal interpretation: “And so it was.” TODO — check this interpretation against the saved configuration and validation result.
 
@@ -1625,9 +2513,17 @@ _Batch 128 with augmentation accidentally disabled_
 
 **Expected:** “Batch size being smaller in theory should help with generalization. We are making more erratic jumps that speed up gradient descent.”
 
-**Result:** `cifar10-20261024-213729-7b6a5d2b`: train 99.9978%, validation 57.38%, test 55.77%; 0.85 minutes; selected epoch 27. Train loss 1.631 to 0.001167; minimum 0.001167 at epoch 30; validation loss 1.497 to 2.62; minimum 1.336 at epoch 4.
+**Result:**
 
-`cifar10-20261024-222752-audit-batch-128`: train 99.9978%, validation 57.38%, test 55.77%; 0.86 minutes; selected epoch 27. Train loss 1.631 to 0.001167; minimum 0.001167 at epoch 30; validation loss 1.497 to 2.62; minimum 1.336 at epoch 4.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-213729-7b6a5d2b` | 99.9978% | 57.38% | 55.77% | 0.85 minutes | 27 | — |
+| `cifar10-20261024-222752-audit-batch-128` | 99.9978% | 57.38% | 55.77% | 0.86 minutes | 27 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| `cifar10-20261024-213729-7b6a5d2b` | 1.631 → 0.001167 | 0.001167 (30) | 1.497 → 2.62 | 1.336 (4) |
+| `cifar10-20261024-222752-audit-batch-128` | 1.631 → 0.001167 | 0.001167 (30) | 1.497 → 2.62 | 1.336 (4) |
 
 Journal interpretation: “Worse, not entirely unexpected.” TODO — check this interpretation against the saved configuration and validation result.
 
@@ -1645,13 +2541,21 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-213937-1058bdc7`: train 99.9867%, validation 56.4%, test 54.59%; 0.51 minutes; selected epoch 28. Train loss 1.68 to 0.00421; minimum 0.00421 at epoch 30; validation loss 1.559 to 2.498; minimum 1.312 at epoch 5.
+**Result:**
 
-`cifar10-20261024-221742-c8c03980`: train 99.9867%, validation 56.4%, test 54.59%; 0.51 minutes; selected epoch 28. Train loss 1.68 to 0.00421; minimum 0.00421 at epoch 30; validation loss 1.559 to 2.498; minimum 1.312 at epoch 5.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-213937-1058bdc7` | 99.9867% | 56.4% | 54.59% | 0.51 minutes | 28 | — |
+| `cifar10-20261024-221742-c8c03980` | 99.9867% | 56.4% | 54.59% | 0.51 minutes | 28 | — |
+| `cifar10-20261024-222752-audit-baseline` | 99.9867% | 56.4% | 54.59% | 0.52 minutes | 28 | — |
+| `cifar10-20261024-223819-2016e143` | — | — | — | — | — | No final score; 11 completed epoch rows saved |
 
-`cifar10-20261024-222752-audit-baseline`: train 99.9867%, validation 56.4%, test 54.59%; 0.52 minutes; selected epoch 28. Train loss 1.68 to 0.00421; minimum 0.00421 at epoch 30; validation loss 1.559 to 2.498; minimum 1.312 at epoch 5.
-
-`cifar10-20261024-223819-2016e143`: No final score; 11 completed epoch rows saved. Train loss 1.68 to 0.6411; minimum 0.6411 at epoch 11; validation loss 1.559 to 1.488; minimum 1.312 at epoch 5.
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| `cifar10-20261024-213937-1058bdc7` | 1.68 → 0.00421 | 0.00421 (30) | 1.559 → 2.498 | 1.312 (5) |
+| `cifar10-20261024-221742-c8c03980` | 1.68 → 0.00421 | 0.00421 (30) | 1.559 → 2.498 | 1.312 (5) |
+| `cifar10-20261024-222752-audit-baseline` | 1.68 → 0.00421 | 0.00421 (30) | 1.559 → 2.498 | 1.312 (5) |
+| `cifar10-20261024-223819-2016e143` | 1.68 → 0.6411 | 0.6411 (11) | 1.559 → 1.488 | 1.312 (5) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1667,7 +2571,15 @@ _Reduce CIFAR weight decay to 0.00001_
 
 **Expected:** “This is what I had expected to make the biggest difference.”
 
-**Result:** `cifar10-20261024-215848-059027aa`: train 74.9%, validation 60.38%, test 59.07%; 1.46 minutes; selected epoch 29. Train loss 1.784 to 0.9737; minimum 0.9737 at epoch 30; validation loss 1.552 to 1.185; minimum 1.158 at epoch 29.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-215848-059027aa` | 74.9% | 60.38% | 59.07% | 1.46 minutes | 29 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.784 → 0.9737 | 0.9737 (30) | 1.552 → 1.185 | 1.158 (29) |
 
 Journal interpretation: “Incredible. We've been over regularizing. Why not? Even smaller.” TODO — check this interpretation against the saved configuration and validation result.
 
@@ -1683,7 +2595,15 @@ _Zero weight decay_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-220725-3ec48d0c`: train 74.9311%, validation 60.36%, test 59.11%; 1.41 minutes; selected epoch 29. Train loss 1.784 to 0.9729; minimum 0.9729 at epoch 30; validation loss 1.552 to 1.185; minimum 1.158 at epoch 29.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-220725-3ec48d0c` | 74.9311% | 60.36% | 59.11% | 1.41 minutes | 29 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.784 → 0.9729 | 0.9729 (30) | 1.552 → 1.185 | 1.158 (29) |
 
 Journal interpretation: “It rounded to zero after I added one more. Going to leave regularization on.” TODO — check this interpretation against the saved configuration and validation result.
 
@@ -1699,7 +2619,15 @@ _Augmentation-off audit: relu_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-222752-audit-relu`: train 99.9844%, validation 55.52%, test 54.81%; 0.53 minutes; selected epoch 30. Train loss 1.718 to 0.01115; minimum 0.01115 at epoch 30; validation loss 1.578 to 2.306; minimum 1.327 at epoch 5.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-222752-audit-relu` | 99.9844% | 55.52% | 54.81% | 0.53 minutes | 30 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.718 → 0.01115 | 0.01115 (30) | 1.578 → 2.306 | 1.327 (5) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1717,7 +2645,15 @@ _Augmentation-off audit: weight-decay-1e-5_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-222752-audit-weight-decay-1e-5`: train 99.9978%, validation 55.3%, test 54.75%; 0.51 minutes; selected epoch 29. Train loss 1.68 to 0.002158; minimum 0.002158 at epoch 30; validation loss 1.559 to 2.664; minimum 1.313 at epoch 5.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-222752-audit-weight-decay-1e-5` | 99.9978% | 55.3% | 54.75% | 0.51 minutes | 29 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.68 → 0.002158 | 0.002158 (30) | 1.559 → 2.664 | 1.313 (5) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1735,7 +2671,15 @@ _Augmentation-off audit: weight-decay-zero_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-222752-audit-weight-decay-zero`: train 99.9978%, validation 55.72%, test 54.67%; 0.49 minutes; selected epoch 29. Train loss 1.68 to 0.002283; minimum 0.002283 at epoch 30; validation loss 1.559 to 2.644; minimum 1.313 at epoch 5.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-222752-audit-weight-decay-zero` | 99.9978% | 55.72% | 54.67% | 0.49 minutes | 29 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.68 → 0.002283 | 0.002283 (30) | 1.559 → 2.644 | 1.313 (5) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1753,7 +2697,15 @@ _Augmentation-off audit: width-hidden_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-222752-audit-width-hidden`: train 72.8311%, validation 51.74%, test 50.29%; 0.43 minutes; selected epoch 15. Train loss 1.736 to 0.3564; minimum 0.3564 at epoch 30; validation loss 1.6 to 2.102; minimum 1.367 at epoch 7.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-222752-audit-width-hidden` | 72.8311% | 51.74% | 50.29% | 0.43 minutes | 15 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.736 → 0.3564 | 0.3564 (30) | 1.6 → 2.102 | 1.367 (7) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1773,7 +2725,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-234504-6badff50`: train 87.4733%, validation 61.48%, test 60.11%; 2.83 minutes; selected epoch 53. Train loss 1.784 to 0.6976; minimum 0.6976 at epoch 60; validation loss 1.552 to 1.319; minimum 1.152 at epoch 35.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-234504-6badff50` | 87.4733% | 61.48% | 60.11% | 2.83 minutes | 53 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.784 → 0.6976 | 0.6976 (60) | 1.552 → 1.319 | 1.152 (35) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1789,7 +2749,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-234930-b4aa43ea`: train 96.3133%, validation 61.26%, test 59.01%; 3.38 minutes; selected epoch 43. Train loss 1.799 to 0.3329; minimum 0.3329 at epoch 60; validation loss 1.552 to 1.892; minimum 1.181 at epoch 19.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-234930-b4aa43ea` | 96.3133% | 61.26% | 59.01% | 3.38 minutes | 43 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.799 → 0.3329 | 0.3329 (60) | 1.552 → 1.892 | 1.181 (19) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1805,7 +2773,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261024-235432-57963b71`: train 93.7622%, validation 59.64%, test 58.11%; 3.31 minutes; selected epoch 52. Train loss 2.005 to 0.4989; minimum 0.4989 at epoch 60; validation loss 1.748 to 1.864; minimum 1.194 at epoch 24.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261024-235432-57963b71` | 93.7622% | 59.64% | 58.11% | 3.31 minutes | 52 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.005 → 0.4989 | 0.4989 (60) | 1.748 → 1.864 | 1.194 (24) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1821,7 +2797,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-000330-5cea5707`: train 91.9044%, validation 61.48%, test 59.43%; 3.39 minutes; selected epoch 32. Train loss 1.799 to 0.3178; minimum 0.3178 at epoch 60; validation loss 1.552 to 1.843; minimum 1.178 at epoch 15.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-000330-5cea5707` | 91.9044% | 61.48% | 59.43% | 3.39 minutes | 32 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.799 → 0.3178 | 0.3178 (60) | 1.552 → 1.843 | 1.178 (15) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1837,9 +2821,17 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-000912-e7c42e1d`: train 94.1978%, validation 61.68%, test 59.08%; 3.53 minutes; selected epoch 49. Train loss 1.833 to 0.5039; minimum 0.5039 at epoch 60; validation loss 1.582 to 1.526; minimum 1.152 at epoch 19.
+**Result:**
 
-`cifar10-20261025-002050-9941eabc`: train 94.1978%, validation 61.68%, test 59.08%; 4.45 minutes; selected epoch 49. Train loss 1.833 to 0.5039; minimum 0.5039 at epoch 60; validation loss 1.582 to 1.526; minimum 1.152 at epoch 19.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-000912-e7c42e1d` | 94.1978% | 61.68% | 59.08% | 3.53 minutes | 49 | — |
+| `cifar10-20261025-002050-9941eabc` | 94.1978% | 61.68% | 59.08% | 4.45 minutes | 49 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| `cifar10-20261025-000912-e7c42e1d` | 1.833 → 0.5039 | 0.5039 (60) | 1.582 → 1.526 | 1.152 (19) |
+| `cifar10-20261025-002050-9941eabc` | 1.833 → 0.5039 | 0.5039 (60) | 1.582 → 1.526 | 1.152 (19) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1855,7 +2847,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-001310-684974cb`: train 70.9911%, validation 60.26%, test 58.82%; 1.79 minutes; selected epoch 29. Train loss 1.783 to 1.041; minimum 1.041 at epoch 30; validation loss 1.556 to 1.176; minimum 1.147 at epoch 29.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-001310-684974cb` | 70.9911% | 60.26% | 58.82% | 1.79 minutes | 29 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.783 → 1.041 | 1.041 (30) | 1.556 → 1.176 | 1.147 (29) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1871,7 +2871,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-001521-3603c62e`: train 78.84%, validation 61.28%, test 59.47%; 2.97 minutes; selected epoch 46. Train loss 1.783 to 0.8696; minimum 0.8696 at epoch 50; validation loss 1.556 to 1.178; minimum 1.135 at epoch 41.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-001521-3603c62e` | 78.84% | 61.28% | 59.47% | 2.97 minutes | 46 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.783 → 0.8696 | 0.8696 (50) | 1.556 → 1.178 | 1.135 (41) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1887,7 +2895,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-002715-5a076b1b`: train 89.4933%, validation 61.56%, test 59.25%; 6.93 minutes; selected epoch 31. Train loss 1.748 to 0.4276; minimum 0.4276 at epoch 60; validation loss 1.511 to 1.658; minimum 1.152 at epoch 18.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-002715-5a076b1b` | 89.4933% | 61.56% | 59.25% | 6.93 minutes | 31 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.748 → 0.4276 | 0.4276 (60) | 1.511 → 1.658 | 1.152 (18) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1903,7 +2919,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-003949-24bf237f`: train 93.8378%, validation 61.96%, test 59.69%; 9.16 minutes; selected epoch 38. Train loss 1.763 to 0.4431; minimum 0.4414 at epoch 59; validation loss 1.486 to 1.579; minimum 1.144 at epoch 15.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-003949-24bf237f` | 93.8378% | 61.96% | 59.69% | 9.16 minutes | 38 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.763 → 0.4431 | 0.4414 (59) | 1.486 → 1.579 | 1.144 (15) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1919,7 +2943,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-005328-ee80b2f5`: train 75.6644%, validation 60.24%, test 57.68%; 2.25 minutes; selected epoch 27. Train loss 2.318 to 0.9572; minimum 0.9572 at epoch 30; validation loss 1.786 to 1.228; minimum 1.165 at epoch 26.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-005328-ee80b2f5` | 75.6644% | 60.24% | 57.68% | 2.25 minutes | 27 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.318 → 0.9572 | 0.9572 (30) | 1.786 → 1.228 | 1.165 (26) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1935,7 +2967,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-005652-cd458538`: train 97.3133%, validation 62.04%, test 60.13%; 8.01 minutes; selected epoch 57. Train loss 1.752 to 0.4525; minimum 0.4525 at epoch 60; validation loss 1.509 to 1.602; minimum 1.167 at epoch 16.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-005652-cd458538` | 97.3133% | 62.04% | 60.13% | 8.01 minutes | 57 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.752 → 0.4525 | 0.4525 (60) | 1.509 → 1.602 | 1.167 (16) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1951,7 +2991,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-115606-bd7c0564`: train 95.6933%, validation 59.12%, test 57.55%; 4.25 minutes; selected epoch 27. Train loss 1.659 to 0.1991; minimum 0.1991 at epoch 60; validation loss 1.443 to 2.177; minimum 1.205 at epoch 9.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-115606-bd7c0564` | 95.6933% | 59.12% | 57.55% | 4.25 minutes | 27 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.659 → 0.1991 | 0.1991 (60) | 1.443 → 2.177 | 1.205 (9) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1967,9 +3015,17 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-123955-7c8c8c1d`: train 96.8067%, validation 62.26%, test 60.15%; 5.91 minutes; selected epoch 60. Train loss 1.762 to 0.5186; minimum 0.5181 at epoch 59; validation loss 1.522 to 1.485; minimum 1.138 at epoch 17.
+**Result:**
 
-`cifar10-20261025-210636-d9406711`: train 96.8067%, validation 62.26%, test 60.15%; 6.03 minutes; selected epoch 60. Train loss 1.762 to 0.5186; minimum 0.5181 at epoch 59; validation loss 1.522 to 1.485; minimum 1.138 at epoch 17.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-123955-7c8c8c1d` | 96.8067% | 62.26% | 60.15% | 5.91 minutes | 60 | — |
+| `cifar10-20261025-210636-d9406711` | 96.8067% | 62.26% | 60.15% | 6.03 minutes | 60 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| `cifar10-20261025-123955-7c8c8c1d` | 1.762 → 0.5186 | 0.5181 (59) | 1.522 → 1.485 | 1.138 (17) |
+| `cifar10-20261025-210636-d9406711` | 1.762 → 0.5186 | 0.5181 (59) | 1.522 → 1.485 | 1.138 (17) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -1985,7 +3041,15 @@ _Flat residual mlp_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-124849-bcdd1a30`: train 94.88%, validation 61.9%, test 60.26%; 6.06 minutes; selected epoch 35. Train loss 1.743 to 0.3943; minimum 0.3943 at epoch 60; validation loss 1.469 to 1.694; minimum 1.161 at epoch 12.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-124849-bcdd1a30` | 94.88% | 61.9% | 60.26% | 6.06 minutes | 35 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 1.743 → 0.3943 | 0.3943 (60) | 1.469 → 1.694 | 1.161 (12) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2003,9 +3067,17 @@ _Incomplete block construction: block forward returns none_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-125710-62ba38ce`: No final score; 0 completed epoch rows saved. No completed epoch metrics were saved.
+**Result:**
 
-`cifar10-20261025-125841-0e1749e2`: No final score; 0 completed epoch rows saved. No completed epoch metrics were saved.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-125710-62ba38ce` | — | — | — | — | — | No final score; 0 completed epoch rows saved; No completed epoch metrics were saved. |
+| `cifar10-20261025-125841-0e1749e2` | — | — | — | — | — | No final score; 0 completed epoch rows saved; No completed epoch metrics were saved. |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| `cifar10-20261025-125710-62ba38ce` | — | — | — | — |
+| `cifar10-20261025-125841-0e1749e2` | — | — | — | — |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2023,9 +3095,17 @@ _Incomplete block construction: block forward returns none_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-130442-f759bea4`: No final score; 0 completed epoch rows saved. No completed epoch metrics were saved.
+**Result:**
 
-`cifar10-20261025-132544-8610feee`: No final score; 0 completed epoch rows saved. No completed epoch metrics were saved.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-130442-f759bea4` | — | — | — | — | — | No final score; 0 completed epoch rows saved; No completed epoch metrics were saved. |
+| `cifar10-20261025-132544-8610feee` | — | — | — | — | — | No final score; 0 completed epoch rows saved; No completed epoch metrics were saved. |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| `cifar10-20261025-130442-f759bea4` | — | — | — | — |
+| `cifar10-20261025-132544-8610feee` | — | — | — | — |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2043,7 +3123,15 @@ _Bilinear gated blocks_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-135437-5b0d7d45`: train 98.7511%, validation 60.34%, test 57.66%; 5.90 minutes; selected epoch 44. Train loss 2.053 to 0.3892; minimum 0.3892 at epoch 60; validation loss 1.771 to 1.715; minimum 1.201 at epoch 12.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-135437-5b0d7d45` | 98.7511% | 60.34% | 57.66% | 5.90 minutes | 44 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.053 → 0.3892 | 0.3892 (60) | 1.771 → 1.715 | 1.201 (12) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2061,7 +3149,15 @@ _Bilinear blocks without skip connections; unused extra linear layers remain reg
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-140146-70e4347d`: No final score; 22 completed epoch rows saved. Train loss 2.027 to 0.7744; minimum 0.7744 at epoch 22; validation loss 1.754 to 1.371; minimum 1.211 at epoch 11.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-140146-70e4347d` | — | — | — | — | — | No final score; 22 completed epoch rows saved |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.027 → 0.7744 | 0.7744 (22) | 1.754 → 1.371 | 1.211 (11) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2079,11 +3175,19 @@ _Bilinear blocks without skip connections_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-140404-e8234a17`: train 98.7733%, validation 60.24%, test 57.57%; 6.03 minutes; selected epoch 45. Train loss 2.032 to 0.387; minimum 0.387 at epoch 60; validation loss 1.764 to 1.728; minimum 1.243 at epoch 13.
+**Result:**
 
-`cifar10-20261025-141647-eeafe2e6`: train 98.7733%, validation 60.24%, test 57.57%; 5.99 minutes; selected epoch 45. Train loss 2.032 to 0.387; minimum 0.387 at epoch 60; validation loss 1.764 to 1.728; minimum 1.243 at epoch 13.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-140404-e8234a17` | 98.7733% | 60.24% | 57.57% | 6.03 minutes | 45 | — |
+| `cifar10-20261025-141647-eeafe2e6` | 98.7733% | 60.24% | 57.57% | 5.99 minutes | 45 | — |
+| `cifar10-20261025-142317-26fef98f` | 98.7733% | 60.24% | 57.57% | 6.09 minutes | 45 | — |
 
-`cifar10-20261025-142317-26fef98f`: train 98.7733%, validation 60.24%, test 57.57%; 6.09 minutes; selected epoch 45. Train loss 2.032 to 0.387; minimum 0.387 at epoch 60; validation loss 1.764 to 1.728; minimum 1.243 at epoch 13.
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| `cifar10-20261025-140404-e8234a17` | 2.032 → 0.387 | 0.387 (60) | 1.764 → 1.728 | 1.243 (13) |
+| `cifar10-20261025-141647-eeafe2e6` | 2.032 → 0.387 | 0.387 (60) | 1.764 → 1.728 | 1.243 (13) |
+| `cifar10-20261025-142317-26fef98f` | 2.032 → 0.387 | 0.387 (60) | 1.764 → 1.728 | 1.243 (13) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2101,9 +3205,17 @@ _4×4 max pooling followed by bilinear residual blocks_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-195130-38a08235`: No final score; 13 completed epoch rows saved. Train loss 1.828 to 0.984; minimum 0.984 at epoch 13; validation loss 1.59 to 1.325; minimum 1.276 at epoch 9.
+**Result:**
 
-`cifar10-20261025-201234-869c059e`: train 82.2622%, validation 57.38%, test 55.73%; 6.03 minutes; selected epoch 14. Train loss 1.828 to 0.3808; minimum 0.3808 at epoch 60; validation loss 1.59 to 1.774; minimum 1.276 at epoch 9.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-195130-38a08235` | — | — | — | — | — | No final score; 13 completed epoch rows saved |
+| `cifar10-20261025-201234-869c059e` | 82.2622% | 57.38% | 55.73% | 6.03 minutes | 14 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| `cifar10-20261025-195130-38a08235` | 1.828 → 0.984 | 0.984 (13) | 1.59 → 1.325 | 1.276 (9) |
+| `cifar10-20261025-201234-869c059e` | 1.828 → 0.3808 | 0.3808 (60) | 1.59 → 1.774 | 1.276 (9) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2121,7 +3233,15 @@ _Normalized value/gate blocks with no dropout; no skip addition in this saved ve
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261025-213314-9c0e7949`: train 97.0422%, validation 61.52%, test 59.67%; 11.40 minutes; selected epoch 54. Train loss 2.188 to 0.5288; minimum 0.5288 at epoch 60; validation loss 1.798 to 1.475; minimum 1.173 at epoch 19.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261025-213314-9c0e7949` | 97.0422% | 61.52% | 59.67% | 11.40 minutes | 54 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.188 → 0.5288 | 0.5288 (60) | 1.798 → 1.475 | 1.173 (19) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2139,7 +3259,15 @@ _Add dropout 0.1 to gated blocks_
 
 **Expected:** “Intuitively this makes sense. We randomly are tossing out information and asking the model to still answer the question.”
 
-**Result:** `cifar10-20261026-131127-ba8e8b68`: train 95.12%, validation 63.5%, test 60.87%; 11.35 minutes; selected epoch 52. Train loss 2.303 to 0.6481; minimum 0.6481 at epoch 60; validation loss 1.789 to 1.34; minimum 1.165 at epoch 20.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-131127-ba8e8b68` | 95.12% | 63.5% | 60.87% | 11.35 minutes | 52 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.303 → 0.6481 | 0.6481 (60) | 1.789 → 1.34 | 1.165 (20) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2157,7 +3285,15 @@ _Normalized value/gate blocks with 0.15 dropout; no skip addition in this saved 
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261026-151046-ee81c4cb`: train 60.6178%, validation 56.38%, test 55.34%; 2.67 minutes; selected epoch 10. Train loss 2.39 to 1.368; minimum 1.368 at epoch 10; validation loss 1.827 to 1.257; minimum 1.257 at epoch 10.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-151046-ee81c4cb` | 60.6178% | 56.38% | 55.34% | 2.67 minutes | 10 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.39 → 1.368 | 1.368 (10) | 1.827 → 1.257 | 1.257 (10) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2175,7 +3311,15 @@ _Normalized value/gate blocks with 0.1 dropout; no skip addition in this saved v
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261026-152251-5dfa7476`: train 61.68%, validation 56.64%, test 55.61%; 1.88 minutes; selected epoch 10. Train loss 2.303 to 1.344; minimum 1.344 at epoch 10; validation loss 1.789 to 1.264; minimum 1.264 at epoch 10.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-152251-5dfa7476` | 61.68% | 56.64% | 55.61% | 1.88 minutes | 10 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.303 → 1.344 | 1.344 (10) | 1.789 → 1.264 | 1.264 (10) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2193,7 +3337,15 @@ _Normalized value/gate blocks with 0.1 dropout; no skip addition in this saved v
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261026-152521-7a9bfc86`: train 66.5511%, validation 58.58%, test 57.41%; 2.82 minutes; selected epoch 14. Train loss 2.303 to 1.23; minimum 1.23 at epoch 15; validation loss 1.789 to 1.19; minimum 1.187 at epoch 14.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-152521-7a9bfc86` | 66.5511% | 58.58% | 57.41% | 2.82 minutes | 14 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.303 → 1.23 | 1.23 (15) | 1.789 → 1.19 | 1.187 (14) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2211,7 +3363,15 @@ _Normalized value/gate blocks with 0.1 dropout; no skip addition in this saved v
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261026-152851-db2487cc`: No final score; 0 completed epoch rows saved. No completed epoch metrics were saved.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-152851-db2487cc` | — | — | — | — | — | No final score; 0 completed epoch rows saved; No completed epoch metrics were saved. |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | — | — | — | — |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2229,7 +3389,15 @@ _Normalized value/gate blocks with 0.1 dropout; no skip addition in this saved v
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261026-152951-e65d9ef5`: train 72.88%, validation 60.42%, test 58.7%; 3.75 minutes; selected epoch 20. Train loss 2.303 to 1.136; minimum 1.136 at epoch 20; validation loss 1.789 to 1.165; minimum 1.165 at epoch 20.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-152951-e65d9ef5` | 72.88% | 60.42% | 58.7% | 3.75 minutes | 20 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.303 → 1.136 | 1.136 (20) | 1.789 → 1.165 | 1.165 (20) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2247,7 +3415,15 @@ _Normalized value/gate blocks with 0.1 dropout; no skip addition in this saved v
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261026-153426-931b32ea`: train 72.88%, validation 60.42%, test 58.7%; 3.79 minutes; selected epoch 20. Train loss 2.303 to 1.136; minimum 1.136 at epoch 20; validation loss 1.789 to 1.165; minimum 1.165 at epoch 20.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-153426-931b32ea` | 72.88% | 60.42% | 58.7% | 3.79 minutes | 20 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.303 → 1.136 | 1.136 (20) | 1.789 → 1.165 | 1.165 (20) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2267,7 +3443,15 @@ _Hierarchical 2×2 rolling-window MLP_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261026-215237-2ac3a7b3`: train 55.5444%, validation 49.98%, test 48.27%; 9.91 minutes; selected epoch 54. Train loss 2.39 to 1.386; minimum 1.386 at epoch 60; validation loss 1.874 to 1.399; minimum 1.386 at epoch 59.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-215237-2ac3a7b3` | 55.5444% | 49.98% | 48.27% | 9.91 minutes | 54 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 2.39 → 1.386 | 1.386 (60) | 1.874 → 1.399 | 1.386 (59) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2285,7 +3469,15 @@ _Widen rolling windows and classifier_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261026-221344-5d653ac6`: train 71.3511%, validation 60.8%, test 59.15%; 14.83 minutes; selected epoch 57. Train loss 3.277 to 1.052; minimum 1.052 at epoch 60; validation loss 1.973 to 1.153; minimum 1.153 at epoch 60.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-221344-5d653ac6` | 71.3511% | 60.8% | 59.15% | 14.83 minutes | 57 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 3.277 → 1.052 | 1.052 (60) | 1.973 → 1.153 | 1.153 (60) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2301,7 +3493,15 @@ _Preserve full-image coverage with edge padding_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `cifar10-20261026-224057-085c2c3b`: train 88.5156%, validation 76.1%, test 75.45%; 12.61 minutes; selected epoch 51. Train loss 3.459 to 0.4437; minimum 0.4437 at epoch 60; validation loss 1.884 to 0.7835; minimum 0.7223 at epoch 43.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `cifar10-20261026-224057-085c2c3b` | 88.5156% | 76.1% | 75.45% | 12.61 minutes | 51 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 3.459 → 0.4437 | 0.4437 (60) | 1.884 → 0.7835 | 0.7223 (43) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2321,9 +3521,17 @@ _Flat gated MLP on ImageNet32_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `imagenet32-20261026-195826-4b2dc142`: train 18.7556%, validation 12.1632%, test 11.106%; 42.22 minutes; selected epoch 10. Train loss 6.185 to 4.644; minimum 4.644 at epoch 10; validation loss 5.829 to 4.963; minimum 4.963 at epoch 10.
+**Result:**
 
-`imagenet32-20261026-204057-1f232b47`: No final score; 4 completed epoch rows saved. Train loss 6.185 to 5.263; minimum 5.263 at epoch 4; validation loss 5.829 to 5.212; minimum 5.212 at epoch 4.
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `imagenet32-20261026-195826-4b2dc142` | 18.7556% | 12.1632% | 11.106% | 42.22 minutes | 10 | — |
+| `imagenet32-20261026-204057-1f232b47` | — | — | — | — | — | No final score; 4 completed epoch rows saved |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| `imagenet32-20261026-195826-4b2dc142` | 6.185 → 4.644 | 4.644 (10) | 5.829 → 4.963 | 4.963 (10) |
+| `imagenet32-20261026-204057-1f232b47` | 6.185 → 5.263 | 5.263 (4) | 5.829 → 5.212 | 5.212 (4) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2341,7 +3549,15 @@ _Normalized value/gate blocks with 0.1 dropout; no skip addition in this saved v
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `imagenet32-20261026-210325-b9c04e03`: train 28.1384%, validation 12.7307%, test 11.648%; 114.63 minutes; selected epoch 17. Train loss 6.185 to 3.954; minimum 3.954 at epoch 20; validation loss 5.829 to 5.18; minimum 4.947 at epoch 11.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `imagenet32-20261026-210325-b9c04e03` | 28.1384% | 12.7307% | 11.648% | 114.63 minutes | 17 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 6.185 → 3.954 | 3.954 (20) | 5.829 → 5.18 | 4.947 (11) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2361,7 +3577,15 @@ _Rolling-window MLP on ImageNet32_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `imagenet32-20261027-000850-1c570f4f`: train 26.4322%, validation 20.4939%, test 18.496%; 62.01 minutes; selected epoch 10. Train loss 5.692 to 3.827; minimum 3.827 at epoch 10; validation loss 5.055 to 4.117; minimum 4.117 at epoch 10.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `imagenet32-20261027-000850-1c570f4f` | 26.4322% | 20.4939% | 18.496% | 62.01 minutes | 10 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 5.692 → 3.827 | 3.827 (10) | 5.055 → 4.117 | 4.117 (10) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2379,7 +3603,15 @@ _Continue ImageNet training (analysis experiment)_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** `imagenet32-continuation-20261027-013419-8e7bc688`: train 37.1263%, validation 21.9809%, test 20.004%; 134.60 minutes; selected epoch 25. Train loss 5.692 to 3.229; minimum 3.229 at epoch 25; validation loss 5.055 to 4.106; minimum 4.079 at epoch 16.
+**Result:**
+
+| Run | Train accuracy | Validation accuracy | Test accuracy | Training time | Selected epoch | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `imagenet32-continuation-20261027-013419-8e7bc688` | 37.1263% | 21.9809% | 20.004% | 134.60 minutes | 25 | — |
+
+| Run | Train loss (start → end) | Minimum train loss (epoch) | Validation loss (start → end) | Minimum validation loss (epoch) |
+| --- | --- | --- | --- | --- |
+| Same run | 5.692 → 3.229 | 3.229 (25) | 5.055 → 4.106 | 4.079 (16) |
 
 TODO — add your own interpretation and whether the result matched your expectation.
 
@@ -2399,7 +3631,14 @@ _Separate MLP-Mixer implementation_
 
 **Expected:** TODO — no prediction located. If reconstructing it now, label it retrospective.
 
-**Result:** That worktree’s journal records synthetic checks, including Metal training, and no full-dataset scores. TODO — describe your actual reason and expectation, cite the paper, and add a run ID only after a dataset experiment exists.
+**Result:**
+
+| Evidence status | Recorded result |
+| --- | --- |
+| Synthetic checks | Journal records synthetic checks, including Metal training. |
+| Full-dataset scores | None recorded. |
+
+TODO — describe your actual reason and expectation, cite the paper, and add a run ID only after a dataset experiment exists.
 
 ## Final harness preparation
 
@@ -2411,13 +3650,32 @@ _Separate MLP-Mixer implementation_
 
 **Expected:** No personal prediction was recorded before this CUDA run. TODO — add your own reading, labeled retrospective. The implementation goal was a clean install and fresh training through the unchanged instructor evaluation cells; this is not a recovered personal prediction.
 
-**Result:** The exact instructor harness passed on a high-RAM A100, seed 0, installed from commit `b5ab6e1f75de4cfc257cf85b7e2535cfa217934c`. All models trained from scratch. Total training: 40.33 minutes.
+**Result:** The exact instructor harness passed on a high-RAM A100, seed 0, installed from commit `b5ab6e1f75de4cfc257cf85b7e2535cfa217934c`. All models trained from scratch.
 
-- `mnist-c628ed51`: test 99.150%, validation 99.3667%, 14.70 minutes; selected epoch 270 of 382 complete epochs (time_budget). Train loss 0.742 to 0.012; validation loss 0.218 to 0.027, minimum 0.024 at epoch 361.
-- `cifar10-32ae8cde`: test 74.760%, validation 76.6400%, 3.82 minutes; selected epoch 56 of 60 complete epochs (epochs). Train loss 3.574 to 0.457; validation loss 1.909 to 0.796, minimum 0.736 at epoch 56.
-- `imagenet32-8856b095`: test 19.960%, validation 22.0222%, 21.81 minutes; selected epoch 23 of 25 complete epochs (epochs). Train loss 5.651 to 3.252; validation loss 5.013 to 4.111, minimum 4.070 at epoch 15.
+| Run | Test accuracy | Validation accuracy | Training time | Selected epoch | Completed epochs | Stop reason |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `mnist-c628ed51` | 99.150% | 99.3667% | 14.70 minutes | 270 | 382 | time_budget |
+| `cifar10-32ae8cde` | 74.760% | 76.6400% | 3.82 minutes | 56 | 60 | epochs |
+| `imagenet32-8856b095` | 19.960% | 22.0222% | 21.81 minutes | 23 | 25 | epochs |
 
-The ImageNet fixed-batch diagnostics contain eight snapshots, including initialization and selected epoch 23. Removing its first and second residual classifier branches reduced validation accuracy by 10.1634 and 3.6131 percentage points, respectively. Full validation accuracy after restoring the saved selected model exactly matched training's selected checkpoint. TODO — add your own interpretation and whether the result matched your expectation.
+| Dataset | Train loss (start to end) | Validation loss (start to end) | Minimum validation loss | Minimum epoch |
+| --- | --- | --- | ---: | ---: |
+| MNIST | 0.742 to 0.012 | 0.218 to 0.027 | 0.024 | 361 |
+| CIFAR10 | 3.574 to 0.457 | 1.909 to 0.796 | 0.736 | 56 |
+| ImageNet32 | 5.651 to 3.252 | 5.013 to 4.111 | 4.070 | 15 |
+
+| Summary measure | Result |
+| --- | ---: |
+| Total training time | 40.33 minutes |
+
+The ImageNet fixed-batch diagnostics contain eight snapshots, including initialization and selected epoch 23.
+
+| Residual classifier branch removed | Validation accuracy drop (percentage points) |
+| --- | ---: |
+| First | 10.1634 |
+| Second | 3.6131 |
+
+Full validation accuracy after restoring the saved selected model exactly matched training's selected checkpoint. TODO — add your own interpretation and whether the result matched your expectation.
 
 **Runs:** [Fresh harness evidence and run records](outputs/final-evaluation/README.md). [Report images](outputs/report-figures/README.md). The historical 20.004% continuation remains separate from this fresh 19.960% result.
 
@@ -2426,9 +3684,15 @@ The ImageNet fixed-batch diagnostics contain eight snapshots, including initiali
 The saved epoch-23 ImageNet model was evaluated without retraining on the same
 validation split. At each of its six window stages, replacing each neighborhood
 with repeated copies of its top-left pixel or its mean preserved channel
-mapping and shape while removing spatial information. Mean-only validation
-accuracy ranged from 0.5823% at stage 1 to 16.4515% at stage 4, versus 22.0222%
-for the full model. Weights and restored accuracy were unchanged. [All twelve
+mapping and shape while removing spatial information.
+
+| Evaluation | Stage | Validation accuracy |
+| --- | ---: | ---: |
+| Mean-only ablation | 1 | 0.5823% |
+| Mean-only ablation | 4 | 16.4515% |
+| Full model | — | 22.0222% |
+
+Weights and restored accuracy were unchanged. [All twelve
 results and methods](outputs/window-stage-ablation/README.md).
 
 TODO — add your own interpretation. These controls retain the learned MLP and
@@ -2442,7 +3706,18 @@ should not be described as deleting the whole stage.
 
 **Expected:** Recorded before training: assistant-proposed hypothesis, accepted for one experiment, that extra processing before compression may increase best validation accuracy above 22.022230%. Extra capacity may instead overfit; compare validation loss and the training/validation gap. No numerical gain was predicted. This is not a recovered personal prediction.
 
-**Result:** One fresh seed-0 run completed 25 epochs in 23.52 minutes. Best validation accuracy 21.1067% at epoch 25, versus baseline 22.0222% at epoch 23: 0.9156 percentage points worse. Minimum validation loss 4.101746 at epoch 25, versus baseline 4.069596 at epoch 15. Epoch-25 training loss 3.419130, versus baseline 3.252028. The accuracy hypothesis was not supported within this fixed 25-epoch recipe. The candidate was still improving at the cutoff; no continuation or retry was run. No test-set evaluation or default change. TODO — add your own interpretation.
+**Result:** One fresh seed-0 run, compared with the qualified baseline:
+
+| Measure | Baseline | Extra block |
+| --- | ---: | ---: |
+| Best validation accuracy | 22.0222% | 21.1067% |
+| Selected epoch / completed epochs | 23 / 25 | 25 / 25 |
+| Accuracy change from baseline (percentage points) | — | -0.9156 |
+| Minimum validation loss | 4.069596 (epoch 15) | 4.101746 (epoch 25) |
+| Epoch-25 training loss | 3.252028 | 3.419130 |
+| Training time (minutes) | 21.81 | 23.52 |
+
+The accuracy hypothesis was not supported within this fixed 25-epoch recipe. The candidate was still improving at the cutoff; no continuation or retry was run. No test-set evaluation or default change. TODO — add your own interpretation.
 
 **Runs:** `imagenet32-prereduction-20261028-s0`; [pre-run protocol](outputs/pre-reduction-experiment/intent.json); [results, curves, and evidence](outputs/pre-reduction-experiment/README.md).
 
@@ -2457,5 +3732,12 @@ should not be described as deleting the whole stage.
 **Expected:** TODO — write this before running the experiment.
 
 **Result:** TODO — accuracy, training time, loss-curve behavior and whether the prediction held.
+
+| Measure | Result |
+| --- | --- |
+| Accuracy | TODO |
+| Training time | TODO |
+| Loss-curve behavior | TODO |
+| Whether the prediction held | TODO |
 
 **Runs:** TODO — add the saved run ID.

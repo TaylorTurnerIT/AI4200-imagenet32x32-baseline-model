@@ -6,9 +6,28 @@ This is a source-backed reconstruction for writing `LOG.md`, not a replacement d
 
 ## Later recorded experiments
 
+### 2026-10-28 — Original ImageNet32 baseline recovery
+
+A later run of the unchanged supplied model fills the missing baseline measurement.
+
+| Run | Test accuracy | Training time | Epochs |
+| --- | ---: | ---: | ---: |
+| `imagenet32-originalbaseline-20261028-s0` | 6.766% | 15.42 minutes | 10 |
+
+[Change 1](../../LOG.md#change-1--mnist--cifar10--imagenet32--2026-10-15) · [Original source, harness, losses and receipts](../original-baseline-evaluation/README.md).
+
 ### Oct 28 — Extra residual block before final ImageNet reduction
 
-One seed-0 run added a 256→512→256 pre-LayerNorm/GELU residual MLP before the final 2×2 to 1×1 window stage, adding 263,424 parameters. With the same split and training recipe, best validation accuracy was **21.1067%**, below the baseline's **22.0222%**, after 25 epochs and 23.52 minutes. Best accuracy and minimum validation loss occurred at the cutoff; longer training is unmeasured. No test evaluation, retry, or default change.
+One seed-0 run added a 256→512→256 pre-LayerNorm/GELU residual MLP before the final 2×2 to 1×1 window stage, adding 263,424 parameters. The split and training recipe were unchanged.
+
+| Result | Baseline | Extra block |
+| --- | ---: | ---: |
+| Best validation accuracy | 22.0222% | 21.1067% |
+| Selected epoch / completed epochs | 23 / 25 | 25 / 25 |
+| Training time (minutes) | 21.81 | 23.52 |
+| Accuracy change from baseline (percentage points) | — | -0.9156 |
+
+Best candidate accuracy and minimum validation loss occurred at the cutoff; longer training is unmeasured. No test evaluation, retry, or default change.
 
 Run: `imagenet32-prereduction-20261028-s0`. [Change 146](../../LOG.md#change-146--imagenet32--2026-10-28) · [Pre-run hypothesis, results and curves](../pre-reduction-experiment/README.md) · [Exact run index](run-index.md#imagenet32-prereduction-20261028-s0).
 

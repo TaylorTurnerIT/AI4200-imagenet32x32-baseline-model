@@ -1,0 +1,2 @@
+time,package_url,import_name,task,accuracy,train_minutes,seed
+2026-10-29 00:40,git+https://github.com/JesseTNRoberts/AI4200-imagenet32x32-baseline-model.git@b56785a206069671420fbf5c6bbd6efb99f467b9,residual_mlp_baseline,imagenet32,0.0677,15.4,0

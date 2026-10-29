@@ -1,0 +1,7 @@
+{
+  "run_id": "imagenet32-originalbaseline-20261028-s0",
+  "directory": "runs/experiments/imagenet32-originalbaseline-20261028-s0",
+  "checkpoint": "final.pt",
+  "checkpoint_sha256": "211c50cdbce95ea1dbde2ab090f88b48e5efedc61b9c855302dd1ae1a3fe27fc",
+  "binary_artifacts_excluded_from_git": true
+}

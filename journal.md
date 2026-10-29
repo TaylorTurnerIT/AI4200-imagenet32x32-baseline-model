@@ -1031,7 +1031,29 @@ MNIST, CIFAR-10, and ImageNet32 now have separate notebooks, each starting from 
 
 ### Extra residual block before final reduction — 2026-10-28
 
-The [extra-block run](outputs/pre-reduction-experiment/README.md) reached 21.1067% ImageNet32 validation after 25 epochs (23.52 minutes), below the baseline's 22.0222%. Same seed, split and recipe; no test evaluation or default change, and its best accuracy and lowest validation loss both occurred at the cutoff.
+The [extra-block run](outputs/pre-reduction-experiment/README.md) used the same seed, split and recipe as the baseline.
+
+| Result | Baseline | Extra block |
+| --- | ---: | ---: |
+| Best ImageNet32 validation accuracy | 22.0222% | 21.1067% |
+| Selected epoch / completed epochs | 23 / 25 | 25 / 25 |
+| Training time (minutes) | 21.81 | 23.52 |
+| Accuracy change from baseline (percentage points) | — | -0.9156 |
+
+Its best accuracy and lowest validation loss both occurred at the cutoff. No test evaluation or default change.
+
+### Original ImageNet32 baseline recovery — 2026-10-28
+
+Recovered the missing measurement using the instructor’s unchanged baseline and harness.
+
+| Measure | Result |
+| --- | ---: |
+| Test accuracy | 6.766% |
+| Training time | 15.42 minutes |
+| Epochs | 10 |
+| Training loss, first → last epoch | 6.4107 → 5.3584 |
+
+[Saved run `imagenet32-originalbaseline-20261028-s0`](outputs/original-baseline-evaluation/README.md).
 
 # Planning
 

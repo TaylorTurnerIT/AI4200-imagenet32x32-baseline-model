@@ -1,0 +1,37 @@
+{
+  "run_id": "imagenet32-originalbaseline-20261028-s0",
+  "task": "imagenet32",
+  "source_commit": "b56785a206069671420fbf5c6bbd6efb99f467b9",
+  "installed_origin": {
+    "url": "https://github.com/JesseTNRoberts/AI4200-imagenet32x32-baseline-model.git",
+    "vcs_info": {
+      "commit_id": "b56785a206069671420fbf5c6bbd6efb99f467b9",
+      "requested_revision": "b56785a206069671420fbf5c6bbd6efb99f467b9",
+      "vcs": "git"
+    }
+  },
+  "source_sha256": {
+    "model.py": "546a7ccb952c11276694d09142767bcddddb45769f532dc9ce24da1cc75425cb",
+    "train.py": "a14fee241a387f8c890ac15a046664ad1c8c265189750c802dfca21bd14876e9",
+    "__init__.py": "926c34c78756172c7555de36d59cf407804efaad2227eeadb0a9d6ad156adfd9"
+  },
+  "seed": 0,
+  "device": "cuda",
+  "fresh_weights": true,
+  "test_accuracy": 0.06766,
+  "test_correct": 3383,
+  "test_examples": 50000,
+  "training_minutes": 15.422419758637746,
+  "epochs_completed": 10,
+  "checkpoint": "final epoch; no validation selection",
+  "training_examples": 1281167,
+  "validation_split": null,
+  "harness_probability_checks": "passed",
+  "additional_finite_nonnegative_check": "passed",
+  "leaderboard_alias": "",
+  "epoch_loss_precision": "four decimals, as printed by original trainer",
+  "initial_epoch_train_loss_printed": "6.4107",
+  "final_epoch_train_loss_printed": "5.3584",
+  "recovered_after_development": true,
+  "completed_utc": "2026-10-29T00:40:58.818623+00:00"
+}

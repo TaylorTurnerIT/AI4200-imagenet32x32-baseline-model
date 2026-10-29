@@ -1,0 +1,105 @@
+[colab] Parsing notebook '/private/tmp/ai4200-original-baseline-prep/baseline-harness.ipynb'...
+[colab] Executing cell 1/12 - 582b3e20...
+[colab] Executing cell 2/12 - b0d3b4a6...
+[colab] Executing cell 3/12 - 7e8a769c...
+  Installing build dependencies ... [?25l[?25hdone
+  Getting requirements to build wheel ... [?25l[?25hdone
+  Preparing metadata (pyproject.toml) ... [?25l[?25hdone
+  Building wheel for residual-mlp-baseline (pyproject.toml) ... [?25l[?25hdone
+[colab] Executing cell 4/12 - e6d4c6fb...
+Testing residual_mlp_baseline on cuda
+[colab] Executing cell 5/12 - 9d0e3ec7...
+[colab] Executing cell 6/12 - 71daf27b...
+imagenet32: getting benjamin-paine/imagenet-1k-32x32 from Hugging Face (first run only; reuses its download cache if present)
+/usr/local/lib/python3.13/dist-packages/huggingface_hub/utils/_auth.py:138: UserWarning: 
+Error while fetching `HF_TOKEN` secret value from your vault: 'Requesting secret HF_TOKEN timed out. Secrets can only be fetched when running from the Colab UI.'.
+  warnings.warn(f"\nError while fetching `HF_TOKEN` secret value from your vault: '{str(e)}'.")
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING:huggingface_hub.utils._http:Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+README.md:   0%|          | 0.00/88.7k [00:00<?, ?B/s]
+data/train-00000-of-00003.parquet: reconstructing file:   0%|          |  0.00B 
+/  197MB            
+data/train-00000-of-00003.parquet: downloading bytes:           |  0.00B        
+data/train-00001-of-00003.parquet: reconstructing file:   0%|          |  0.00B 
+/  200MB            
+data/train-00001-of-00003.parquet: downloading bytes:           |  0.00B        
+data/train-00002-of-00003.parquet: reconstructing file:   0%|          |  0.00B 
+/  199MB            
+data/train-00002-of-00003.parquet: downloading bytes:           |  0.00B        
+data/validation-00000-of-00001.parquet: reconstructing file:   0%|          |  
+0.00B / 24.0MB            
+data/validation-00000-of-00001.parquet: downloading bytes:           |  0.00B   
+data/test-00000-of-00001.parquet: reconstructing file:   0%|          |  0.00B /
+46.6MB            
+data/test-00000-of-00001.parquet: downloading bytes:           |  0.00B         
+Generating train split:   0%|          | 0/1281167 [00:00<?, ? examples/s]
+Generating validation split:   0%|          | 0/50000 [00:00<?, ? examples/s]
+Generating test split:   0%|          | 0/100000 [00:00<?, ? examples/s]
+  train: 10,000 / 1,281,167 images  train: 20,000 / 1,281,167 images  train: 30,000 / 1,281,167 images  train: 40,000 / 1,281,167 images  train: 50,000 / 1,281,167 images  train: 60,000 / 1,281,167 images  train: 70,000 / 1,281,167 images  train: 80,000 / 1,281,167 images  train: 90,000 / 1,281,167 images  train: 100,000 / 1,281,167 images  train: 110,000 / 1,281,167 images  train: 120,000 / 1,281,167 images  train: 130,000 / 1,281,167 images  train: 140,000 / 1,281,167 images  train: 150,000 / 1,281,167 images  train: 160,000 / 1,281,167 images  train: 170,000 / 1,281,167 images  train: 180,000 / 1,281,167 images  train: 190,000 / 1,281,167 images  train: 200,000 / 1,281,167 images  train: 210,000 / 1,281,167 images  train: 220,000 / 1,281,167 images  train: 230,000 / 1,281,167 images  train: 240,000 / 1,281,167 images  train: 250,000 / 1,281,167 images  train: 260,000 / 1,281,167 images  train: 270,000 / 1,281,167 images  train: 280,000 / 1,281,167 images  train: 290,000 / 1,281,167 images  train: 300,000 / 1,281,167 images  train: 310,000 / 1,281,167 images  train: 320,000 / 1,281,167 images  train: 330,000 / 1,281,167 images  train: 340,000 / 1,281,167 images  train: 350,000 / 1,281,167 images  train: 360,000 / 1,281,167 images  train: 370,000 / 1,281,167 images  train: 380,000 / 1,281,167 images  train: 390,000 / 1,281,167 images  train: 400,000 / 1,281,167 images  train: 410,000 / 1,281,167 images  train: 420,000 / 1,281,167 images  train: 430,000 / 1,281,167 images  train: 440,000 / 1,281,167 images  train: 450,000 / 1,281,167 images  train: 460,000 / 1,281,167 images  train: 470,000 / 1,281,167 images  train: 480,000 / 1,281,167 images  train: 490,000 / 1,281,167 images  train: 500,000 / 1,281,167 images  train: 510,000 / 1,281,167 images  train: 520,000 / 1,281,167 images  train: 530,000 / 1,281,167 images  train: 540,000 / 1,281,167 images  train: 550,000 / 1,281,167 images  train: 560,000 / 1,281,167 images  train: 570,000 / 1,281,167 images  train: 580,000 / 1,281,167 images  train: 590,000 / 1,281,167 images  train: 600,000 / 1,281,167 images  train: 610,000 / 1,281,167 images  train: 620,000 / 1,281,167 images  train: 630,000 / 1,281,167 images  train: 640,000 / 1,281,167 images  train: 650,000 / 1,281,167 images  train: 660,000 / 1,281,167 images  train: 670,000 / 1,281,167 images  train: 680,000 / 1,281,167 images  train: 690,000 / 1,281,167 images  train: 700,000 / 1,281,167 images  train: 710,000 / 1,281,167 images  train: 720,000 / 1,281,167 images  train: 730,000 / 1,281,167 images  train: 740,000 / 1,281,167 images  train: 750,000 / 1,281,167 images  train: 760,000 / 1,281,167 images  train: 770,000 / 1,281,167 images  train: 780,000 / 1,281,167 images  train: 790,000 / 1,281,167 images  train: 800,000 / 1,281,167 images  train: 810,000 / 1,281,167 images  train: 820,000 / 1,281,167 images  train: 830,000 / 1,281,167 images  train: 840,000 / 1,281,167 images  train: 850,000 / 1,281,167 images  train: 860,000 / 1,281,167 images  train: 870,000 / 1,281,167 images  train: 880,000 / 1,281,167 images  train: 890,000 / 1,281,167 images  train: 900,000 / 1,281,167 images  train: 910,000 / 1,281,167 images  train: 920,000 / 1,281,167 images  train: 930,000 / 1,281,167 images  train: 940,000 / 1,281,167 images  train: 950,000 / 1,281,167 images  train: 960,000 / 1,281,167 images  train: 970,000 / 1,281,167 images  train: 980,000 / 1,281,167 images  train: 990,000 / 1,281,167 images  train: 1,000,000 / 1,281,167 images  train: 1,010,000 / 1,281,167 images  train: 1,020,000 / 1,281,167 images  train: 1,030,000 / 1,281,167 images  train: 1,040,000 / 1,281,167 images  train: 1,050,000 / 1,281,167 images  train: 1,060,000 / 1,281,167 images  train: 1,070,000 / 1,281,167 images  train: 1,080,000 / 1,281,167 images  train: 1,090,000 / 1,281,167 images  train: 1,100,000 / 1,281,167 images  train: 1,110,000 / 1,281,167 images  train: 1,120,000 / 1,281,167 images  train: 1,130,000 / 1,281,167 images  train: 1,140,000 / 1,281,167 images  train: 1,150,000 / 1,281,167 images  train: 1,160,000 / 1,281,167 images  train: 1,170,000 / 1,281,167 images  train: 1,180,000 / 1,281,167 images  train: 1,190,000 / 1,281,167 images  train: 1,200,000 / 1,281,167 images  train: 1,210,000 / 1,281,167 images  train: 1,220,000 / 1,281,167 images  train: 1,230,000 / 1,281,167 images  train: 1,240,000 / 1,281,167 images  train: 1,250,000 / 1,281,167 images  train: 1,260,000 / 1,281,167 images  train: 1,270,000 / 1,281,167 images  train: 1,280,000 / 1,281,167 images  train: 1,281,167 / 1,281,167 images
+  test: 10,000 / 50,000 images  test: 20,000 / 50,000 images  test: 30,000 / 50,000 images  test: 40,000 / 50,000 images  test: 50,000 / 50,000 images
+imagenet32: X_train (1281167, 3, 32, 32) uint8, X_test (50000, 3, 32, 32), labels 0..999
+[colab] Executing cell 7/12 - cf78fe40...
+<Figure size 1000x140 with 8 Axes>
+
+[Image saved to: /var/folders/_j/6mq3w82s4h52bncpkwsn4mc00000gn/T/tmp7b0o4o7v.png]
+[colab] Executing cell 8/12 - 7e2d5d2d...
+[colab] Executing cell 9/12 - baseline-evidence-before...
+Original baseline verified; training has not started.
+[colab] Executing cell 10/12 - a360c7da...
+
+===== imagenet32 =====
+epoch 1: train loss 6.4107
+epoch 2: train loss 6.0411
+epoch 3: train loss 5.8735
+epoch 4: train loss 5.7538
+epoch 5: train loss 5.6625
+epoch 6: train loss 5.5864
+epoch 7: train loss 5.5197
+epoch 8: train loss 5.4607
+epoch 9: train loss 5.4074
+epoch 10: train loss 5.3584
+imagenet32: test accuracy 6.77%  (training took 15.4 min)
+[colab] Executing cell 11/12 - f5cf4557...
+      task | test accuracy | train time
+-----------------------------------------
+imagenet32 |         6.77% |   15.4 min
+[colab] Executing cell 12/12 - baseline-evidence-after...
+{
+  "run_id": "imagenet32-originalbaseline-20261028-s0",
+  "task": "imagenet32",
+  "source_commit": "b56785a206069671420fbf5c6bbd6efb99f467b9",
+  "installed_origin": {
+    "url": "https://github.com/JesseTNRoberts/AI4200-imagenet32x32-baseline-model.git",
+    "vcs_info": {
+      "commit_id": "b56785a206069671420fbf5c6bbd6efb99f467b9",
+      "requested_revision": "b56785a206069671420fbf5c6bbd6efb99f467b9",
+      "vcs": "git"
+    }
+  },
+  "source_sha256": {
+    "model.py": "546a7ccb952c11276694d09142767bcddddb45769f532dc9ce24da1cc75425cb",
+    "train.py": "a14fee241a387f8c890ac15a046664ad1c8c265189750c802dfca21bd14876e9",
+    "__init__.py": "926c34c78756172c7555de36d59cf407804efaad2227eeadb0a9d6ad156adfd9"
+  },
+  "seed": 0,
+  "device": "cuda",
+  "fresh_weights": true,
+  "test_accuracy": 0.06766,
+  "test_correct": 3383,
+  "test_examples": 50000,
+  "training_minutes": 15.422419758637746,
+  "epochs_completed": 10,
+  "checkpoint": "final epoch; no validation selection",
+  "training_examples": 1281167,
+  "validation_split": null,
+  "harness_probability_checks": "passed",
+  "additional_finite_nonnegative_check": "passed",
+  "leaderboard_alias": "",
+  "epoch_loss_precision": "four decimals, as printed by original trainer",
+  "initial_epoch_train_loss_printed": "6.4107",
+  "final_epoch_train_loss_printed": "5.3584",
+  "recovered_after_development": true,
+  "completed_utc": "2026-10-29T00:40:58.818623+00:00"
+}
+ORIGINAL_BASELINE_EVIDENCE_READY
+[colab] Saving notebook with outputs to '/private/tmp/ai4200-original-baseline-prep/baseline-harness_output.ipynb'...

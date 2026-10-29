@@ -1,0 +1,11 @@
+{
+  "python": "3.13.16",
+  "torch": "2.11.0+cu130",
+  "cuda": "13.0",
+  "gpu": "NVIDIA A100-SXM4-80GB",
+  "ram_gib": 167.05175399780273,
+  "default_dtype": "torch.float32",
+  "torch_threads": 6,
+  "matmul_allow_tf32": false,
+  "cudnn_allow_tf32": true
+}

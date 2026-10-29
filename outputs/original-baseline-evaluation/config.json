@@ -1,0 +1,27 @@
+{
+  "run_id": "imagenet32-originalbaseline-20261028-s0",
+  "task": "imagenet32",
+  "source_commit": "b56785a206069671420fbf5c6bbd6efb99f467b9",
+  "recipe": {
+    "depth": 30,
+    "width": 128,
+    "hidden": 256,
+    "activation": "tanh",
+    "normalization": "pre-LayerNorm",
+    "initialization": "Xavier normal, zero biases",
+    "optimizer": "SGD",
+    "learning_rate": 0.05,
+    "momentum": 0,
+    "weight_decay": 0,
+    "batch_size": 256,
+    "epochs": 10,
+    "seed": 0,
+    "schedule": "constant",
+    "augmentation": false,
+    "train_from_scratch": true,
+    "training_split": "all 1,281,167 training images; no validation carve-out",
+    "checkpoint_selection": "final epoch"
+  },
+  "model_repr": "ResidualMLP(\n  (input_layer): Linear(in_features=3072, out_features=128, bias=True)\n  (blocks): ModuleList(\n    (0-29): 30 x Block(\n      (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n      (fc1): Linear(in_features=128, out_features=256, bias=True)\n      (fc2): Linear(in_features=256, out_features=128, bias=True)\n    )\n  )\n  (head_norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n  (head_fc1): Linear(in_features=128, out_features=256, bias=True)\n  (head_fc2): Linear(in_features=256, out_features=1000, bias=True)\n)",
+  "parameters": 2668904
+}
