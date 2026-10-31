@@ -14,16 +14,16 @@
   "required_sections": 6,
   "placeholder_markers": 0,
   "overfull_tex_boxes": 0,
-  "visual_review": "All seven rendered IEEE journal pages inspected; no clipping, overlapping content, or overfull boxes.",
+  "visual_review": "All seven corrected IEEE journal pages rendered and inspected; no clipping, overlapping content, or overfull boxes.",
   "portable_source_bundle": "Standalone IEEEtran project compiled; extracted PDF text matches repository build page-for-page.",
   "uses_existing_saved_metrics": true,
   "additional_training_required": false,
   "additional_ablation_required": false,
   "runtime_cleanup": "Redundant A100 terminated; no active server sessions.",
   "outputs_sha256": {
-    "project1-report.tex": "f8335a61f722e57de17ca08fc46163505ece721a3aff7964a0f27e4307e23012",
-    "project1-report.pdf": "59965cd5e14b139247d43e3d5774d444a01c30b929d71fafaf5219429067af49",
-    "project1-report-source.zip": "f2b9af26d15d31f9a39adc596b0182f70d4f6778f064140faef39ce29ce62259"
+    "project1-report.tex": "b4377a93ba46b4d15faf6ad0062c33c88f1d298842dcb9505ca1878c81df7e57",
+    "project1-report.pdf": "9508f3c2ac284a3da66c4de126ee7ef23d3d3e8c8fe8a5df4864cd084d5db275",
+    "project1-report-source.zip": "420acca4b3f70509510485c6e00c154bceb608112883126044e5674d7d4b96e7"
   },
   "formatting": {
     "document_class": "IEEEtran",
@@ -36,6 +36,14 @@
     "title_and_author_text_preserved": true,
     "preservation_method": "Exact source-body comparison after removing layout wrappers and normalizing heading numbering and whitespace.",
     "journal_unchanged_since_author_commit": true,
-    "image_assets_unchanged": true
+    "image_assets_unchanged": true,
+    "validation_scope": "IEEE formatting pass at 77f4a22, before the separately approved dynamics paragraph correction."
+  },
+  "approved_content_revision": {
+    "base_commit": "77f4a22f44b67bc8060755cc6e93d9dc822f8510",
+    "scope": "One ImageNet activation-variance interpretation paragraph",
+    "all_other_source_content_unchanged": true,
+    "change": "Remove unsupported vanishing-gradient and expected residual-explosion claims; distinguish activation variance from gradient magnitude.",
+    "measured_results_tables_images_and_captions_unchanged": true
   }
 }

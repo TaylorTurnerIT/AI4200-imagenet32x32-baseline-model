@@ -26,4 +26,6 @@ measurements as estimates or count continued weights as fresh training.
 
 The author revisions were committed before formatting. `verification.json` records
 the exact content comparison: all prose, six tables, eight images and captions,
-and the title and author text were preserved. Only layout commands changed.
+and the title and author text were preserved during the IEEE conversion. A later
+approved correction trims one activation-variance interpretation paragraph; all
+other report content and measured results remain unchanged.
