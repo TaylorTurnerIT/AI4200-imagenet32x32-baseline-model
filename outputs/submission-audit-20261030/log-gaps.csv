@@ -1,0 +1,147 @@
+change,heading,todo_markers,why_retrospectively_reconstructed,expectation_retrospectively_estimated,unrecorded_or_unrecoverable_evidence
+1,### Change 1 — mnist / cifar10 / imagenet32 — 2026-10-15,0,False,False,
+2,### Change 2 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+3,### Change 3 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+4,### Change 4 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+5,### Change 5 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+6,### Change 6 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+7,### Change 7 — mnist — 2026-10-19,0,True,True,
+8,### Change 8 — mnist — 2026-10-19,0,False,True,
+9,### Change 9 — mnist — 2026-10-19,0,False,False,No complete per-epoch loss artifact found.
+10,### Change 10 — mnist — 2026-10-19,0,True,False,No complete per-epoch loss artifact found.
+11,### Change 11 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+12,### Change 12 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+13,### Change 13 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+14,### Change 14 — mnist — 2026-10-19,0,True,True,
+15,### Change 15 — mnist — 2026-10-19,0,False,True,No complete per-epoch loss artifact found.
+16,### Change 16 — mnist — 2026-10-19,0,False,True,No complete per-epoch loss artifact found.
+17,### Change 17 — mnist — 2026-10-19,0,True,True,
+18,### Change 18 — mnist — 2026-10-19,0,False,False,
+19,### Change 19 — mnist — 2026-10-19,0,True,False,
+20,### Change 20 — mnist — 2026-10-19,0,False,True,No complete per-epoch loss artifact found.
+21,### Change 21 — mnist — 2026-10-19,0,False,True,No complete per-epoch loss artifact found.
+22,### Change 22 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+23,### Change 23 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+24,### Change 24 — mnist — 2026-10-19,0,False,True,
+25,### Change 25 — mnist — 2026-10-19,0,True,True,No complete per-epoch loss artifact found.
+26,### Change 26 — mnist — 2026-10-19,0,False,True,
+27,### Change 27 — mnist — 2026-10-19,0,False,True,No complete per-epoch loss artifact found.
+28,### Change 28 — mnist — 2026-10-19,0,True,True,
+29,### Change 29 — mnist — 2026-10-19,0,False,True,No complete per-epoch loss artifact found.
+30,### Change 30 — mnist — 2026-10-19,0,True,True,
+31,### Change 31 — mnist — 2026-10-20,0,False,True,No complete per-epoch loss artifact found.
+32,### Change 32 — mnist — 2026-10-20,0,True,True,No complete per-epoch loss artifact found.
+33,### Change 33 — mnist — 2026-10-20,0,False,True,No complete per-epoch loss artifact found.
+34,### Change 34 — mnist — 2026-10-20,0,True,True,No complete per-epoch loss artifact found.
+35,### Change 35 — mnist — 2026-10-20,0,False,True,
+36,### Change 36 — mnist — 2026-10-20,0,False,True,No complete per-epoch loss artifact found.
+37,### Change 37 — mnist — 2026-10-20,0,False,True,
+38,### Change 38 — mnist — 2026-10-20,0,True,True,No complete per-epoch loss artifact found.
+39,### Change 39 — mnist — 2026-10-20,0,True,True,No complete per-epoch loss artifact found.
+40,### Change 40 — mnist — 2026-10-20,0,True,True,No complete per-epoch loss artifact found.
+41,### Change 41 — mnist — 2026-10-20,0,True,True,No complete per-epoch loss artifact found.
+42,### Change 42 — mnist — 2026-10-20,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+43,### Change 43 — mnist — 2026-10-20,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+44,### Change 44 — mnist — 2026-10-20,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+45,### Change 45 — mnist — 2026-10-20,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+46,### Change 46 — mnist — 2026-10-22,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+47,### Change 47 — mnist — 2026-10-22,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+48,### Change 48 — mnist — 2026-10-22,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+49,### Change 49 — mnist — 2026-10-22,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+50,### Change 50 — mnist — 2026-10-22,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+51,### Change 51 — mnist — 2026-10-22,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+52,### Change 52 — mnist — 2026-10-22,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+53,### Change 53 — mnist — 2026-10-22,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+54,### Change 54 — mnist — 2026-10-22,0,True,True,Exact setup and shifted CSV time/train fields cannot be assigned reliably.
+55,### Change 55 — mnist — 2026-10-22,0,False,True,
+56,### Change 56 — mnist — 2026-10-22,0,True,True,One or more attempts has no final score.
+57,### Change 57 — mnist — 2026-10-22,0,True,True,
+58,### Change 58 — mnist — 2026-10-23,0,False,True,
+59,### Change 59 — mnist — 2026-10-23,0,True,True,
+60,### Change 60 — mnist — 2026-10-23,0,True,True,
+61,### Change 61 — mnist — 2026-10-23,0,True,True,One or more attempts has no final score.
+62,### Change 62 — mnist — 2026-10-23,0,True,True,One or more attempts has no final score.
+63,### Change 63 — mnist — 2026-10-24,0,True,True,
+64,### Change 64 — mnist — 2026-10-24,0,True,True,One or more attempts has no final score.
+65,### Change 65 — mnist — 2026-10-24,0,True,True,One or more attempts has no final score.
+66,### Change 66 — mnist — 2026-10-24,0,True,True,One or more attempts has no final score.
+67,### Change 67 — mnist — date not recorded,0,False,True,
+68,### Change 68 — mnist — date not recorded,0,False,True,
+69,### Change 69 — mnist — date not recorded,0,True,True,
+70,### Change 70 — mnist — 2026-10-27,0,True,True,One or more attempts has no final score.
+71,### Change 71 — mnist — 2026-10-27,0,True,True,One or more attempts has no final score.
+72,### Change 72 — mnist — 2026-10-27,0,True,True,
+73,### Change 73 — cifar10 — 2026-10-23,0,True,True,
+74,### Change 74 — cifar10 — 2026-10-23,0,True,False,
+75,### Change 75 — cifar10 — 2026-10-23,0,False,True,
+76,### Change 76 — cifar10 — 2026-10-23,0,False,True,One or more attempts has no final score.
+77,### Change 77 — cifar10 — 2026-10-23,0,False,True,
+78,### Change 78 — cifar10 — 2026-10-23,0,False,True,
+79,### Change 79 — cifar10 — 2026-10-24,0,False,False,
+80,### Change 80 — cifar10 — 2026-10-24,0,True,True,
+81,### Change 81 — cifar10 — 2026-10-24,0,False,True,
+82,### Change 82 — cifar10 — 2026-10-24,0,True,True,
+83,### Change 83 — cifar10 — 2026-10-24,0,True,True,
+84,### Change 84 — cifar10 — 2026-10-24,0,True,True,
+85,### Change 85 — cifar10 — 2026-10-24,0,True,True,
+86,### Change 86 — cifar10 — 2026-10-24,0,True,True,
+87,### Change 87 — cifar10 — 2026-10-24,0,True,True,
+88,### Change 88 — cifar10 — 2026-10-24,0,True,True,
+89,### Change 89 — cifar10 — 2026-10-24,0,True,True,
+90,### Change 90 — cifar10 — 2026-10-24,0,True,True,
+91,### Change 91 — cifar10 — 2026-10-24,0,True,True,
+92,### Change 92 — cifar10 — 2026-10-24,0,True,True,
+93,### Change 93 — cifar10 — 2026-10-24,0,True,True,
+94,### Change 94 — cifar10 — 2026-10-24,0,True,True,
+95,### Change 95 — cifar10 — 2026-10-24,0,True,True,
+96,### Change 96 — cifar10 — 2026-10-24,0,True,True,
+97,### Change 97 — cifar10 — 2026-10-24,0,True,True,
+98,### Change 98 — cifar10 — 2026-10-24,0,False,True,One or more attempts has no final score.
+99,### Change 99 — cifar10 — 2026-10-24,0,False,False,
+100,### Change 100 — cifar10 — 2026-10-24,0,True,False,
+101,### Change 101 — cifar10 — 2026-10-24,0,True,False,
+102,### Change 102 — cifar10 — 2026-10-24,0,True,True,One or more attempts has no final score.
+103,### Change 103 — cifar10 — 2026-10-24,0,False,False,
+104,### Change 104 — cifar10 — 2026-10-24,0,False,True,
+105,### Change 105 — cifar10 — 2026-10-24,0,False,True,
+106,### Change 106 — cifar10 — 2026-10-24,0,False,True,
+107,### Change 107 — cifar10 — 2026-10-24,0,False,True,
+108,### Change 108 — cifar10 — 2026-10-24,0,False,True,
+109,### Change 109 — cifar10 — 2026-10-24,0,True,True,
+110,### Change 110 — cifar10 — 2026-10-24,0,True,True,
+111,### Change 111 — cifar10 — 2026-10-24,0,True,True,
+112,### Change 112 — cifar10 — 2026-10-25,0,True,True,
+113,### Change 113 — cifar10 — 2026-10-25,0,True,True,
+114,### Change 114 — cifar10 — 2026-10-25,0,True,True,
+115,### Change 115 — cifar10 — 2026-10-25,0,True,True,
+116,### Change 116 — cifar10 — 2026-10-25,0,True,True,
+117,### Change 117 — cifar10 — 2026-10-25,0,True,True,
+118,### Change 118 — cifar10 — 2026-10-25,0,True,True,
+119,### Change 119 — cifar10 — 2026-10-25,0,True,True,
+120,### Change 120 — cifar10 — 2026-10-25,0,True,True,
+121,### Change 121 — cifar10 — 2026-10-25,0,True,True,
+122,### Change 122 — cifar10 — 2026-10-25,0,True,True,
+123,### Change 123 — cifar10 — 2026-10-25,0,True,True,One or more attempts has no final score.
+124,### Change 124 — cifar10 — 2026-10-25,0,True,True,One or more attempts has no final score.
+125,### Change 125 — cifar10 — 2026-10-25,0,False,True,
+126,### Change 126 — cifar10 — 2026-10-25,0,True,True,One or more attempts has no final score.
+127,### Change 127 — cifar10 — 2026-10-25,0,True,True,
+128,### Change 128 — cifar10 — 2026-10-25,0,True,True,One or more attempts has no final score.
+129,### Change 129 — cifar10 — 2026-10-25,0,True,True,
+130,### Change 130 — cifar10 — 2026-10-26,0,False,False,
+131,### Change 131 — cifar10 — 2026-10-26,0,True,True,
+132,### Change 132 — cifar10 — 2026-10-26,0,True,True,
+133,### Change 133 — cifar10 — 2026-10-26,0,True,True,
+134,### Change 134 — cifar10 — 2026-10-26,0,True,True,One or more attempts has no final score.
+135,### Change 135 — cifar10 — 2026-10-26,0,True,True,
+136,### Change 136 — cifar10 — 2026-10-26,0,True,True,
+137,### Change 137 — cifar10 — 2026-10-26,0,False,True,
+138,### Change 138 — cifar10 — 2026-10-26,0,True,True,
+139,### Change 139 — cifar10 — 2026-10-26,0,True,True,
+140,### Change 140 — imagenet32 — 2026-10-26,0,True,True,One or more attempts has no final score.
+141,### Change 141 — imagenet32 — 2026-10-26,0,True,True,
+142,### Change 142 — imagenet32 — 2026-10-27,0,True,True,
+143,### Change 143 — imagenet32 — 2026-10-27,0,True,True,
+144,### Change 144 — mnist / cifar10 / imagenet32 — 2026-10-26,0,False,True,
+145,### Change 145 — mnist / cifar10 / imagenet32 — 2026-10-27,0,True,True,
+146,### Change 146 — imagenet32 — 2026-10-28,0,True,False,

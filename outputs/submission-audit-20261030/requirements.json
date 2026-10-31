@@ -1,0 +1,231 @@
+{
+  "date": "2026-10-30",
+  "audited_main_commit": "6b7e86d43d1c4deacbeec5432f3acfe54425d108",
+  "draft_sha256": "19dd86c955200d8ada07bb4b4b02aeba9bd38d98422dc8fd8f38cfc8260daa9c",
+  "scope": "Assignment pasted in this thread; current local main, all five registered worktrees, saved evidence, and live public repository metadata.",
+  "section_audited": "5000 (confirmed by user)",
+  "compute": {
+    "additional_experimental_training_required": false,
+    "additional_residual_branch_ablation_required": false,
+    "additional_window_controls_required": false,
+    "final_submission_commit_harness_check_still_required": true,
+    "existing_qualified_training_minutes": 40.33389208714167,
+    "final_check_note": "Use a fresh CUDA environment and pin the final selected grading commit. This is a final submission check, not a need for a new architecture. Allow setup time plus up to 90 minutes training."
+  },
+  "verified": {
+    "grading_code_files_match_qualified_source_hashes": 5,
+    "focused_submission_tests": {
+      "run": 7,
+      "passed": 7
+    },
+    "saved_unique_run_config_records_found_across_worktrees": 114,
+    "missing_literal_run_references_in_draft": 0,
+    "diagnostic_snapshots": [
+      [
+        0,
+        "initial"
+      ],
+      [
+        1,
+        "epoch"
+      ],
+      [
+        5,
+        "epoch"
+      ],
+      [
+        10,
+        "epoch"
+      ],
+      [
+        15,
+        "epoch"
+      ],
+      [
+        20,
+        "epoch"
+      ],
+      [
+        25,
+        "epoch"
+      ],
+      [
+        23,
+        "selected_checkpoint"
+      ]
+    ],
+    "linear_layers_measured_per_snapshot": 20,
+    "residual_branches_measured_per_snapshot": 2,
+    "diagnostic_values_finite": true,
+    "probe_batch_examples": 32,
+    "probe_eval_mode": true,
+    "saturation": "Not applicable to final GELU model under assignment tanh/ReLU definitions",
+    "ablation_validation_examples": 128116,
+    "residual_branches_ablated_without_retraining": 2,
+    "ablation_drops_percentage_points": [
+      10.163445627400169,
+      3.6131318492616056
+    ],
+    "window_controls_completed": 12,
+    "required_training_curve_comparison_present": "outputs/report-figures/cifar10-training-comparison.png",
+    "all_eight_report_pngs_present": true
+  },
+  "baseline_test_accuracy": {
+    "mnist": 0.9565,
+    "cifar10": 0.4821,
+    "imagenet32": 0.06766
+  },
+  "qualified_test_accuracy": {
+    "mnist": 0.9915,
+    "cifar10": 0.7476,
+    "imagenet32": 0.1996
+  },
+  "log": {
+    "todo_markers": 436,
+    "recorded_change_sections": 146,
+    "next_entry_template": 147,
+    "gap_counts": {
+      "why_todo": 107,
+      "expected_todo": 133,
+      "result_or_interpretation_todo": 141,
+      "change_or_settings_todo": 14,
+      "loss_artifact_not_found": 28,
+      "draft_notes_todo": 9
+    },
+    "adoption_pending": "LOG.ste-draft.md is untracked; required LOG.md remains older committed draft",
+    "unmatched_legacy_setup_changes": [
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54
+    ],
+    "extra_reconciliation_changes": [
+      8,
+      9,
+      10,
+      41,
+      68,
+      69,
+      78,
+      100
+    ],
+    "preservation_report": "outputs/experiment-history/ste-draft-review.json",
+    "expectation_limit": "Retrospective writing cannot create a pre-run prediction. Label reconstruction and missing evidence honestly."
+  },
+  "report": {
+    "completed_student_report_found": false,
+    "report_directory_contains_templates_only": true,
+    "required_sections": [
+      "Final models and baseline/final harness test scores",
+      "What mattered most: 3 to 5 changes tied to log entries",
+      "ImageNet training dynamics plus 5000-level residual ablation",
+      "What did not work",
+      "Across MNIST, CIFAR-10, and ImageNet32",
+      "Explanations and citations for beyond-class techniques"
+    ],
+    "suggested_supported_improvement_comparisons": [
+      {
+        "changes": [
+          77,
+          79
+        ],
+        "claim": "SGD recipe to AdamW recipe",
+        "validation_accuracy": [
+          0.5248,
+          0.5436
+        ],
+        "limit": "Optimizer and learning rate changed together"
+      },
+      {
+        "changes": [
+          137,
+          138
+        ],
+        "claim": "Wider window MLP and residual classifier",
+        "validation_accuracy": [
+          0.4998,
+          0.608
+        ],
+        "limit": "Several widths changed together"
+      },
+      {
+        "changes": [
+          138,
+          139
+        ],
+        "claim": "Full-image coverage with edge padding",
+        "validation_accuracy": [
+          0.608,
+          0.761
+        ],
+        "limit": "Coverage and number of reduction stages changed together"
+      }
+    ]
+  },
+  "publication": {
+    "repository_visibility": "PUBLIC",
+    "public_main": "1f0c7edfc8a77a413c84fb5f556e4298d488d693",
+    "local_main": "6b7e86d43d1c4deacbeec5432f3acfe54425d108",
+    "latest_local_docs_unpublished": true,
+    "draft_untracked": true,
+    "pushed_during_audit": false
+  },
+  "required_next_actions": [
+    "Finish and adopt log under LOG.md; remove template/scaffolding; preserve honest unknowns",
+    "Write final report, use existing figures, add interpretations and citations, export and review PDF",
+    "Commit/publish intended grading version, including final LOG.md",
+    "Run original instructor harness in fresh CUDA environment pinned to selected final commit",
+    "Submit public repository URL and report PDF on Canvas; identify tested commit if needed"
+  ],
+  "not_required_today": [
+    "New model architecture",
+    "Training the Google Mixer exploration",
+    "Retrying or continuing the worse extra-block candidate",
+    "More window ablations",
+    "Ablations on MNIST/CIFAR-10",
+    "Repeating every historical experiment"
+  ],
+  "optional_figure_polish": "Accuracy timelines are a snapshot and omit the later recovered ImageNet baseline and extra-block run. Update or date-label them if presenting a complete history. Existing curve comparison satisfies the required figure example.",
+  "history_disclosures": [
+    "Earlier test-driven decisions cannot be rewritten as validation-driven decisions",
+    "Historical non-residual and MaxPool2d trials were discarded; frozen grading architecture excludes them",
+    "20.004% continued-weight ImageNet score is not the qualified fresh 19.96% test score",
+    "Window controls are spatial-information changes, not complete learned-stage deletion"
+  ],
+  "audit_limits": [
+    "No new full-dataset training was performed",
+    "Current focused tests use small synthetic inputs and do not replace a final fresh-harness check",
+    "Saved run coverage does not prove every unsaved edit was documented",
+    "Missing historical predictions/curves cannot be regenerated as contemporaneous evidence"
+  ],
+  "section_confirmation": "User confirmed 5000-level during this audit.",
+  "post_reconstruction_update": {
+    "date": "2026-10-30",
+    "draft_sha256": "82afbefdf13edcb70613e259dacca3289a9a432891fef7ff04d2b9541ef68f73",
+    "todo_markers": 0,
+    "new_why_reconstructions": 107,
+    "new_expected_estimates": 133,
+    "measured_result_tables_unchanged": true,
+    "missing_measurements_explicitly_unknown": true,
+    "draft_still_requires_adoption_as_LOG_md": false,
+    "historical_gap_counts_above_are_the_pre_reconstruction_snapshot": true,
+    "predictions_written_before_the_run_cannot_be_recreated_as_contemporaneous_records": true,
+    "adopted_as": "LOG.md",
+    "adopted_log_sha256": "e09598e15b4f37408bc8c161bd00343cdc8dd3b9fa0f9c496e1b3f16bb7caf7d",
+    "remaining_actions": [
+      "Complete final report PDF and citations",
+      "Publish intended grading commit",
+      "Run original harness in fresh CUDA environment pinned to grading commit",
+      "Submit public repository URL and PDF on Canvas"
+    ]
+  }
+}
