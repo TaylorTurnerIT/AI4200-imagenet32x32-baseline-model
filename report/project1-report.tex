@@ -1,38 +1,34 @@
-\documentclass[10pt,letterpaper]{article}
-\usepackage[margin=0.65in,bottom=0.7in]{geometry}
+\documentclass[journal,10pt,letterpaper]{IEEEtran}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{graphicx,booktabs,tabularx,array,xcolor,amsmath}
-\usepackage[font=small,labelfont=bf]{caption}
-\usepackage{fancyhdr}
+\usepackage{graphicx,booktabs,tabularx,array,amsmath}
 \usepackage[hyphens]{url}
 \usepackage[colorlinks=true,urlcolor=blue,linkcolor=blue]{hyperref}
-\definecolor{navy}{HTML}{183449}
-\definecolor{teal}{HTML}{087D88}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt}
 \setlength{\emergencystretch}{2em}
 \setlength{\tabcolsep}{5pt}
-\renewcommand{\arraystretch}{1.15}
-\pagestyle{fancy}
-\fancyhf{}
-\renewcommand{\headrulewidth}{0pt}
-\fancyfoot[L]{\footnotesize Taylor Turner | Project 1 | Residual MLPs | 5000-level}
-\fancyfoot[R]{\footnotesize\thepage}
-\renewcommand{\footrulewidth}{0.4pt}
-\newcommand{\reportheading}[1]{\vspace{4pt}{\large\bfseries\color{navy}#1}\par\vspace{4pt}}
-\newcommand{\reportfigure}[3]{\begin{center}\includegraphics[width=\linewidth,height=#2in,keepaspectratio]{#1}\captionof{figure}{#3}\end{center}}
+\renewcommand{\arraystretch}{1.05}
+\newcommand{\reportfigure}[3]{%
+  \begin{figure*}[!t]
+  \centering
+  \includegraphics[width=\textwidth,height=\dimexpr#2in-0.15in\relax,keepaspectratio]{#1}
+  \caption{#3}
+  \end{figure*}%
+}
+\title{Residual MLPs on MNIST, CIFAR-10, and ImageNet32}
+\author{Taylor Turner\\\small AI 4200 Project 1 | 5000-level section | October 30, 2026}
 \hypersetup{pdftitle={Project 1: Residual MLPs},pdfauthor={Taylor Turner}}
 \begin{document}
 
-{\LARGE\bfseries\color{navy}Residual MLPs on MNIST, CIFAR-10, and ImageNet32\par}\vspace{8pt}
 
-Taylor Turner | AI 4200 Project 1 | 5000-level section | October 30, 2026
+\maketitle
 
-\reportheading{1. Final models}
+
+
+\section{Final models}
 
 The biggest gain came from changing how the model sees an image, as predicted by Dr. Roberts in lecture. A flattened residual MLP was enough for MNIST. For CIFAR-10 and ImageNet32, I used many small shared MLPs to build an image representation before the residual classifier. The overwhelming majority of experimentation was done on the CIFAR dataset as it was a reasonably sized dataset that closely approximated the gains I would find on ImageNet and allowed for much faster iterations. Ultimately very few runs were done on ImageNet, even as performance continued to grow up across each.
 
+\begin{table*}[!t]
+\centering
 \begingroup\small\begin{tabularx}{\linewidth}{@{}>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X@{}}\toprule
 \textbf{Task} & \textbf{Original baseline test} & \textbf{Final test} & \textbf{Gain, points} & \textbf{Train, min} \\
 \midrule
@@ -40,9 +36,12 @@ MNIST & 95.65\% & 99.15\% & +3.50 & 14.70 \\
 CIFAR-10 & 48.21\% & 74.76\% & +26.55 & 3.82 \\
 ImageNet32 & 6.766\% & 19.960\% & +13.194 & 21.81 \\
 \bottomrule\end{tabularx}\endgroup\par\vspace{5pt}
+\end{table*}
 
 These final scores come from the fresh seed-0 instructor harness at commit b5ab6e1, with CUDA on an A100-SXM4-80GB. Total training took 40.33 minutes. The five grading-source files at main commit 7355660 match this successful qualification byte-for-byte; later changes concern documentation and packaging. MNIST and CIFAR baselines are historical journal measurements on Apple Metal. The ImageNet baseline was recovered on October 28 with the unchanged instructor source, seed 0, and an A100; it took 15.42 minutes. These comparisons measure complete recipes across different run conditions.
 
+\begin{table*}[!t]
+\centering
 \begingroup\small\begin{tabularx}{\linewidth}{@{}>{\hsize=1.05\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=0.95\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X@{}}\toprule
 \textbf{Setting} & \textbf{MNIST} & \textbf{CIFAR-10} & \textbf{ImageNet32} \\
 \midrule
@@ -57,15 +56,18 @@ Augmentation & Affine, brightness, noise, erasing & Affine, brightness, noise, e
 Epoch / time ceiling & 500 / 15 min & 60 / 15 min & 25 / 60 min \\
 Selected / completed & 270 / 382 & 56 / 60 & 23 / 25 \\
 \bottomrule\end{tabularx}\endgroup\par\vspace{5pt}
+\end{table*}
 
 All tasks use cross-entropy, batch 256, a constant learning rate, and a seeded 10\% validation split from the supplied training data. Inputs map from uint8 to [-1, 1]. AdamW uses betas 0.9/0.999 and epsilon 1e-8. Validation accuracy selects the best complete epoch, with earlier ties preferred. No ensemble, pretrained weights, distillation, extra training data, or checkpoint loading is used. Each train() call starts fresh. The instructor harness computes the test scores [1].
 
-\clearpage
 
-\reportheading{2. What mattered most}
+
+\section{What mattered most}
 
 Three comparisons explain most of the useful progress. These are measured recipe comparisons, not isolated causal effects. The run IDs and full settings remain in LOG.md.
 
+\begin{table*}[!t]
+\centering
 \begingroup\small\begin{tabularx}{\linewidth}{@{}>{\hsize=1.4\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=0.85\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=0.5\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1.25\hsize\linewidth=\hsize\raggedright\arraybackslash}X@{}}\toprule
 \textbf{Change in LOG.md} & \textbf{Validation before / after} & \textbf{Gain, points} & \textbf{What the evidence supports} \\
 \midrule
@@ -73,6 +75,7 @@ Three comparisons explain most of the useful progress. These are measured recipe
 137 to 138: wider windows and classifier & 49.98\% / 60.80\% & +10.82 & The narrow hierarchy lacked useful capacity. Several widths changed together. \\
 138 to 139: padding and full coverage & 60.80\% / 76.10\% & +15.30 & Retaining the image edges helped this hierarchy. Coverage and stage count changed together. \\
 \bottomrule\end{tabularx}\endgroup\par\vspace{5pt}
+\end{table*}
 
 AdamW was useful, but it was not a magic bullet. The flattened CIFAR models still reached a plateau. The first window model was worse than the better flat models. Widening it helped, then the coverage check exposed a more basic problem: the unpadded hierarchy only used the top-left 17x17 region. Padding kept the bottom and right edges and added a sixth reduction stage.
 
@@ -80,9 +83,9 @@ The work moved through three broad eras: understanding the flat baseline, testin
 
 \reportfigure{../outputs/report-figures/mnist-accuracy.png}{2.55}{MNIST experiment history.}
 
-\clearpage
 
-\reportheading{Experiment history: CIFAR-10 and ImageNet32}
+
+\subsection{Experiment history: CIFAR-10 and ImageNet32}
 
 \reportfigure{../outputs/report-figures/cifar10-accuracy.png}{2.55}{CIFAR-10 experiment history.}
 
@@ -90,9 +93,9 @@ The work moved through three broad eras: understanding the flat baseline, testin
 
 Figures 1-3 show the saved-history snapshot through the October 27 qualification. The x-axis orders experiments; it is not elapsed time or training epochs. Downward triangles retain results below each clipped y-axis. The figures do not show the later baseline recovery or extra-block experiment. Historical continuation is labeled separately from fresh training. The full plot data retain exact values and run IDs [2].
 
-\clearpage
 
-\reportheading{Training curves: fitting the data was not enough}
+
+\subsection{Training curves: fitting the data was not enough}
 
 \reportfigure{../outputs/report-figures/cifar10-training-comparison.png}{3.25}{Earlier flat CIFAR experiment versus the qualified final window model.}
 
@@ -100,6 +103,8 @@ Figure 4 compares cifar10-20261023-112130-b25190a4 with cifar10-32ae8cde. The ea
 
 The earlier CIFAR model could fit the training set much better than its held-out images. This was the reason to try regularization and augmentation, but stronger regularization did not remove the representation limit. The window model reached a much higher validation score. Its validation loss still stopped improving before training ended, so selecting a validation checkpoint remained useful. I specifically chose to train more steps than was necessary and then select the best validation, knowing that it would approximate the test accuracy without introducing accidental data leakage. By default, the project didn't necessarily call out using a three split, but I realized that by targeting test directly, even though it wasn't in the training set, I was introducing bias, which is a big reason why I ultimately had to remove it from my decisions.
 
+\begin{table*}[!t]
+\centering
 \begingroup\small\begin{tabularx}{\linewidth}{@{}>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X@{}}\toprule
 \textbf{Qualified run} & \textbf{Train loss, first to last} & \textbf{Validation loss, first to last} & \textbf{Minimum validation loss} & \textbf{Selected accuracy epoch} \\
 \midrule
@@ -107,14 +112,15 @@ MNIST & 0.742 to 0.012 & 0.218 to 0.027 & 0.024 at 361 & 270 \\
 CIFAR-10 & 3.574 to 0.457 & 1.909 to 0.796 & 0.736 at 56 & 56 \\
 ImageNet32 & 5.651 to 3.252 & 5.013 to 4.111 & 4.070 at 15 & 23 \\
 \bottomrule\end{tabularx}\endgroup\par\vspace{5pt}
+\end{table*}
 
 The ImageNet result is especially useful. Training loss kept falling, but validation loss reached its minimum at epoch 15. Best validation accuracy came later, at epoch 23. Accuracy and cross-entropy answer different questions: a model can classify more examples correctly while becoming more confidently wrong on others. I selected by validation accuracy and kept the loss curve as evidence of the remaining generalization problem.
 
 The earlier 20.004\% ImageNet test result used continued weights. It is not evidence that the grading function can reach that score from scratch. The fresh 19.960\% result is the qualified score. I kept the continuation in the history rather than treating it as the final submission.
 
-\clearpage
 
-\reportheading{3. ImageNet training dynamics}
+
+\section{ImageNet training dynamics}
 
 I measured the same 32 training examples in eval mode at initialization, epochs 1, 5, 10, 15, 20, and 25, and the selected epoch-23 checkpoint. The probe records 20 linear weight matrices, 22 activation outputs including both residual streams, and both branch-to-stream ratios. Activation variance is measured over each recorded output tensor; gradient RMS summarizes each weight-gradient matrix. A branch ratio divides RMS(block output - block input) by RMS(block input), and an update ratio divides RMS(weight change) by RMS(weight). A copied model and actual optimizer state receive one probe step. Live training is unchanged [3].
 
@@ -130,20 +136,23 @@ I also wanted to call attention to the zero epoch variants being a massive outli
 
 The update ratios describe a fixed-batch step with copied optimizer state, not the live random minibatch step. GELU has no tanh saturation or ReLU dead-unit criterion as defined by this assignment, so that specific saturation measurement does not apply. Plot positions follow forward order, with the exact module map in layer-index.json [3].
 
-\clearpage
 
-\reportheading{5000-level ablation: which blocks matter?}
+
+\subsection{5000-level ablation: which blocks matter?}
 
 I bypassed one residual classifier branch at a time, retaining its identity skip and every other block. I did not retrain. Each evaluation used all 128,116 validation examples from the training split. The full selected model scored 22.0222\% [3].
 
 \reportfigure{../outputs/report-figures/ablation-depth.png}{2.22}{Accuracy drop when each residual branch is bypassed.}
 
+\begin{table*}[!t]
+\centering
 \begingroup\small\begin{tabularx}{\linewidth}{@{}>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X@{}}\toprule
 \textbf{Branch removed} & \textbf{Validation accuracy} & \textbf{Drop, points} & \textbf{Original branch / stream RMS} \\
 \midrule
 Block 1 & 11.8588\% & 10.1634 & 0.9455 \\
 Block 2 & 18.4091\% & 3.6131 & 0.6994 \\
 \bottomrule\end{tabularx}\endgroup\par\vspace{5pt}
+\end{table*}
 
 Block 1 matters more by both measurements. Block 2 has the smaller ratio and smaller accuracy drop, but losing 3.61 points is still substantial. Neither is an obvious free removal. With only two branches, this is agreement in ordering, not evidence of a general predictive relationship. Bypass results describe dependence of the trained model; they do not tell me how a separately trained shallower model would perform.
 
@@ -151,14 +160,16 @@ Block 1 matters more by both measurements. Block 2 has the smaller ratio and sma
 
 The window stages do not have identity skips. I therefore changed their inputs rather than deleting whole stages. At one stage, I repeated either the top-left value or the 2x2 mean in all four positions. The learned MLP, strides, padding, and output shape stayed intact. Mean-only accuracy fell to 0.5823\% at stage 1, 16.4515\% at stage 4, and 6.9367\% at stage 6. Spatial arrangement matters throughout the hierarchy, particularly near its ends. These interventions also shift feature distributions; they are not a smaller-model benchmark. All 12 controls and restoration checks are preserved [4].
 
-\clearpage
 
-\reportheading{4. What did not work}
+
+\section{What did not work}
 
 \textbf{More capacity before compression.} The spatial ablations made me wonder whether another residual block could extract more signal before the last reduction. I tested one fresh seed-0 candidate. It added a 256-to-512-to-256 residual MLP before the final 2x2-to-1x1 stage. The split, shared initial parameters, optimizer, and 25-epoch recipe matched the qualified model. No retry, continuation, or test-set evaluation followed [5].
 
 \reportfigure{../outputs/report-figures/imagenet32-pre-reduction-comparison.png}{2.8}{One extra-block candidate versus the qualified ImageNet model.}
 
+\begin{table*}[!t]
+\centering
 \begingroup\small\begin{tabularx}{\linewidth}{@{}>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X@{}}\toprule
 \textbf{Measure} & \textbf{Qualified model} & \textbf{Extra residual block} \\
 \midrule
@@ -168,6 +179,7 @@ Minimum validation loss & 4.069596 & 4.101746 \\
 Final training loss & 3.252028 & 3.419130 \\
 Training time, min & 21.81 & 23.52 \\
 \bottomrule\end{tabularx}\endgroup\par\vspace{5pt}
+\end{table*}
 
 The extra block lost 0.9156 points and fit the training data worse. I cannot explain that as overfitting alone. Its best accuracy and minimum validation loss occurred at the cutoff, so slower optimization is plausible. The trial only says that this added block did not help under this recipe and budget. I kept the original architecture.
 
@@ -177,9 +189,9 @@ The extra block lost 0.9156 points and fit the training data worse. I cannot exp
 
 \textbf{Incomplete or discarded designs.} The history includes crashes, unfinished block edits, non-residual trials, and MaxPool2d experiments. Those trials remain in the log as failures or discarded directions. The frozen grading route uses the allowed linear, activation, normalization, and residual building blocks, with no pooling module. The separate Google MLP-Mixer exploration has no full-dataset result and was not selected.
 
-\clearpage
 
-\reportheading{5. Across the three tasks}
+
+\section{Across the three tasks}
 
 MNIST did not need the image hierarchy. Its digits have a simple shared structure and only ten classes. The seven-block flat model could reach 99\% without learning a large collection of local color and texture features. Keeping that earlier recipe was better supported than applying the latest architecture to every task.
 
@@ -189,7 +201,7 @@ ImageNet32 adds 1000 classes and many more training images, but each image still
 
 The comparison does not establish a hard accuracy limit for MLPs. It shows a limit of the recipes I tried. The local hierarchy helped, but compression, optimization, and generalization still constrained ImageNet. The ablations show that the trained model uses both classifier branches and the spatial hierarchy. They do not imply that adding more layers must help.
 
-\reportheading{6. Techniques beyond the basic baseline}
+\section{Techniques beyond the basic baseline}
 
 \textbf{Shared window MLPs and padding.} At each stage, Tensor.unfold gathers a 2x2 neighborhood. A shared Linear(4C,128), GELU, Linear(128,64), GELU maps it to 64 features. The first stage uses stride 1; later stages use stride 2. Bottom/right zero padding preserves odd-sized edges. Spatial sizes are 32, 31, 16, 8, 4, 2, and 1. The final 64 features project to width 512 before the residual classifier. This uses linear layers and reshaping, while introducing locality and weight sharing. That inductive bias resembles convolution mathematically; the implementation does not use a convolution layer. My journal's early claim that the operation was not shared was incorrect. MLP-Mixer was related reading, not the final architecture [6].
 
@@ -197,9 +209,9 @@ The comparison does not establish a hard accuracy limit for MLPs. It shows a lim
 
 \textbf{GELU and pre-normalization.} GELU scales an input by a smooth Gaussian-based gate rather than applying ReLU's hard cutoff [8]. LayerNorm normalizes each example across its feature dimensions. Applying it before the branch controls the branch's input scale while leaving the skip available. This helps explain how large internal projections can coexist with moderate residual-stream variance.
 
-\clearpage
 
-\reportheading{Technique notes and reproducibility}
+
+\subsection{Technique notes and reproducibility}
 
 \textbf{AdamW and AMSGrad.} Adam uses running first and second gradient moments to scale updates. AdamW applies weight decay separately from that gradient scaling [9]. AMSGrad retains a running maximum of the second-moment estimate in the update denominator [10]. I used the documented combined recipe. The log supports an improvement over one SGD recipe, but does not isolate AMSGrad's contribution.
 
@@ -211,17 +223,17 @@ The comparison does not establish a hard accuracy limit for MLPs. It shows a lim
 
 The original baseline has 30 tanh residual blocks, width 128, hidden 256, Xavier initialization, SGD at 0.05, batch 256, and ten epochs. The ImageNet recovery used instructor commit b56785a206069671420fbf5c6bbd6efb99f467b9. The final public API is train(task, X\_train, y\_train, seed=0, device="cuda") and predict(model, X\_test). Analysis scripts run separately; diagnostics are off by default. The repository retains the log, code, executable harness, exact settings, and compact evidence. Raw checkpoints remain outside Git and are never loaded by graded training.
 
-\reportheading{References and saved evidence}
+\section*{References and saved evidence}
 
-{\footnotesize [1] Jesse T. N. Roberts, instructor baseline and Project 1 harness: \url{https://github.com/JesseTNRoberts/AI4200-imagenet32x32-baseline-model}. Submission: \url{https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model}.\par}
+{\footnotesize\raggedright [1] Jesse T. N. Roberts, instructor baseline and Project 1 harness: \url{https://github.com/JesseTNRoberts/AI4200-imagenet32x32-baseline-model}. Submission: \url{https://github.com/TaylorTurnerIT/AI4200-imagenet32x32-baseline-model}.\par}
 
-{\footnotesize [2] Repository LOG.md; outputs/experiment-history/run-index.md; outputs/report-figures/accuracy-data.json and cifar10-training-comparison.json. Key runs: cifar10-20261023-134657-9294e112 (77), cifar10-20261024-151753-14698b08 (79), cifar10-20261026-215237-2ac3a7b3 (137), cifar10-20261026-221344-5d653ac6 (138), cifar10-20261026-224057-085c2c3b (139).\par}
+{\footnotesize\raggedright [2] Repository LOG.md; outputs/experiment-history/run-index.md; outputs/report-figures/accuracy-data.json and cifar10-training-comparison.json. Key runs: cifar10-20261023-134657-9294e112 (77), cifar10-20261024-151753-14698b08 (79), cifar10-20261026-215237-2ac3a7b3 (137), cifar10-20261026-221344-5d653ac6 (138), cifar10-20261026-224057-085c2c3b (139).\par}
 
-{\footnotesize [3] outputs/final-evaluation/qualification.json and analysis/. Fresh qualification at b5ab6e1f75de4cfc257cf85b7e2535cfa217934c; runs mnist-c628ed51, cifar10-32ae8cde, imagenet32-8856b095. Scripts: scripts/analyze\_submission.py and src/residual\_mlp\_baseline/analysis.py.\par}
+{\footnotesize\raggedright [3] outputs/final-evaluation/qualification.json and analysis/. Fresh qualification at b5ab6e1f75de4cfc257cf85b7e2535cfa217934c; runs mnist-c628ed51, cifar10-32ae8cde, imagenet32-8856b095. Scripts: scripts/analyze\_submission.py and src/residual\_mlp\_baseline/analysis.py.\par}
 
-{\footnotesize [4] outputs/window-stage-ablation/README.md and window-stage-ablation.json; scripts/ablate\_window\_stages.py. [5] LOG.md Change 146; outputs/pre-reduction-experiment/; imagenet32-prereduction-20261028-s0.\par}
+{\footnotesize\raggedright [4] outputs/window-stage-ablation/README.md and window-stage-ablation.json; scripts/ablate\_window\_stages.py. [5] LOG.md Change 146; outputs/pre-reduction-experiment/; imagenet32-prereduction-20261028-s0.\par}
 
-{\footnotesize [6] MLP-Mixer: An all-MLP Architecture for Vision. \url{https://arxiv.org/abs/2105.01601}. [7] Activator: GLU Activation Function as the Core Component of a Vision Transformer. \url{https://arxiv.org/abs/2405.15953}.\par}
+{\footnotesize\raggedright [6] MLP-Mixer: An all-MLP Architecture for Vision. \url{https://arxiv.org/abs/2105.01601}. [7] Activator: GLU Activation Function as the Core Component of a Vision Transformer. \url{https://arxiv.org/abs/2405.15953}.\par}
 
-{\footnotesize [8] Gaussian Error Linear Units (GELUs). \url{https://arxiv.org/abs/1606.08415}. [9] Decoupled Weight Decay Regularization. \url{https://arxiv.org/abs/1711.05101}. [10] On the Convergence of Adam and Beyond. \url{https://arxiv.org/abs/1904.09237}. Muon implementation reference: \url{https://docs.pytorch.org/docs/stable/generated/torch.optim.Muon.html}.\par}
+{\footnotesize\raggedright [8] Gaussian Error Linear Units (GELUs). \url{https://arxiv.org/abs/1606.08415}. [9] Decoupled Weight Decay Regularization. \url{https://arxiv.org/abs/1711.05101}. [10] On the Convergence of Adam and Beyond. \url{https://arxiv.org/abs/1904.09237}. Muon implementation reference: \url{https://docs.pytorch.org/docs/stable/generated/torch.optim.Muon.html}.\par}
 \end{document}

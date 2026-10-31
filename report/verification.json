@@ -9,20 +9,33 @@
     "__init__.py": "926c34c78756172c7555de36d59cf407804efaad2227eeadb0a9d6ad156adfd9"
   },
   "grading_source_matches_successful_qualification": true,
-  "report_pages": 9,
+  "report_pages": 7,
   "report_figures": 8,
   "required_sections": 6,
   "placeholder_markers": 0,
   "overfull_tex_boxes": 0,
-  "visual_review": "All nine rendered pages inspected; no clipping or orphan spill page.",
-  "portable_source_bundle": "Compiled successfully outside the checkout.",
+  "visual_review": "All seven rendered IEEE journal pages inspected; no clipping, overlapping content, or overfull boxes.",
+  "portable_source_bundle": "Standalone IEEEtran project compiled; extracted PDF text matches repository build page-for-page.",
   "uses_existing_saved_metrics": true,
   "additional_training_required": false,
   "additional_ablation_required": false,
   "runtime_cleanup": "Redundant A100 terminated; no active server sessions.",
   "outputs_sha256": {
-    "project1-report.tex": "66e3bffe3d2db9333843f894d930fb8d43366e099e06cabe46b909621ba9a0a9",
-    "project1-report.pdf": "ffcbbc4bf8e767dc0a74aad2732f5c00a9550c7eaaa53bddb81b113022dc9e41",
-    "project1-report-source.zip": "eae1501dc3e85dde0bd42a5d3340764a65c402d0792b19f4b206bfc6552adfee"
+    "project1-report.tex": "f8335a61f722e57de17ca08fc46163505ece721a3aff7964a0f27e4307e23012",
+    "project1-report.pdf": "59965cd5e14b139247d43e3d5774d444a01c30b929d71fafaf5219429067af49",
+    "project1-report-source.zip": "f2b9af26d15d31f9a39adc596b0182f70d4f6778f064140faef39ce29ce62259"
+  },
+  "formatting": {
+    "document_class": "IEEEtran",
+    "mode": "journal,10pt,letterpaper",
+    "author_revision_commit": "bb492e0b895e05c3e200d2c8cb4e1dd5e415f3e8",
+    "content_unchanged": true,
+    "canonical_body_sha256": "4311cc33154b654d1bfa913618dafeb26b7bb32e87ad00b990d2c7db36ae4488",
+    "unchanged_tables": 6,
+    "unchanged_figures_and_captions": 8,
+    "title_and_author_text_preserved": true,
+    "preservation_method": "Exact source-body comparison after removing layout wrappers and normalizing heading numbering and whitespace.",
+    "journal_unchanged_since_author_commit": true,
+    "image_assets_unchanged": true
   }
 }
