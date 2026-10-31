@@ -31,7 +31,7 @@ Taylor Turner | AI 4200 Project 1 | 5000-level section | October 30, 2026
 
 \reportheading{1. Final models}
 
-The biggest gain came from changing how the model sees an image. A flat residual MLP was enough for MNIST. For CIFAR-10 and ImageNet32, I used small shared MLPs to build an image representation before the residual classifier. More layers alone did not solve the problem.
+The biggest gain came from changing how the model sees an image, as predicted by Dr. Roberts in lecture. A flattened residual MLP was enough for MNIST. For CIFAR-10 and ImageNet32, I used many small shared MLPs to build an image representation before the residual classifier. The overwhelming majority of experimentation was done on the CIFAR dataset as it was a reasonably sized dataset that closely approximated the gains I would find on ImageNet and allowed for much faster iterations. Ultimately very few runs were done on ImageNet, even as performance continued to grow up across each.
 
 \begingroup\small\begin{tabularx}{\linewidth}{@{}>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X@{}}\toprule
 \textbf{Task} & \textbf{Original baseline test} & \textbf{Final test} & \textbf{Gain, points} & \textbf{Train, min} \\
@@ -69,14 +69,14 @@ Three comparisons explain most of the useful progress. These are measured recipe
 \begingroup\small\begin{tabularx}{\linewidth}{@{}>{\hsize=1.4\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=0.85\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=0.5\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1.25\hsize\linewidth=\hsize\raggedright\arraybackslash}X@{}}\toprule
 \textbf{Change in LOG.md} & \textbf{Validation before / after} & \textbf{Gain, points} & \textbf{What the evidence supports} \\
 \midrule
-77 to 79: SGD to AdamW recipe & 52.48\% / 54.36\% & +1.88 & Adaptive optimization helped this flat CIFAR recipe. The learning rate also changed. \\
+77 to 79: SGD to AdamW recipe & 52.48\% / 54.36\% & +1.88 & Adaptive optimization helped this flattened CIFAR recipe. The learning rate also changed. \\
 137 to 138: wider windows and classifier & 49.98\% / 60.80\% & +10.82 & The narrow hierarchy lacked useful capacity. Several widths changed together. \\
 138 to 139: padding and full coverage & 60.80\% / 76.10\% & +15.30 & Retaining the image edges helped this hierarchy. Coverage and stage count changed together. \\
 \bottomrule\end{tabularx}\endgroup\par\vspace{5pt}
 
-AdamW was useful, but it was not a magic bullet. The flat CIFAR models still reached a plateau. The first window model was worse than the better flat models. Widening it helped, then the coverage check exposed a more basic problem: the unpadded hierarchy only used the top-left 17x17 region. Padding kept the bottom and right edges and added a sixth reduction stage.
+AdamW was useful, but it was not a magic bullet. The flattened CIFAR models still reached a plateau. The first window model was worse than the better flat models. Widening it helped, then the coverage check exposed a more basic problem: the unpadded hierarchy only used the top-left 17x17 region. Padding kept the bottom and right edges and added a sixth reduction stage.
 
-The work moved through three broad eras: understanding the flat baseline, testing optimization and regularization, and changing the image representation. MNIST largely stayed in the first two. The window hierarchy defined the last major CIFAR and ImageNet change. The later fresh harness check separated reproducible submission scores from exploratory results.
+The work moved through three broad eras: understanding the flat baseline, testing optimization and regularization, and changing the image representation with regularization. The core idea that I was exploring, especially in the last stage, was the model was more than capable of extracting signal as long as I surfaced it. And regularization is the means by which I surfaced signal. MNIST largely stayed in the first two. The window hierarchy defined the last major CIFAR and ImageNet change. The later fresh harness check separated reproducible submission scores from exploratory results.
 
 \reportfigure{../outputs/report-figures/mnist-accuracy.png}{2.55}{MNIST experiment history.}
 
@@ -98,7 +98,7 @@ Figures 1-3 show the saved-history snapshot through the October 27 qualification
 
 Figure 4 compares cifar10-20261023-112130-b25190a4 with cifar10-32ae8cde. The earlier curve is a saved development model, not the instructor's original baseline. Recipe, seed, and hardware differ. The comparison shows the change in overall training behavior; it does not isolate one architectural component. Training accuracy uses minibatch predictions, with augmentation when enabled [2].
 
-The earlier CIFAR model could fit the training set much better than its held-out images. This was the reason to try regularization and augmentation, but stronger regularization did not remove the representation limit. The window model reached a much higher validation score. Its validation loss still stopped improving before training ended, so selecting a validation checkpoint remained useful.
+The earlier CIFAR model could fit the training set much better than its held-out images. This was the reason to try regularization and augmentation, but stronger regularization did not remove the representation limit. The window model reached a much higher validation score. Its validation loss still stopped improving before training ended, so selecting a validation checkpoint remained useful. I specifically chose to train more steps than was necessary and then select the best validation, knowing that it would approximate the test accuracy without introducing accidental data leakage. By default, the project didn't necessarily call out using a three split, but I realized that by targeting test directly, even though it wasn't in the training set, I was introducing bias, which is a big reason why I ultimately had to remove it from my decisions.
 
 \begingroup\small\begin{tabularx}{\linewidth}{@{}>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X>{\hsize=1\hsize\linewidth=\hsize\raggedright\arraybackslash}X@{}}\toprule
 \textbf{Qualified run} & \textbf{Train loss, first to last} & \textbf{Validation loss, first to last} & \textbf{Minimum validation loss} & \textbf{Selected accuracy epoch} \\
@@ -121,6 +121,8 @@ I measured the same 32 training examples in eval mode at initialization, epochs 
 \reportfigure{../outputs/report-figures/training-dynamics.png}{3.88}{Fixed-batch ImageNet measurements across training. All four y-axes are logarithmic.}
 
 \textbf{Activation variance.} The stream is not uniform through the network. At initialization, one late window linear output has variance about 2.07e-8. The first classifier branch then dominates its tiny input. By the selected checkpoint, residual-stream variances after blocks 1 and 2 are 0.0902 and 0.1367. Internal value and gate projections reach much larger variance, up to 990.6, before their normalization. That large internal value is not the residual-stream variance. The normalizations help separate internal scale from the added branch scale.
+
+I also wanted to call attention to the zero epoch variants being a massive outlier. I believe this is caused by the feed forward block of MLPs. That section's entire purpose was to extract more fine-grained detail by asking the model to look at a smaller section at a time. And because it's feed forward, we would expect a vanishing gradient. At the point at which the model then transitions into its residual network section, we see the effect stabilize. Now, after that first epoch, the weights can increase to offset that loss of variance. And suddenly it's a lot more stable. That's at least how I've interpreted these readings. Afterward after the residual part starts it begins to explode, which is what we would expect a res net to do. Now I could have done more work to prevent that, but because the gradient never actually did explode, we're good.
 
 \textbf{Branch-to-stream ratio.} Block 1 starts near 7915 because the incoming representation is tiny, not because the whole network has already diverged. By epoch 5 its ratio is 1.075. At the selected checkpoint, ratios are 0.9455 and 0.6994. Neither residual branch is close to unused.
 

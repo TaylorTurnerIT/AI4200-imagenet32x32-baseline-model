@@ -1044,7 +1044,7 @@ Its best accuracy and lowest validation loss both occurred at the cutoff. No tes
 
 ### Original ImageNet32 baseline recovery — 2026-10-28
 
-Recovered the missing measurement using the instructor’s unchanged baseline and harness.
+Recovered the missing measurement using the unchanged baseline and harness.
 
 | Measure | Result |
 | --- | ---: |
