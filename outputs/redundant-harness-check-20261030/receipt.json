@@ -1,0 +1,6 @@
+{
+  "status": "interrupted_redundant_rerun",
+  "submission_commit": "7355660847f3f8b868bd911a6343558c3123c1bc",
+  "reason": "Existing successful qualification covers identical grading source. Rerun stopped after user challenged its need.",
+  "complete_final_evaluation": false
+}

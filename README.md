@@ -2,8 +2,9 @@
 
 The project started from the instructor baseline. See [SUBMISSION.md](SUBMISSION.md)
 for the frozen task-specific grading recipes and exact-harness reproduction.
-The [development log draft](LOG.md) and [report figures](outputs/report-figures/)
-preserve the experimental history.
+The [development log](LOG.md) and [report figures](outputs/report-figures/)
+preserve the experimental history. The [LaTeX report and compiled PDF](report/README.md)
+explain the final models, training dynamics, and ablations.
 
 ## Dataset notebooks
 

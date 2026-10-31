@@ -1,5 +1,10 @@
 # Final submission and reproduction
 
+[LaTeX report, compiled PDF, and portable source bundle](report/README.md).
+The [source verification](report/verification.json) confirms that all five
+grading-source files at `7355660` match the successful qualification below.
+No additional training or ablation is needed for the report.
+
 [Fresh A100 harness results and executed notebook](outputs/final-evaluation/README.md):
 MNIST 99.15%, CIFAR-10 74.76%, ImageNet32 19.96%; total training 40.33 minutes.
 
@@ -79,8 +84,10 @@ procedure. Keep this distinction explicit in the report.
 
 ## Consolidation scope
 
-The main branch includes the saved-run reconstruction, draft `LOG.md`, report
+The main branch includes the saved-run reconstruction, `LOG.md`, report
 images, model walkthrough, frozen submission path, and three independent
 dataset notebooks. The MLP-Mixer exploration is preserved through its separate
 model/training API and documentation; it does not replace the grading recipes.
-Personal Why and Expected sections remain TODOs unless journal wording was available.
+Missing Why and Expected fields are labeled retrospective reconstructions.
+Measured results remain exact, and unrecoverable history remains explicit.
+The [LaTeX report and compiled PDF](report/README.md) summarize the evidence.
